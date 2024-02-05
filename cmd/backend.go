@@ -2,7 +2,8 @@ package main
 
 import (
 	"net/http"
-	//"github.com/jackc/pgx/v5"
+
+	db "github.com/DeltaCapstone/ChoiceMoversBackend/database"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -14,6 +15,8 @@ func main() {
 	// Middleware
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
+
+	db.Dbconn()
 
 	// Routes
 	e.GET("/", hello)

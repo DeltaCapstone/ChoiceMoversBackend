@@ -1,4 +1,4 @@
-module backend
+module github.com/DeltaCapstone/ChoiceMoversBackend
 
 go 1.18
 
