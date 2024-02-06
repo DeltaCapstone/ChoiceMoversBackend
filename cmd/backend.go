@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"net/http"
-	"github.com/DeltaCapstone/ChoiceMoversBackend/database"
+
+	db "github.com/DeltaCapstone/ChoiceMoversBackend/database"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -15,7 +17,9 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	db.Dbconn()
+	dbinst, _ := db.NewPG(context.Background())
+
+	dbinst.Ping(context.Background())
 
 	// Routes
 	e.GET("/", hello)

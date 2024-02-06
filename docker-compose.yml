@@ -6,6 +6,8 @@ services:
       - db_volume:/data:rw
   backend:
     build: .
+    env_file:
+      - .env
     ports: 
       - "8080:8080"
 
