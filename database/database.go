@@ -25,7 +25,7 @@ func NewPG(ctx context.Context) (*postgres, error) {
 	pgOnce.Do(func() {
 		config, err := pgxpool.ParseConfig(fmt.Sprintf("user=%s password=%s dbname=%s", os.Getenv("PGUSER"), os.Getenv("PGPASSWORD"), os.Getenv("PGDATABASE")))
 		if err != nil {
-			log.Fatalf("unable to parse PostgreSQL configuration: %v", err)
+			log.Printf("unable to parse PostgreSQL configuration: %v", err)
 		}
 
 		db, err := pgxpool.NewWithConfig(ctx, config)
@@ -33,10 +33,10 @@ func NewPG(ctx context.Context) (*postgres, error) {
 			// Check if the error is a PgError
 			var pgErr *pgconn.PgError
 			if errors.As(err, &pgErr) {
-				log.Fatalf("PostgreSQL error - Code: %s, Message: %s", pgErr.Code, pgErr.Message)
+				log.Printf("PostgreSQL error - Code: %s, Message: %s", pgErr.Code, pgErr.Message)
 			} else {
 				// If it's not a PgError, log the general error
-				log.Fatalf("unable to create connection pool: %v", err)
+				log.Printf("unable to create connection pool: %v", err)
 			}
 		}
 
