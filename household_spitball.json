@@ -1,0 +1,39 @@
+{
+    "home_type": "house",
+    "br_count": 3,
+    "bath_coutn": 2,
+    "rooms": [
+        {
+            "room_num": 1,
+            "room_type": "living room",
+            "boxes_small": 4,
+            "boxes_medium":1,
+            "boxes_large": 0,
+            "furniture": [
+                {"couch": 2},
+                {"tv": 1},
+                {"media center": 1},
+                {"arm chair": 1},
+                {"coffee table": 1},
+                {"end_table": 2},
+                {"lamp_floor": 1},
+                {"lamp_table": 2}   
+            ]
+        },
+        {
+            "room_num": 2,
+            "room_type": "bedroom",
+            "boxes_small": 0,
+            "boxes_medium":5,
+            "boxes_large": 1,
+            "furniture": [
+                {"bed_king": 1},
+                {"dresser": 1},
+                {"night_stand": 2},
+                {"bookshelf": 1},
+                {"lamp_table": 2}
+            ]
+            
+        }
+    ]
+}
