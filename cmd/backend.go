@@ -18,6 +18,7 @@ func main() {
 	e.Use(middleware.Recover())
 
 	dbinst, _ := db.NewPG(context.Background())
+	defer dbinst.Close()
 
 	dbinst.Ping(context.Background())
 
