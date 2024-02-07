@@ -1,0 +1,22 @@
+CREATE TABLE MoveAppointments (
+    AppointmentID INT PRIMARY KEY,
+    AppointmentDate DATE,
+    StartTime TIME,
+    EndTime TIME,
+    CustomerName VARCHAR(255),
+    CustomerPhone VARCHAR(50),
+    CustomerEmail VARCHAR(255),
+    DurationHours INT,
+    NumberOfMovers INT,
+    LoadAddress TEXT,
+    UnloadAddress TEXT,
+    LoadResidenceType VARCHAR(255),
+    LoadFlightsOfStairs INT,
+    UnloadResidenceType VARCHAR(255),
+    UnloadFlightsOfStairs INT,
+    RentalTruckSize VARCHAR(255),
+    ItemsToMove TEXT,
+    WorkersAssigned TEXT,
+    Mileage INT,
+    MoveCost DECIMAL(10,2)
+);
