@@ -1,20 +1,22 @@
 services:
-  db:
-    image: postgres
-    restart: always
-    volumes:
-      - db_volume:/data:rw
   backend:
     build: .
     env_file:
       - .env
     ports: 
       - "8080:8080"
+    volumes:
+      - .:/user/src/app
 
-volumes:
-  db_volume:
-    driver: local
-    driver_opts:
-      o: "size=100m, uid=1000"
-      device: tmpfs
-      type: tmpfs
+
+  db:
+    image: postgres
+    restart: always
+    ports: 
+      -"5432:5432"
+    environment:
+      - POSTGRES_USER=${PGUSER}
+      - POSTGRES_PASSWORD=${PGPASSWORD}
+      - POSTGRES_DB=${PGDATABASE}
+    volumes:
+      - ./db_data:/data
