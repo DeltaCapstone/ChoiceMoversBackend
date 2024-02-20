@@ -1,6 +1,7 @@
 {
     "home_type": "house",
     "square feet": 0,
+    "flights": 0,
     "rooms": [
         {
             "room_type": "attic",
@@ -8,10 +9,10 @@
             "boxes_medium":0,
             "boxes_large": 0,
             "furniture": [
-                o	Chair
-                o	Night stand
-                o	Coffee table 
-                o	Shelving unit
+                {"chair": 0},
+                {"night stand": 0},
+                {"coffee table": 0},
+                {"shelving unit": 0}
             ]
         },
         {
@@ -20,23 +21,23 @@
             "boxes_medium":0,
             "boxes_large": 0,
             "furniture": [
-                o	Armoire
-                o	Chair
-                o	Filing cabinet
-                o	Love seat
-                o	Tool chest
-                o	Television
-                o	Hightop table
-                o	Exercise equipment
-                o	Safe
-                o	Large chair
-                o	Credenza
-                o	Couch
-                o	 Coffee table
-                o	Power tools
-                o	Shelving unit
-                o	Stool
-                o	Pool table                
+                {"armoire": 0},
+                {"chair": 0},
+                {"filing cabinet": 0},
+                {"love seat": 0},
+                {"tool chest": 0},
+                {"television": 0},
+                {"hightop table": 0},
+                {"exercise equipment": 0},
+                {"safe": 0},
+                {"large chair": 0},
+                {"credenza": 0},
+                {"couch": 0},
+                {"coffee table": 0},
+                {"power tools": 0},
+                {"shelving unit": 0},
+                {"stool": 0},
+                {"pool table": 0}               
             ]
         },
         {
@@ -45,22 +46,21 @@
             "boxes_medium":0,
             "boxes_large": 0,
             "furniture": [
-                o	Crib
-                o	King bed
-                o	Queen/full bed
-                o	Double/twin bed
-                o	Bookshelf
-                o	Armoire
-                o	Large chair
-                o	Dresser
-                o	Nightstand
-                o	Tv
-                o	Desk
-                o	Chair
-                o	Exercise equipment
-                o	Piano
-                o	Pool table
-                           
+                {"crib": 0},
+                {"king bed": 0},
+                {"queen/full bed": 0},
+                {"double/twin bed": 0},
+                {"bookshelf": 0},
+                {"armoire": 0},
+                {"large chair": 0},
+                {"dresser": 0},
+                {"nightstand": 0},
+                {"tv": 0},
+                {"desk": 0},
+                {"chair": 0},
+                {"exercise equipment": 0},
+                {"piano": 0},
+                {"pool table": 0}          
             ]
         },
         {
@@ -69,12 +69,12 @@
             "boxes_medium":0,
             "boxes_large": 0,
             "furniture": [
-                o	Buffet table
-                o	China cabinet
-                o	Chair
-                o	Dinning table 
-                o	Tea car
-                o	pool table                
+                {"buffet table": 0},
+                {"china cabinet": 0},
+                {"chair": 0},
+                {"dinning table": 0},
+                {"tea car": 0},
+                {"pool table": 0}            
             ]
         },
         {
@@ -83,34 +83,16 @@
             "boxes_medium":0,
             "boxes_large": 0,
             "furniture": [
-                o	Bookshelf
-                o	Large chair
-                o	Entertainment center
-                o	Couch
-                o	Love seat
-                o	Coffee table
-                o	End table 
-                o	Tv
-                o	Recliner
-                o	Piano                         
-            ]
-        },
-        {
-            "room_type": "family",
-            "boxes_small": 0,
-            "boxes_medium":0,
-            "boxes_large": 0,
-            "furniture": [
-                o	Bookshelf
-                o	Large chair
-                o	Entertainment center
-                o	Couch
-                o	Love seat
-                o	Coffee table
-                o	End table 
-                o	Tv
-                o	Recliner
-                o	Piano                         
+                {"bookshelf": 0},
+                {"large chair": 0},
+                {"entertainment center": 0},
+                {"couch": 0},
+                {"love seat": 0},
+                {"coffee table": 0},
+                {"end table": 0},
+                {"tv": 0},
+                {"recliner": 0},
+                {"piano": 0}                      
             ]
         },
         {
@@ -119,12 +101,12 @@
             "boxes_medium":0,
             "boxes_large": 0,
             "furniture": [
-                o	Bicycles
-                o	Push mower
-                o	Tv
-                o	Tool chest
-                o	Power tools
-                o	Yard tools                                       
+                {"bicycles": 0},
+                {"push mower": 0},
+                {"tv": 0},
+                {"tool chest": 0},
+                {"power tools": 0},
+                {"yard tools": 0}                                     
             ]
         },
         {
@@ -133,13 +115,13 @@
             "boxes_medium":0,
             "boxes_large": 0,
             "furniture": [
-                o	Chair 
-                o	Small appliances
-                o	Tea cart
-                o	Island
-                o	Kitchen table
-                o	Stool
-                o	Large appliances                                                      
+                {"chair": 0},
+                {"small appliances": 0},
+                {"tea cart": 0},
+                {"island": 0},
+                {"kitchen table": 0},
+                {"stool": 0},
+                {"large appliances": 0}                                                     
             ]
         },
         {
@@ -148,7 +130,7 @@
             "boxes_medium":0,
             "boxes_large": 0,
             "furniture": [
-                o	Laundry appliances                
+                {"laundry appliances": 0}              
             ]
         },
         {
@@ -157,21 +139,21 @@
             "boxes_medium":0,
             "boxes_large": 0,
             "furniture": [
-                o	Bookshelf
-                o	Armoire
-                o	Desk chair
-                o	Computer
-                o	Monitor
-                o	Credenza
-                o	Desk
-                o	Filing cabinet
-                o	Tv
-                o	Love seat
-                o	Printer
-                o	Exercise equipment
-                o	Piano
-                o	Save
-                o	Pool table
+                {"bookshelf": 0},
+                {"armoire": 0},
+                {"desk chair": 0},
+                {"computer": 0},
+                {"monitor": 0},
+                {"credenza": 0},
+                {"desk": 0},
+                {"filing cabinet": 0},
+                {"tv": 0},
+                {"love seat": 0},
+                {"printer": 0},
+                {"exercise equipment": 0},
+                {"piano": 0},
+                {"save": 0},
+                {"pool table": 0}
                                 
             ]
         },
@@ -181,16 +163,16 @@
             "boxes_medium":0,
             "boxes_large": 0,
             "furniture": [
-                o	Chairs
-                o	Swings/glider
-                o	Patio sofa
-                o	Patio table
-                o	Coffee table 
-                o	Push mower
-                o	Yard tools
-                o	Gril
-                o	Hot tub                               
+                {"chairs": 0},
+                {"swings/glider": 0},
+                {"patio sofa": 0},
+                {"patio table": 0},
+                {"coffee table": 0},
+                {"push mower": 0},
+                {"yard tools": 0},
+                {"grill": 0},
+                {"hot tub": 0}                            
             ]
-        },
+        }
     ]
 }
