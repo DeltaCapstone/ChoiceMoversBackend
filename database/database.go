@@ -53,3 +53,13 @@ func (pg *postgres) Ping(ctx context.Context) error {
 func (pg *postgres) Close() {
 	pg.db.Close()
 }
+
+func (pg *postgres) getName(ctx context.Context, name string) string {
+	var row string
+	err := pg.db.QueryRow(ctx, "select * from mytable where %s", name).Scan(&row)
+	if err != nil {
+		return err.Error()
+	} else {
+		return row
+	}
+}

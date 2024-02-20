@@ -7,3 +7,4 @@ COPY . .
 WORKDIR /app/cmd
 
 CMD ["go", "run", "."]
+

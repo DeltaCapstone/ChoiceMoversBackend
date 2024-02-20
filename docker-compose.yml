@@ -13,10 +13,10 @@ services:
     image: postgres
     restart: always
     ports: 
-      -"5432:5432"
+      - "5432:5432"
     environment:
       - POSTGRES_USER=${PGUSER}
       - POSTGRES_PASSWORD=${PGPASSWORD}
-      - POSTGRES_DB=${PGDATABASE}
     volumes:
-      - ./db_data:/data
+      - ./db_data:/var/lib/postgresql/data
+      - ./sql/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
