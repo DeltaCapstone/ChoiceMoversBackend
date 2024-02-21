@@ -23,7 +23,7 @@ var (
 
 func NewPG(ctx context.Context) (*postgres, error) {
 	pgOnce.Do(func() {
-		config, err := pgxpool.ParseConfig(fmt.Sprintf("user=%s password=%s dbname=%s host=localhost port=5432", os.Getenv("PGUSER"), os.Getenv("PGPASSWORD"), os.Getenv("PGDATABASE")))
+		config, err := pgxpool.ParseConfig(fmt.Sprintf("user=%s password=%s dbname=%s host=db port=5432 sslmode=disable", os.Getenv("PGUSER"), os.Getenv("PGPASSWORD"), os.Getenv("PGDATABASE")))
 		if err != nil {
 			log.Printf("unable to parse PostgreSQL configuration: %v", err)
 		}
@@ -39,7 +39,6 @@ func NewPG(ctx context.Context) (*postgres, error) {
 				log.Printf("unable to create connection pool: %v", err)
 			}
 		}
-
 		PgInstance = &postgres{db}
 	})
 
