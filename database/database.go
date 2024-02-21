@@ -1,4 +1,4 @@
-package db
+package DB
 
 import (
 	"context"
@@ -17,13 +17,13 @@ type postgres struct {
 }
 
 var (
-	pgInstance *postgres
+	PgInstance *postgres
 	pgOnce     sync.Once
 )
 
 func NewPG(ctx context.Context) (*postgres, error) {
 	pgOnce.Do(func() {
-		config, err := pgxpool.ParseConfig(fmt.Sprintf("user=%s password=%s dbname=%s", os.Getenv("PGUSER"), os.Getenv("PGPASSWORD"), os.Getenv("PGDATABASE")))
+		config, err := pgxpool.ParseConfig(fmt.Sprintf("user=%s password=%s dbname=%s host=localhost port=5432", os.Getenv("PGUSER"), os.Getenv("PGPASSWORD"), os.Getenv("PGDATABASE")))
 		if err != nil {
 			log.Printf("unable to parse PostgreSQL configuration: %v", err)
 		}
@@ -40,10 +40,10 @@ func NewPG(ctx context.Context) (*postgres, error) {
 			}
 		}
 
-		pgInstance = &postgres{db}
+		PgInstance = &postgres{db}
 	})
 
-	return pgInstance, nil
+	return PgInstance, nil
 }
 
 func (pg *postgres) Ping(ctx context.Context) error {
@@ -54,12 +54,13 @@ func (pg *postgres) Close() {
 	pg.db.Close()
 }
 
-func (pg *postgres) getName(ctx context.Context, name string) string {
+// basic querry for retrieving id for name
+func (pg *postgres) GetName(ctx context.Context, name string) (string, error) {
 	var row string
-	err := pg.db.QueryRow(ctx, "select * from mytable where %s", name).Scan(&row)
+	err := pg.db.QueryRow(ctx, "select id from mytable where name = $1", name).Scan(&row)
 	if err != nil {
-		return err.Error()
+		return "", fmt.Errorf("error querying database: %v", err)
 	} else {
-		return row
+		return row, nil
 	}
 }
