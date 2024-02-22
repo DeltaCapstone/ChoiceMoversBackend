@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
+
 	//"golang.org/x/crypto/bcrypt"
 
 	DB "github.com/DeltaCapstone/ChoiceMoversBackend/database"
@@ -12,12 +14,14 @@ func hello(c echo.Context) error {
 	return c.String(http.StatusOK, "Hello, World!")
 }
 
-func getUser(c echo.Context) error {
-	value, err := DB.PgInstance.GetName(c.Request().Context(), "dakota")
+func getUsers(c echo.Context) error {
+	users, err := DB.PgInstance.GetUsers(c.Request().Context())
 	if err != nil {
-		return c.String(http.StatusInternalServerError, err.Error()+" Error retrieving data")
+		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error retrieving data: %v", err))
 	}
-	return c.String(http.StatusOK, "dakota's id is: "+value)
+	//fmt.Print(users)
+
+	return c.JSON(http.StatusOK, users)
 }
 
 /*

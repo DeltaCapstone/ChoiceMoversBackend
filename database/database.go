@@ -25,7 +25,7 @@ func NewPG(ctx context.Context) (*postgres, error) {
 	pgOnce.Do(func() {
 		config, err := pgxpool.ParseConfig(fmt.Sprintf("user=%s password=%s dbname=%s host=db port=5432 sslmode=disable", os.Getenv("PGUSER"), os.Getenv("PGPASSWORD"), os.Getenv("PGDATABASE")))
 		if err != nil {
-			log.Printf("unable to parse PostgreSQL configuration: %v", err)
+			log.Fatalf("unable to parse PostgreSQL configuration: %v", err)
 		}
 
 		db, err := pgxpool.NewWithConfig(ctx, config)
@@ -33,10 +33,10 @@ func NewPG(ctx context.Context) (*postgres, error) {
 			// Check if the error is a PgError
 			var pgErr *pgconn.PgError
 			if errors.As(err, &pgErr) {
-				log.Printf("PostgreSQL error - Code: %s, Message: %s", pgErr.Code, pgErr.Message)
+				log.Fatalf("PostgreSQL error - Code: %s, Message: %s", pgErr.Code, pgErr.Message)
 			} else {
 				// If it's not a PgError, log the general error
-				log.Printf("unable to create connection pool: %v", err)
+				log.Fatalf("unable to create connection pool: %v", err)
 			}
 		}
 		PgInstance = &postgres{db}
@@ -53,13 +53,30 @@ func (pg *postgres) Close() {
 	pg.db.Close()
 }
 
+// TODO
+// will neet to move and probably change
+type User struct {
+	ID          int
+	UserName    string
+	AccountType string
+	Email       string
+}
+
 // basic querry for retrieving id for name
-func (pg *postgres) GetName(ctx context.Context, name string) (string, error) {
-	var row string
-	err := pg.db.QueryRow(ctx, "select id from mytable where name = $1", name).Scan(&row)
+func (pg *postgres) GetUsers(ctx context.Context) ([]User, error) {
+	var users []User
+	rows, err := pg.db.Query(ctx, "select user_id, username, accnt_type, email from users")
 	if err != nil {
-		return "", fmt.Errorf("error querying database: %v", err)
-	} else {
-		return row, nil
+		return nil, fmt.Errorf("error querying database: %v", err)
 	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var user User
+		if err := rows.Scan(&user.ID, &user.UserName, &user.AccountType, &user.Email); err != nil {
+			return nil, fmt.Errorf("error reading row: %v", err)
+		}
+		users = append(users, user)
+	}
+	return users, nil
 }
