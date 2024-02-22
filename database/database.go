@@ -8,6 +8,7 @@ import (
 	"os"
 	"sync"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -63,9 +64,15 @@ type User struct {
 }
 
 // basic querry for retrieving id for name
-func (pg *postgres) GetUsers(ctx context.Context) ([]User, error) {
+func (pg *postgres) GetUsers(ctx context.Context, accountType string) ([]User, error) {
 	var users []User
-	rows, err := pg.db.Query(ctx, "select user_id, username, accnt_type, email from users")
+	var rows pgx.Rows
+	var err error
+	if accountType != "" {
+		rows, err = pg.db.Query(ctx, "select user_id, username, accnt_type, email from users where accnt_type = $1", accountType)
+	} else {
+		rows, err = pg.db.Query(ctx, "select user_id, username, accnt_type, email from users")
+	}
 	if err != nil {
 		return nil, fmt.Errorf("error querying database: %v", err)
 	}

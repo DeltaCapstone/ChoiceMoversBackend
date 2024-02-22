@@ -14,8 +14,10 @@ func hello(c echo.Context) error {
 	return c.String(http.StatusOK, "Hello, World!")
 }
 
+// accountType must match account types ENUM in db
 func getUsers(c echo.Context) error {
-	users, err := DB.PgInstance.GetUsers(c.Request().Context())
+	accountType := c.QueryParam("accountType")
+	users, err := DB.PgInstance.GetUsers(c.Request().Context(), accountType)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error retrieving data: %v", err))
 	}
