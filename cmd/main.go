@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"net/http"
 	"os"
 	"os/signal"
 	"time"
@@ -30,12 +29,7 @@ func main() {
 	}
 	defer dbinst.Close()
 
-	dbinst.Ping(ctx)
-
-	// Routes
-	e.GET("/", hello)
-	//test route to run a very basic querry
-	e.GET("/dakota", getDakota)
+	CreateRoutes(e)
 
 	// Start server with graceful shutdown
 	go func() {
@@ -50,18 +44,4 @@ func main() {
 	<-quit
 	cancel()                    // Cancel the context to stop database operations
 	time.Sleep(2 * time.Second) // Allow time for existing connections to finish
-}
-
-// Handler
-func hello(c echo.Context) error {
-	return c.String(http.StatusOK, "Hello, World!")
-}
-
-// Test with basic query
-func getDakota(c echo.Context) error {
-	value, err := DB.PgInstance.GetName(c.Request().Context(), "dakota")
-	if err != nil {
-		return c.String(http.StatusInternalServerError, err.Error()+" Error retrieving data")
-	}
-	return c.String(http.StatusOK, "dakota's id is: "+value)
 }
