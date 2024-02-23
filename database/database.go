@@ -87,3 +87,12 @@ func (pg *postgres) GetUsers(ctx context.Context, accountType string) ([]User, e
 	}
 	return users, nil
 }
+
+func (pg *postgres) CreateUser(ctx context.Context, user User) (int, error) {
+	var userID int
+	err := pg.db.QueryRow(ctx, "INSERT INTO users (username, accnt_type, email) VALUES ($1, $2, $3) RETURNING user_id", user.UserName, user.AccountType, user.Email).Scan(&userID)
+	if err != nil {
+		return 0, fmt.Errorf("error inserting row: %v", err)
+	}
+	return userID, nil
+}
