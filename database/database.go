@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"sync"
 
 	"github.com/jackc/pgx/v5"
@@ -54,24 +55,20 @@ func (pg *postgres) Close() {
 	pg.db.Close()
 }
 
-// TODO
-// will neet to move and probably change
-type User struct {
-	ID          int
-	UserName    string
-	AccountType string
-	Email       string
-}
-
-// basic querry for retrieving id for name
-func (pg *postgres) GetUsers(ctx context.Context, accountType string) ([]User, error) {
-	var users []User
+// /////////////////////////////////////////////////////////////////////////////////////////////////
+// Customer Route Queries
+func (pg *postgres) GetCustomers(ctx context.Context, id string) ([]Customer, error) {
+	var customers []Customer
 	var rows pgx.Rows
 	var err error
-	if accountType != "" {
-		rows, err = pg.db.Query(ctx, "select user_id, username, accnt_type, email from users where accnt_type = $1", accountType)
+	if id != "" {
+		ID, e := strconv.Atoi(id)
+		if e != nil {
+			return nil, fmt.Errorf("id is not an integer: %v", err)
+		}
+		rows, err = pg.db.Query(ctx, "select customer_id, username, email, primary_phone from customers where id = $1", ID)
 	} else {
-		rows, err = pg.db.Query(ctx, "select user_id, username, accnt_type, email from users")
+		rows, err = pg.db.Query(ctx, "select customer_id, username, email, primary_phone from customers")
 	}
 	if err != nil {
 		return nil, fmt.Errorf("error querying database: %v", err)
@@ -79,20 +76,52 @@ func (pg *postgres) GetUsers(ctx context.Context, accountType string) ([]User, e
 	defer rows.Close()
 
 	for rows.Next() {
-		var user User
-		if err := rows.Scan(&user.ID, &user.UserName, &user.AccountType, &user.Email); err != nil {
+		var customer Customer
+		if err := rows.Scan(&customer.ID, &customer.UserName, &customer.Email, &customer.PhonePrimary); err != nil {
 			return nil, fmt.Errorf("error reading row: %v", err)
 		}
-		users = append(users, user)
+		customers = append(customers, customer)
 	}
-	return users, nil
+	return customers, nil
 }
 
-func (pg *postgres) CreateUser(ctx context.Context, user User) (int, error) {
-	var userID int
-	err := pg.db.QueryRow(ctx, "INSERT INTO users (username, accnt_type, email) VALUES ($1, $2, $3) RETURNING user_id", user.UserName, user.AccountType, user.Email).Scan(&userID)
-	if err != nil {
-		return 0, fmt.Errorf("error inserting row: %v", err)
+func (pg *postgres) CreateCustomer(ctx context.Context, newCustomer Customer) (int, error) {
+	user_id := 0
+	return user_id, nil
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+//Employee Route Queries
+
+func (pg *postgres) GetEmployees(ctx context.Context, id string) ([]Employee, error) {
+	var employees []Employee
+	var rows pgx.Rows
+	var err error
+	if id != "" {
+		ID, e := strconv.Atoi(id)
+		if e != nil {
+			return nil, fmt.Errorf("id is not an integer: %v", err)
+		}
+		rows, err = pg.db.Query(ctx, "select employee_id, username, email, primary_phone, employee_type from employees where id = $1", ID)
+	} else {
+		rows, err = pg.db.Query(ctx, "select employee_id, username, email, primary_phone, employee_type from employees")
 	}
-	return userID, nil
+	if err != nil {
+		return nil, fmt.Errorf("error querying database: %v", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var employee Employee
+		if err := rows.Scan(&employee.ID, &employee.UserName, &employee.Email, &employee.PhonePrimary, &employee.EmployeeType); err != nil {
+			return nil, fmt.Errorf("error reading row: %v", err)
+		}
+		employees = append(employees, employee)
+	}
+	return employees, nil
+}
+
+func (pg *postgres) CreateEmployee(ctx context.Context, newEmployee Employee) (int, error) {
+	user_id := 0
+	return user_id, nil
 }
