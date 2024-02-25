@@ -1,0 +1,24 @@
+{
+  "id": null,
+  "userName":"dsicher",
+  "password": "12345",
+  "firstName": "dakota",
+  "lastName": "sicher",
+  "email": "dsicher@kent.edu",
+  "phonePrimary": "4206966969",
+  "phoneOther": []
+}
+
+
+{
+  "id": null,
+  "userName":"dsicher",
+  "password": "12345",
+  "firstName": "dakota",
+  "lastName": "sicher",
+  "email": "dsicher@kent.edu",
+  "phonePrimary": "4206966969",
+  "phoneOther": [],
+  "employeeType": "Full-time"     
+}  
+  // "Full-time","Part-time","Manager"

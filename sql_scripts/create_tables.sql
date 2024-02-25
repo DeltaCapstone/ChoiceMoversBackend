@@ -6,11 +6,11 @@ BEGIN;
 CREATE TABLE IF NOT EXISTS public.customers
 (
 	customer_id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
-    username character varying(255) NOT NULL,
-    password_hash character varying(60), --NOT NULL  --bcrypt
-    --first_name character varying(255) NOT NULL,
-    --last_name character varying(255) NOT NULL,
-    email character varying(255) NOT NULL,
+    username character varying(255) UNIQUE NOT NULL,
+    password_hash character varying(60) NOT NULL,  --bcrypt
+    first_name character varying(255) NOT NULL,
+    last_name character varying(255) NOT NULL,
+    email character varying(255) UNIQUE NOT NULL,
     phone_primary text NOT NULL,
     phone_other text[],
     PRIMARY KEY (customer_id)
@@ -21,11 +21,11 @@ CREATE TYPE Employee_type AS ENUM ('Part-time','Full-time', 'Manager','Admin');
 CREATE TABLE IF NOT EXISTS public.employees
 (
     employee_id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
-    username character varying(255) NOT NULL,
-    password_hash character varying(60), --NOT NULL  --bcrypt
-    --first_name character varying(255) NOT NULL,
-    --last_name character varying(255) NOT NULL,
-    email character varying(255) NOT NULL,
+    username character varying(255) UNIQUE NOT NULL,
+    password_hash character varying(60) NOT NULL,  --bcrypt
+    first_name character varying(255) NOT NULL,
+    last_name character varying(255) NOT NULL,
+    email character varying(255) UNIQUE NOT NULL,
     phone_primary text NOT NULL,
     phone_other text[],
     employee_type Employee_type NOT NULL,
