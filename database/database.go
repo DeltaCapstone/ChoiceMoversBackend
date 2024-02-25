@@ -66,7 +66,7 @@ func (pg *postgres) GetCustomers(ctx context.Context, id string) ([]Customer, er
 		if e != nil {
 			return nil, fmt.Errorf("id is not an integer: %v", err)
 		}
-		rows, err = pg.db.Query(ctx, "select customer_id, username, email, phone_primary from customers where id = $1", ID)
+		rows, err = pg.db.Query(ctx, "select customer_id, username, email, phone_primary from customers where customer_id = $1", ID)
 	} else {
 		rows, err = pg.db.Query(ctx, "select customer_id, username, email, phone_primary from customers")
 	}
@@ -102,7 +102,7 @@ func (pg *postgres) GetEmployees(ctx context.Context, id string) ([]Employee, er
 		if e != nil {
 			return nil, fmt.Errorf("id is not an integer: %v", err)
 		}
-		rows, err = pg.db.Query(ctx, "select employee_id, username, email, phone_primary, employee_type from employees where id = $1", ID)
+		rows, err = pg.db.Query(ctx, "select employee_id, username, email, phone_primary, employee_type from employees where employee_id = $1", ID)
 	} else {
 		rows, err = pg.db.Query(ctx, "select employee_id, username, email, phone_primary, employee_type from employees")
 	}
