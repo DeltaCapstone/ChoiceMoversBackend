@@ -25,24 +25,24 @@ func structToMap(data interface{}, tag string) map[string]interface{} {
 }
 
 type Customer struct {
-	ID           int           `db:"customer_id,omitempty" json:"CustomerId,omitempty"`
-	UserName     string        `db:"username"`
-	PasswordHash string        `db:"password_hash" json:"Password"`
-	FirstName    string        `db:"first_name"`
-	LastName     string        `db:"last_name"`
-	Email        string        `db:"email"`
-	PhonePrimary pgtype.Text   `db:"phone_primary"`
-	PhoneOther   []pgtype.Text `db:"phone_other"`
+	ID           int           `db:"customer_id,omitempty" json:"customerId,omitempty"`
+	UserName     string        `db:"username" json:"userName"`
+	PasswordHash string        `db:"password_hash" json:"passwordHash"`
+	FirstName    string        `db:"first_name" json:"firstName"`
+	LastName     string        `db:"last_name" json:"lastName"`
+	Email        string        `db:"email" json:"email"`
+	PhonePrimary pgtype.Text   `db:"phone_primary" json:"phonePrimary"`
+	PhoneOther   []pgtype.Text `db:"phone_other" json:"phoneOther"`
 }
 
 type Employee struct {
-	ID           int           `db:"employee_id,omitempty" json:"EmployeeId,omitempty"`
-	UserName     string        `db:"username"`
-	PasswordHash string        `db:"password_hash" json:"Password"`
-	FirstName    string        `db:"first_name"`
-	LastName     string        `db:"last_name"`
-	Email        string        `db:"email"`
-	PhonePrimary pgtype.Text   `db:"phone_primary"`
-	PhoneOther   []pgtype.Text `db:"phone_other"`
-	EmployeeType string        `db:"employee_type"`
+	ID           int           `db:"employee_id,omitempty" json:"employeeId,omitempty"`
+	UserName     string        `db:"username" json:"userName"`
+	PasswordHash string        `db:"password_hash" json:"passwordHash"`
+	FirstName    string        `db:"first_name" json:"firstName"`
+	LastName     string        `db:"last_name" json:"lastName"`
+	Email        string        `db:"email" json:"email"`
+	PhonePrimary pgtype.Text   `db:"phone_primary" json:"phonePrimary"`
+	PhoneOther   []pgtype.Text `db:"phone_other" json:"phoneOther"`
+	EmployeeType string        `db:"employee_type" json:"employeeType"`
 }
