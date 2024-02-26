@@ -86,17 +86,14 @@ func (pg *postgres) GetCustomers(ctx context.Context, id string) ([]Customer, er
 	return customers, nil
 }
 
+const createCustomerNameQuery = `INSERT INTO customers 
+(username, password_hash, first_name, last_name, email, phone_primary, phone_other) VALUES 
+(@username,@password_hash,@first_name,@last_name,@email,@phone_primary,@phone_other) 
+RETURNING customer_id`
+
 func (pg *postgres) CreateCustomer(ctx context.Context, newCustomer Customer) (int, error) {
 	var newid int
-	//chech if username or email exists
-
-	//insert
-	query := `INSERT INTO customers 
-			(username, password_hash, first_name, last_name, email, phone_primary, phone_other) VALUES 
-			(@username,@password_hash,@first_name,@last_name,@email,@phone_primary,@phone_other) 
-			RETURNING customer_id`
-
-	err := pg.db.QueryRow(ctx, query, pgx.NamedArgs(structToMap(newCustomer, "db"))).Scan(&newid)
+	err := pg.db.QueryRow(ctx, createCustomerNameQuery, pgx.NamedArgs(structToMap(newCustomer, "db"))).Scan(&newid)
 	return newid, err
 }
 
@@ -131,15 +128,13 @@ func (pg *postgres) GetEmployees(ctx context.Context, id string) ([]Employee, er
 	return employees, nil
 }
 
+const createEmployeeNameQuery = `INSERT INTO employees 
+(username, password_hash, first_name, last_name, email, phone_primary, phone_other, employee_type) VALUES 
+(@username,@password_hash,@first_name,@last_name,@email,@phone_primary,@phone_other,@employee_type) 
+RETURNING employee_id `
+
 func (pg *postgres) CreateEmployee(ctx context.Context, newEmployee Employee) (int, error) {
 	var newid int
-	//check if username or email exits
-
-	//insert
-	query := `INSERT INTO employees 
-			(username, password_hash, first_name, last_name, email, phone_primary, phone_other, employee_type) VALUES 
-			(@username,@password_hash,@first_name,@last_name,@email,@phone_primary,@phone_other,@employee_type) 
-			RETURNING employee_id `
-	err := pg.db.QueryRow(ctx, query, pgx.NamedArgs(structToMap(newEmployee, "db"))).Scan(&newid)
+	err := pg.db.QueryRow(ctx, createEmployeeNameQuery, pgx.NamedArgs(structToMap(newEmployee, "db"))).Scan(&newid)
 	return newid, err
 }

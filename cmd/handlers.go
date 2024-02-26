@@ -38,6 +38,8 @@ func CreateCustomer(c echo.Context) error {
 	if err := c.Bind(&newCustomer); err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid user data"})
 	}
+	//validate password
+
 	//replace plaintext password with hash
 	bytes, err := bcrypt.GenerateFromPassword([]byte(newCustomer.PasswordHash), bcrypt.DefaultCost)
 	if err != nil {
@@ -48,11 +50,13 @@ func CreateCustomer(c echo.Context) error {
 	// validation stuff probably needed
 
 	userID, err := DB.PgInstance.CreateCustomer(c.Request().Context(), newCustomer)
-	if err != nil {
+	if err != nil || userID == 0 {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			switch pgErr.Code {
 			case pgerrcode.UniqueViolation:
+				fallthrough
+			case pgerrcode.NotNullViolation:
 				return c.JSON(http.StatusConflict, fmt.Sprintf("username or email already in use: %v", err))
 			}
 		}
@@ -81,6 +85,7 @@ func CreateEmployee(c echo.Context) error {
 	if err := c.Bind(&newEmployee); err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"Bind error": "Invalid user data"})
 	}
+	//validate password
 
 	//replace plaintext password with hash
 	bytes, err := bcrypt.GenerateFromPassword([]byte(newEmployee.PasswordHash), bcrypt.DefaultCost)
@@ -92,11 +97,13 @@ func CreateEmployee(c echo.Context) error {
 	// validation stuff probably needed
 
 	userID, err := DB.PgInstance.CreateEmployee(c.Request().Context(), newEmployee)
-	if err != nil {
+	if err != nil || userID == 0 {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			switch pgErr.Code {
 			case pgerrcode.UniqueViolation:
+				fallthrough
+			case pgerrcode.NotNullViolation:
 				return c.JSON(http.StatusConflict, fmt.Sprintf("username or email already in use: %v", err))
 			}
 		}
