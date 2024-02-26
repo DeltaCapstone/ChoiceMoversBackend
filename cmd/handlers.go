@@ -1,12 +1,15 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
 	"golang.org/x/crypto/bcrypt"
 
 	DB "github.com/DeltaCapstone/ChoiceMoversBackend/database"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/labstack/echo/v4"
 )
 
@@ -46,6 +49,13 @@ func CreateCustomer(c echo.Context) error {
 
 	userID, err := DB.PgInstance.CreateCustomer(c.Request().Context(), newCustomer)
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			switch pgErr.Code {
+			case pgerrcode.UniqueViolation:
+				return c.JSON(http.StatusConflict, fmt.Sprintf("username or email already in use: %v", err))
+			}
+		}
 		return c.JSON(http.StatusInternalServerError, fmt.Sprintf("Failed to create user: %v", err))
 	}
 
@@ -83,6 +93,13 @@ func CreateEmployee(c echo.Context) error {
 
 	userID, err := DB.PgInstance.CreateEmployee(c.Request().Context(), newEmployee)
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			switch pgErr.Code {
+			case pgerrcode.UniqueViolation:
+				return c.JSON(http.StatusConflict, fmt.Sprintf("username or email already in use: %v", err))
+			}
+		}
 		return c.JSON(http.StatusInternalServerError, fmt.Sprintf("Failed to create user: %v", err))
 	}
 

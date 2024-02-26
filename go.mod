@@ -3,6 +3,7 @@ module github.com/DeltaCapstone/ChoiceMoversBackend
 go 1.21
 
 require (
+	github.com/jackc/pgerrcode v0.0.0-20220416144525-469b46aa5efa
 	github.com/jackc/pgx/v5 v5.5.3
 	github.com/labstack/echo/v4 v4.11.4
 	golang.org/x/crypto v0.18.0

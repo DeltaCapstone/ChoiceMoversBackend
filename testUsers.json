@@ -1,5 +1,5 @@
 {
-  "id": null,
+  "customerId": null,
   "userName":"dsicher",
   "password": "12345",
   "firstName": "dakota",
@@ -11,7 +11,7 @@
 
 
 {
-  "id": null,
+  "employeeId": null,
   "userName":"dsicher",
   "password": "12345",
   "firstName": "dakota",

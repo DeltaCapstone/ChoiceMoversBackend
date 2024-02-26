@@ -12,6 +12,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
+	//"github.com/jackc/pgerrcode"
 )
 
 type postgres struct {
@@ -93,13 +94,10 @@ func (pg *postgres) CreateCustomer(ctx context.Context, newCustomer Customer) (i
 	query := `INSERT INTO customers 
 			(username, password_hash, first_name, last_name, email, phone_primary, phone_other) VALUES 
 			(@username,@password_hash,@first_name,@last_name,@email,@phone_primary,@phone_other) 
-			ON CONFLICT DO NOTHING RETURNING customer_id`
+			RETURNING customer_id`
 
-	pg.db.QueryRow(ctx, query, pgx.NamedArgs(structToMap(newCustomer, "db"))).Scan(&newid)
-	if newid == 0 {
-		return newid, fmt.Errorf("error inserting to database: could not create user")
-	}
-	return newid, nil
+	err := pg.db.QueryRow(ctx, query, pgx.NamedArgs(structToMap(newCustomer, "db"))).Scan(&newid)
+	return newid, err
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -141,10 +139,7 @@ func (pg *postgres) CreateEmployee(ctx context.Context, newEmployee Employee) (i
 	query := `INSERT INTO employees 
 			(username, password_hash, first_name, last_name, email, phone_primary, phone_other, employee_type) VALUES 
 			(@username,@password_hash,@first_name,@last_name,@email,@phone_primary,@phone_other,@employee_type) 
-			ON CONFLICT DO NOTHING RETURNING employee_id `
-	pg.db.QueryRow(ctx, query, pgx.NamedArgs(structToMap(newEmployee, "db"))).Scan(&newid)
-	if newid == 0 {
-		return newid, fmt.Errorf("error inserting to database: could not create user")
-	}
-	return newid, nil
+			RETURNING employee_id `
+	err := pg.db.QueryRow(ctx, query, pgx.NamedArgs(structToMap(newEmployee, "db"))).Scan(&newid)
+	return newid, err
 }
