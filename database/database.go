@@ -97,6 +97,21 @@ func (pg *postgres) CreateCustomer(ctx context.Context, newCustomer Customer) (i
 	return newid, err
 }
 
+func (pg *postgres) UpdateCustomer(ctx context.Context, updatedCustomer Customer) error {
+	const updateCustomerQuery = `
+	UPDATE customers
+	SET username = $1, password_hash = $2, first_name = $3, last_name = $4, email =$5, phone_primary = $6, phone_other = $7
+	WHERE customer_id = $8
+	`
+
+	_, err := pg.db.Exec(ctx, updateCustomerQuery,
+		updatedCustomer.UserName, updatedCustomer.PasswordHash,
+		updatedCustomer.FirstName, updatedCustomer.LastName, updatedCustomer.Email,
+		updatedCustomer.PhonePrimary, updatedCustomer.PhoneOther, updatedCustomer.ID)
+
+	return err
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Employee Route Queries
 
@@ -137,4 +152,20 @@ func (pg *postgres) CreateEmployee(ctx context.Context, newEmployee Employee) (i
 	var newid int
 	err := pg.db.QueryRow(ctx, createEmployeeNameQuery, pgx.NamedArgs(structToMap(newEmployee, "db"))).Scan(&newid)
 	return newid, err
+}
+
+func (pg *postgres) UpdateEmployee(ctx context.Context, updatedEmployee Employee) error {
+	const updateEmployeeQuery = `
+		UPDATE employees
+		SET username = $1, password_hash = $2, first_name = $3, last_name = $4, email =$5, phone_primary = $6, phone_other = $7, employee_type = $8
+		WHERE employee_id = $9
+	`
+
+	_, err := pg.db.Exec(ctx, updateEmployeeQuery,
+		updatedEmployee.UserName, updatedEmployee.PasswordHash,
+		updatedEmployee.FirstName, updatedEmployee.LastName, updatedEmployee.Email,
+		updatedEmployee.PhonePrimary, updatedEmployee.PhoneOther, updatedEmployee.EmployeeType, updatedEmployee.ID)
+
+	return err
+
 }

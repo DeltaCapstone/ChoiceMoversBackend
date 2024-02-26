@@ -17,6 +17,9 @@ func hello(c echo.Context) error {
 	return c.String(http.StatusOK, "Hello, World!")
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+//Customer
+
 // accountType must match account types ENUM in db
 func getCustomers(c echo.Context) error {
 	id := c.QueryParam("id")
@@ -66,6 +69,27 @@ func CreateCustomer(c echo.Context) error {
 	return c.JSON(http.StatusCreated, echo.Map{"ID": userID})
 }
 
+func UpdateCustomer(c echo.Context) error {
+	var updatedCustomer DB.Customer
+	// binding request
+	if err := c.Bind(&updatedCustomer); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid input")
+	}
+
+	// update operation
+	err := DB.PgInstance.UpdateCustomer(c.Request().Context(), updatedCustomer)
+	if err != nil {
+		// return internal server error if update fails
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to update customer")
+	}
+
+	return c.JSON(http.StatusOK, "Customer updated")
+
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+//Employee
+
 func getEmployees(c echo.Context) error {
 	id := c.QueryParam("id")
 	users, err := DB.PgInstance.GetEmployees(c.Request().Context(), id)
@@ -111,4 +135,22 @@ func CreateEmployee(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusCreated, echo.Map{"ID": userID})
+}
+
+func UpdateEmployee(c echo.Context) error {
+	var updatedEmployee DB.Employee
+
+	// binding json to employee
+	if err := c.Bind(&updatedEmployee); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid input")
+	}
+
+	// update operation
+	err := DB.PgInstance.UpdateEmployee(c.Request().Context(), updatedEmployee)
+	if err != nil {
+		// return internal server error if update fails
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to update employee")
+	}
+
+	return c.JSON(http.StatusOK, "Employee updated")
 }

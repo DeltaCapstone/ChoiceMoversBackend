@@ -7,8 +7,11 @@ func CreateRoutes(e *echo.Echo) {
 	e.GET("/customer", getCustomers)
 	//e.GET("/customer/:id",getCustomer)
 	e.POST("/customer", CreateCustomer)
+	e.PUT("/customer", UpdateCustomer)
 
 	e.GET("/employee", getEmployees)
 	//e.GET("/employee/:id",getCustomer)
 	e.POST("/employee", CreateEmployee)
+	e.PUT("/employee", UpdateEmployee)
+
 }
