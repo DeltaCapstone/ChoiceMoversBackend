@@ -16,7 +16,15 @@ CREATE TABLE IF NOT EXISTS public.customers
     PRIMARY KEY (customer_id)
 );
 
-CREATE TYPE Employee_type AS ENUM ('Part-time','Full-time', 'Manager','Admin');
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'employee_type') THEN
+        EXECUTE 'CREATE TYPE Employee_type AS ENUM (''Part-time'', ''Full-time'', ''Manager'', ''Admin'')';
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'residence_type') THEN
+       EXECUTE 'CREATE TYPE Residence_type AS ENUM (''Business'', ''House'',''Apartment'',''Condo'',''Storage Unit'')';
+    END IF;
+END$$;
 
 CREATE TABLE IF NOT EXISTS public.employees
 (
@@ -51,8 +59,6 @@ CREATE TABLE IF NOT EXISTS public.jobs
     cost money NOT NULL DEFAULT 0,
     PRIMARY KEY (job_id)
 );
-
-CREATE TYPE Residence_type AS ENUM ('Business', 'House','Apartment','Condo','Storage Unit');
 
 CREATE TABLE IF NOT EXISTS public.adddresses
 (
