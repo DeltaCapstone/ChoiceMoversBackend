@@ -1,4 +1,3 @@
---inserting test users -- NO PASSWORDS FOR NOW
 
 -- Inserting test customers with random names
 INSERT INTO customers (username, first_name, last_name, email, phone_primary, password_hash) VALUES ('user_john_d', 'John', 'Doe', 'john.doe@test.com', '330-111-1111', 'abcde');

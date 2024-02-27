@@ -1,5 +1,6 @@
 services:
   backend:
+    container_name: backend
     build: .
     env_file:
       - .env
@@ -23,4 +24,4 @@ services:
       - POSTGRES_DB=${PGDATABASE}
     volumes:
       - ./db_data:/var/lib/postgresql/data
-      - ./sql_scripts/create_tables.sql:/docker-entrypoint-initdb.d/create_tables.sql
+

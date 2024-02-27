@@ -1,6 +1,7 @@
 package DB
 
 import (
+	"fmt"
 	"reflect"
 
 	"github.com/jackc/pgx/v5/pgtype"
@@ -18,9 +19,9 @@ func structToMap(data interface{}, tag string) map[string]interface{} {
 		// If the tag is not empty, use it as the key in the map
 		if tag != "" {
 			result[tag] = value.Field(i).Interface()
+			fmt.Println(tag, result)
 		}
 	}
-
 	return result
 }
 

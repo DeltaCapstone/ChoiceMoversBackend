@@ -1,6 +1,10 @@
 package main
 
-import "github.com/labstack/echo/v4"
+import (
+	"net/http"
+
+	"github.com/labstack/echo/v4"
+)
 
 func CreateRoutes(e *echo.Echo) {
 	e.GET("/", hello)
@@ -14,4 +18,8 @@ func CreateRoutes(e *echo.Echo) {
 	e.POST("/employee", CreateEmployee)
 	e.PUT("/employee", UpdateEmployee)
 
+}
+
+func hello(c echo.Context) error {
+	return c.String(http.StatusOK, "Hello, World!")
 }
