@@ -47,3 +47,7 @@ type Employee struct {
 	PhoneOther   []pgtype.Text `db:"phone_other" json:"phoneOther"`
 	EmployeeType string        `db:"employee_type" json:"employeeType"`
 }
+
+type Job struct {
+	ID int
+}

@@ -96,13 +96,13 @@ func (pg *postgres) CreateCustomer(ctx context.Context, newCustomer Customer) (i
 	return newid, err
 }
 
-func (pg *postgres) UpdateCustomer(ctx context.Context, updatedCustomer Customer) error {
-	const updateCustomerQuery = `
-	UPDATE customers
-	SET username = $1, password_hash = $2, first_name = $3, last_name = $4, email =$5, phone_primary = $6, phone_other = $7
-	WHERE customer_id = $8
-	`
+const updateCustomerQuery = `
+UPDATE customers
+SET username = $1, password_hash = $2, first_name = $3, last_name = $4, email =$5, phone_primary = $6, phone_other = $7
+WHERE customer_id = $8
+`
 
+func (pg *postgres) UpdateCustomer(ctx context.Context, updatedCustomer Customer) error {
 	_, err := pg.db.Exec(ctx, updateCustomerQuery,
 		updatedCustomer.UserName, updatedCustomer.PasswordHash,
 		updatedCustomer.FirstName, updatedCustomer.LastName, updatedCustomer.Email,
@@ -153,18 +153,24 @@ func (pg *postgres) CreateEmployee(ctx context.Context, newEmployee Employee) (i
 	return newid, err
 }
 
-func (pg *postgres) UpdateEmployee(ctx context.Context, updatedEmployee Employee) error {
-	const updateEmployeeQuery = `
-		UPDATE employees
-		SET username = $1, password_hash = $2, first_name = $3, last_name = $4, email =$5, phone_primary = $6, phone_other = $7, employee_type = $8
-		WHERE employee_id = $9
-	`
+const updateEmployeeQuery = `
+UPDATE employees
+SET username = $1, password_hash = $2, first_name = $3, last_name = $4, email =$5, phone_primary = $6, phone_other = $7, employee_type = $8
+WHERE employee_id = $9`
 
+func (pg *postgres) UpdateEmployee(ctx context.Context, updatedEmployee Employee) error {
 	_, err := pg.db.Exec(ctx, updateEmployeeQuery,
 		updatedEmployee.UserName, updatedEmployee.PasswordHash,
 		updatedEmployee.FirstName, updatedEmployee.LastName, updatedEmployee.Email,
 		updatedEmployee.PhonePrimary, updatedEmployee.PhoneOther, updatedEmployee.EmployeeType, updatedEmployee.ID)
-
 	return err
+}
 
+////////////////////////////////////////////////
+//Jobs
+
+// shell
+func (pg *postgres) GetJobsByStatus(ctx context.Context, status string) ([]Job, error) {
+	var jobs []Job
+	return jobs, nil
 }

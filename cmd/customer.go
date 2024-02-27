@@ -17,7 +17,7 @@ import (
 //Customer
 
 // accountType must match account types ENUM in db
-func getCustomers(c echo.Context) error {
+func getCustomer(c echo.Context) error {
 	id := c.QueryParam("id")
 	users, err := DB.PgInstance.GetCustomers(c.Request().Context(), id)
 	if err != nil {
@@ -31,7 +31,7 @@ func getCustomers(c echo.Context) error {
 }
 
 // POST handler to create a new user
-func CreateCustomer(c echo.Context) error {
+func createCustomer(c echo.Context) error {
 	var newCustomer DB.Customer
 	// attempt at binding incoming json to a newUser
 	if err := c.Bind(&newCustomer); err != nil {
@@ -65,7 +65,7 @@ func CreateCustomer(c echo.Context) error {
 	return c.JSON(http.StatusCreated, echo.Map{"ID": userID})
 }
 
-func UpdateCustomer(c echo.Context) error {
+func updateCustomer(c echo.Context) error {
 	var updatedCustomer DB.Customer
 	// binding request
 	if err := c.Bind(&updatedCustomer); err != nil {

@@ -16,7 +16,7 @@ import (
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Employee
 
-func getEmployees(c echo.Context) error {
+func listEmployees(c echo.Context) error {
 	id := c.QueryParam("id")
 	users, err := DB.PgInstance.GetEmployees(c.Request().Context(), id)
 	if err != nil {
@@ -28,7 +28,7 @@ func getEmployees(c echo.Context) error {
 	return c.JSON(http.StatusOK, users)
 }
 
-func CreateEmployee(c echo.Context) error {
+func createEmployee(c echo.Context) error {
 	var newEmployee DB.Employee
 
 	// attempt at binding incoming json to a newUser
@@ -63,7 +63,7 @@ func CreateEmployee(c echo.Context) error {
 	return c.JSON(http.StatusCreated, echo.Map{"ID": userID})
 }
 
-func UpdateEmployee(c echo.Context) error {
+func updateEmployee(c echo.Context) error {
 	var updatedEmployee DB.Employee
 
 	// binding json to employee
