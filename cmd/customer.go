@@ -5,16 +5,26 @@ import (
 	"fmt"
 	"net/http"
 
-	"golang.org/x/crypto/bcrypt"
-
 	DB "github.com/DeltaCapstone/ChoiceMoversBackend/database"
+	"github.com/DeltaCapstone/ChoiceMoversBackend/utils"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 )
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Customer
+
+type CreateCustomerRequest struct {
+	UserName      string        `db:"username" json:"userName"`
+	PasswordPlain string        `db:"password_plain" json:"passwordPlain"`
+	FirstName     string        `db:"first_name" json:"firstName"`
+	LastName      string        `db:"last_name" json:"lastName"`
+	Email         string        `db:"email" json:"email"`
+	PhonePrimary  pgtype.Text   `db:"phone_primary" json:"phonePrimary"`
+	PhoneOther    []pgtype.Text `db:"phone_other" json:"phoneOther"`
+}
 
 // accountType must match account types ENUM in db
 func getCustomer(c echo.Context) error {
@@ -32,7 +42,7 @@ func getCustomer(c echo.Context) error {
 
 // POST handler to create a new user
 func createCustomer(c echo.Context) error {
-	var newCustomer DB.Customer
+	var newCustomer CreateCustomerRequest
 	// attempt at binding incoming json to a newUser
 	if err := c.Bind(&newCustomer); err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid user data"})
@@ -40,16 +50,22 @@ func createCustomer(c echo.Context) error {
 	//validate password
 
 	//replace plaintext password with hash
-	bytes, err := bcrypt.GenerateFromPassword([]byte(newCustomer.PasswordHash), bcrypt.DefaultCost)
-	if err != nil {
-		return c.String(http.StatusInternalServerError, fmt.Sprintf("Hash error: %v", err))
+	hashedPassword, _ := utils.HashPassword(newCustomer.PasswordPlain)
+
+	args := DB.CreateCustomerParams{
+		UserName:     newCustomer.UserName,
+		PasswordHash: hashedPassword,
+		FirstName:    newCustomer.FirstName,
+		LastName:     newCustomer.LastName,
+		Email:        newCustomer.Email,
+		PhonePrimary: newCustomer.PhonePrimary,
+		PhoneOther:   newCustomer.PhoneOther,
 	}
-	newCustomer.PasswordHash = string(bytes)
 
 	// validation stuff probably needed
 
-	userID, err := DB.PgInstance.CreateCustomer(c.Request().Context(), newCustomer)
-	if err != nil || userID == 0 {
+	user, err := DB.PgInstance.CreateCustomer(c.Request().Context(), args)
+	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			switch pgErr.Code {
@@ -62,7 +78,7 @@ func createCustomer(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, fmt.Sprintf("Failed to create user: %v", err))
 	}
 
-	return c.JSON(http.StatusCreated, echo.Map{"ID": userID})
+	return c.JSON(http.StatusCreated, echo.Map{"username": user})
 }
 
 func updateCustomer(c echo.Context) error {

@@ -5,16 +5,27 @@ import (
 	"fmt"
 	"net/http"
 
-	"golang.org/x/crypto/bcrypt"
-
 	DB "github.com/DeltaCapstone/ChoiceMoversBackend/database"
+	"github.com/DeltaCapstone/ChoiceMoversBackend/utils"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 )
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Employee
+
+type CreateEmployeeRequest struct {
+	UserName      string        `db:"username" json:"userName"`
+	PasswordPlain string        `db:"password_plain" json:"passwordPlain"`
+	FirstName     string        `db:"first_name" json:"firstName"`
+	LastName      string        `db:"last_name" json:"lastName"`
+	Email         string        `db:"email" json:"email"`
+	PhonePrimary  pgtype.Text   `db:"phone_primary" json:"phonePrimary"`
+	PhoneOther    []pgtype.Text `db:"phone_other" json:"phoneOther"`
+	EmployeeType  string        `db:"employee_type" json:"employeeType"`
+}
 
 func listEmployees(c echo.Context) error {
 	//id := c.QueryParam("id")
@@ -29,8 +40,7 @@ func listEmployees(c echo.Context) error {
 }
 
 func createEmployee(c echo.Context) error {
-	var newEmployee DB.Employee
-
+	var newEmployee CreateEmployeeRequest
 	// attempt at binding incoming json to a newUser
 	if err := c.Bind(&newEmployee); err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"Bind error": "Invalid user data"})
@@ -38,16 +48,22 @@ func createEmployee(c echo.Context) error {
 	//validate password
 
 	//replace plaintext password with hash
-	bytes, err := bcrypt.GenerateFromPassword([]byte(newEmployee.PasswordHash), bcrypt.DefaultCost)
-	if err != nil {
-		return c.String(http.StatusInternalServerError, fmt.Sprintf("Hash error: %v", err))
+	hashedPassword, err := utils.HashPassword(newEmployee.PasswordPlain)
+
+	args := DB.CreateEmployeeParams{
+		UserName:     newEmployee.UserName,
+		PasswordHash: hashedPassword,
+		FirstName:    newEmployee.FirstName,
+		LastName:     newEmployee.LastName,
+		Email:        newEmployee.Email,
+		PhonePrimary: newEmployee.PhonePrimary,
+		PhoneOther:   newEmployee.PhoneOther,
 	}
-	newEmployee.PasswordHash = string(bytes)
 
 	// validation stuff probably needed
 
-	userID, err := DB.PgInstance.CreateEmployee(c.Request().Context(), newEmployee)
-	if err != nil || userID == 0 {
+	user, err := DB.PgInstance.CreateEmployee(c.Request().Context(), args)
+	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
 			switch pgErr.Code {
@@ -60,7 +76,7 @@ func createEmployee(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, fmt.Sprintf("Failed to create user: %v", err))
 	}
 
-	return c.JSON(http.StatusCreated, echo.Map{"ID": userID})
+	return c.JSON(http.StatusCreated, echo.Map{"username": user})
 }
 
 func updateEmployee(c echo.Context) error {

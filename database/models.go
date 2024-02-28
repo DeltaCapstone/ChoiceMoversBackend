@@ -1,32 +1,12 @@
 package DB
 
 import (
-	"fmt"
-	"reflect"
-
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-func structToMap(data interface{}, tag string) map[string]interface{} {
-	result := make(map[string]interface{})
-	value := reflect.ValueOf(data)
-	typ := reflect.TypeOf(data)
-
-	for i := 0; i < typ.NumField(); i++ {
-		field := typ.Field(i)
-		tag := field.Tag.Get(tag) // You can customize this tag based on your needs
-
-		// If the tag is not empty, use it as the key in the map
-		if tag != "" {
-			result[tag] = value.Field(i).Interface()
-			fmt.Println(tag, result)
-		}
-	}
-	return result
-}
-
+// Old
 type Customer struct {
-	ID           int           `db:"customer_id,omitempty" json:"customerId,omitempty"`
+	ID           int           `db:"customer_id,omitempty" json:"customer,omitempty"`
 	UserName     string        `db:"username" json:"userName"`
 	PasswordHash string        `db:"password_hash" json:"passwordHash"`
 	FirstName    string        `db:"first_name" json:"firstName"`
@@ -36,6 +16,7 @@ type Customer struct {
 	PhoneOther   []pgtype.Text `db:"phone_other" json:"phoneOther"`
 }
 
+// Old
 type Employee struct {
 	ID           int           `db:"employee_id,omitempty" json:"employeeId,omitempty"`
 	UserName     string        `db:"username" json:"userName"`
