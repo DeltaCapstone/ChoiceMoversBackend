@@ -17,13 +17,13 @@ import (
 //Employee
 
 func listEmployees(c echo.Context) error {
-	id := c.QueryParam("id")
-	users, err := DB.PgInstance.GetEmployees(c.Request().Context(), id)
+	//id := c.QueryParam("id")
+	users, err := DB.PgInstance.GetEmployeeList(c.Request().Context())
 	if err != nil {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error retrieving data: %v", err))
 	}
 	if users == nil {
-		return c.String(http.StatusNotFound, fmt.Sprintf("No user found with id: %v", id))
+		return c.String(http.StatusNotFound, fmt.Sprintf("No no employees found with."))
 	}
 	return c.JSON(http.StatusOK, users)
 }

@@ -57,19 +57,16 @@ func (pg *postgres) Close() {
 
 // /////////////////////////////////////////////////////////////////////////////////////////////////
 // Customer Route Queries
-func (pg *postgres) GetCustomers(ctx context.Context, id string) ([]Customer, error) {
+func (pg *postgres) GetCustomerById(ctx context.Context, id string) ([]Customer, error) {
 	var customers []Customer
 	var rows pgx.Rows
 	var err error
-	if id != "" {
-		ID, e := strconv.Atoi(id)
-		if e != nil {
-			return nil, fmt.Errorf("id is not an integer: %v", err)
-		}
-		rows, err = pg.db.Query(ctx, "SELECT customer_id, username,first_name, last_name, email, phone_primary FROM customers WHERE customer_id = $1", ID)
-	} else {
-		rows, err = pg.db.Query(ctx, "SELECT customer_id, username,first_name, last_name, email, phone_primary FROM customers")
+	ID, er := strconv.Atoi(id)
+	if er != nil {
+		return nil, fmt.Errorf("id is not an integer: %v", err)
 	}
+	rows, err = pg.db.Query(ctx, "SELECT customer_id, username,first_name, last_name, email, phone_primary FROM customers WHERE customer_id = $1", ID)
+
 	if err != nil {
 		return nil, fmt.Errorf("error querying database: %v", err)
 	}
@@ -114,19 +111,14 @@ func (pg *postgres) UpdateCustomer(ctx context.Context, updatedCustomer Customer
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Employee Route Queries
 
-func (pg *postgres) GetEmployees(ctx context.Context, id string) ([]Employee, error) {
+func (pg *postgres) GetEmployeeList(ctx context.Context) ([]Employee, error) {
 	var employees []Employee
 	var rows pgx.Rows
 	var err error
-	if id != "" {
-		ID, e := strconv.Atoi(id)
-		if e != nil {
-			return nil, fmt.Errorf("id is not an integer: %v", err)
-		}
-		rows, err = pg.db.Query(ctx, "SELECT employee_id, username,first_name, last_name, email, phone_primary, employee_type FROM employees FROM employee_id = $1", ID)
-	} else {
-		rows, err = pg.db.Query(ctx, "SELECT employee_id, username,first_name, last_name, email, phone_primary, employee_type FROM employees")
-	}
+
+	rows, err = pg.db.Query(ctx,
+		"SELECT employee_id, username,first_name, last_name, email, phone_primary, employee_type FROM employees")
+
 	if err != nil {
 		return nil, fmt.Errorf("error querying database: %v", err)
 	}

@@ -19,7 +19,7 @@ import (
 // accountType must match account types ENUM in db
 func getCustomer(c echo.Context) error {
 	id := c.QueryParam("id")
-	users, err := DB.PgInstance.GetCustomers(c.Request().Context(), id)
+	users, err := DB.PgInstance.GetCustomerById(c.Request().Context(), id)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error retrieving data: %v", err))
 	}
