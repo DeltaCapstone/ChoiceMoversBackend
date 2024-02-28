@@ -19,9 +19,9 @@ func CreateRoutes(e *echo.Echo) {
 	// Group for employee routes
 	employeeGroup := e.Group("/employee")
 	//employeeGroup.POST("/login", employeeLogin)  // Login
-	employeeGroup.GET("/:id", getEmployee)       // Employee views their own
-	employeeGroup.PUT("/:id", updateEmployee)    // Update my account
-	employeeGroup.GET("/jobs/:status", listJobs) // View list of jobs by status (pending, confirmed, all)
+	employeeGroup.GET("/:id", getEmployee)    // Employee views their own
+	employeeGroup.PUT("/:id", updateEmployee) // Update my account
+	employeeGroup.GET("/jobs", listJobs)      // View list of jobs by status (pending, confirmed, all)
 	//employeeGroup.POST("/jobs/requestJobAssign/:job_id", requstAssign)
 
 	// Group for manager routes
