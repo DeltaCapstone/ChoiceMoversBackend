@@ -30,5 +30,19 @@ type Employee struct {
 }
 
 type Job struct {
-	ID int
+	ID         int               `db:"job_id"`
+	CustomerId int               `db:"customer_id"`
+	LoadAddr   int               `db:"load_addr"`
+	UnloadAddr int               `db:"unload_addr"`
+	StartTime  pgtype.Timestamp  `db:"start_time"`
+	HoursLabor pgtype.Interval   `db:"hours_labor"`
+	Finalized  bool              `db:"finalized"`
+	Rooms      pgtype.JSONBCodec `db:"rooms"`
+	Pack       bool              `db:"pack"`
+	Unpack     bool              `db:"unpack"`
+	Load       bool              `db:"load"`
+	Unload     bool              `db:"unload"`
+	Clean      bool              `db:"clean"`
+	Milage     int               `db:"milage"`
+	Cost       float64           `db:"cost"`
 }

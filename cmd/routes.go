@@ -1,13 +1,11 @@
 package main
 
 import (
-	"net/http"
-
 	"github.com/labstack/echo/v4"
 )
 
 func CreateRoutes(e *echo.Echo) {
-	//e.GET("/", hello)
+
 	e.POST("/customer", createCustomer) //signup
 	e.POST("/customer/login", customerLogin)
 	e.GET("/customer/:id", getCustomer)       //view my account
@@ -28,8 +26,4 @@ func CreateRoutes(e *echo.Echo) {
 	e.POST("/job", createJob)           //Manager should have the ability to manual create jobs, like if someone calls in
 	e.PUT("/job/:id", updateJob)        //manger makes changes to a job or confirms a job
 
-}
-
-func hello(c echo.Context) error {
-	return c.String(http.StatusOK, "Hello, World!")
 }
