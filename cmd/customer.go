@@ -26,21 +26,20 @@ type CreateCustomerRequest struct {
 	PhoneOther    []pgtype.Text `db:"phone_other" json:"phoneOther"`
 }
 
-// accountType must match account types ENUM in db
 func getCustomer(c echo.Context) error {
-	id := c.QueryParam("id")
-	users, err := DB.PgInstance.GetCustomerById(c.Request().Context(), id)
+	id := c.Param("id")
+	user, err := DB.PgInstance.GetCustomerById(c.Request().Context(), id)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error retrieving data: %v", err))
 	}
-	if users == nil {
+
+	if user.UserName == "" {
 		return c.String(http.StatusNotFound, fmt.Sprintf("No user found with id: %v", id))
 	}
 
-	return c.JSON(http.StatusOK, users)
+	return c.JSON(http.StatusOK, user)
 }
 
-// POST handler to create a new user
 func createCustomer(c echo.Context) error {
 	var newCustomer CreateCustomerRequest
 	// attempt at binding incoming json to a newUser

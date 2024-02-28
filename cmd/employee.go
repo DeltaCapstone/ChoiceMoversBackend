@@ -34,9 +34,22 @@ func listEmployees(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error retrieving data: %v", err))
 	}
 	if users == nil {
-		return c.String(http.StatusNotFound, fmt.Sprintf("No no employees found with."))
+		return c.String(http.StatusNotFound, fmt.Sprintf("No no employees found."))
 	}
 	return c.JSON(http.StatusOK, users)
+}
+
+func getEmployee(c echo.Context) error {
+	id := c.Param("id")
+	user, err := DB.PgInstance.GetEmployeeById(c.Request().Context(), id)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error retrieving data: %v", err))
+	}
+	if user.UserName == "" {
+		return c.String(http.StatusNotFound, fmt.Sprintf("No user found with id: %v", id))
+	}
+
+	return c.JSON(http.StatusOK, user)
 }
 
 func createEmployee(c echo.Context) error {

@@ -12,7 +12,7 @@ import (
 )
 
 func listJobs(c echo.Context) error {
-	status := c.QueryParam("status")
+	status := c.Param("status")
 	jobs, err := DB.PgInstance.GetJobsByStatus(c.Request().Context(), status)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error retrieving data: %v", err))

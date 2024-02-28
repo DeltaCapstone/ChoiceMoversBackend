@@ -3,6 +3,7 @@ package DB
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/DeltaCapstone/ChoiceMoversBackend/utils"
 	"github.com/jackc/pgx/v5"
@@ -11,6 +12,24 @@ import (
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Employee Route Queries
+
+func (pg *postgres) GetEmployeeById(ctx context.Context, id string) (Employee, error) {
+	var employee Employee
+	var err error
+	ID, er := strconv.Atoi(id)
+	if er != nil {
+		return employee, fmt.Errorf("id is not an integer: %v", err)
+	}
+	row := pg.db.QueryRow(ctx,
+		`SELECT employee_id, username,first_name, last_name, 
+		email, phone_primary FROM employees WHERE employee_id = $1`, ID)
+
+	if err := row.Scan(&employee.ID, &employee.UserName, &employee.FirstName, &employee.LastName, &employee.Email, &employee.PhonePrimary); err != nil {
+		return employee, fmt.Errorf("error reading row: %v", err)
+	}
+
+	return employee, nil
+}
 
 func (pg *postgres) GetEmployeeList(ctx context.Context) ([]Employee, error) {
 	var employees []Employee

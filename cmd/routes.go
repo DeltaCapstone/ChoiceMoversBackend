@@ -6,24 +6,28 @@ import (
 
 func CreateRoutes(e *echo.Echo) {
 
-	e.POST("/customer", createCustomer) //signup
-	e.POST("/customer/login", customerLogin)
-	e.GET("/customer/:id", getCustomer)       //view my account
-	e.PUT("/customer/:id", updateCustomer)    //update my account
-	e.DELETE("/customer/:id", deleteCustomer) //delete my account
+	customerGroup := e.Group("/customer")
+	customerGroup.POST("", createCustomer) //signup
+	customerGroup.POST("/login", customerLogin)
+	customerGroup.GET("/:id", getCustomer)       //view my account
+	customerGroup.PUT("/:id", updateCustomer)    //update my account
+	customerGroup.DELETE("/:id", deleteCustomer) //delete my account
+	customerGroup.POST("/job", createJobByCustomer)
+	customerGroup.PUT("/job/:id", updateJobByCustomer)
 
-	//employee portal
-	//auth group
-	e.POST("/employee/login", employeeLogin)
-	e.GET("/employee/:id", getEmployeeInfo) //employee views thier own
-	e.PUT("/employee/:id", updateEmployee)  //update my ccount
-	e.GET("/jobs/:status", listJobs)        //veiw list of jobs by status (pending, confirmed, all)
-	e.POST("/jobs/requestJobAssign/:job_id", requstAssign)
+	// Group for employee routes
+	employeeGroup := e.Group("/employee")
+	employeeGroup.POST("/login", employeeLogin)  // Login
+	employeeGroup.GET("/:id", getEmployee)       // Employee views their own
+	employeeGroup.PUT("/:id", updateEmployee)    // Update my account
+	employeeGroup.GET("/jobs/:status", listJobs) // View list of jobs by status (pending, confirmed, all)
+	employeeGroup.POST("/jobs/requestJobAssign/:job_id", requstAssign)
 
-	//admin or manager auth group
-	e.GET("/employee", listEmployees)   //manager view employees
-	e.POST("/employee", createEmployee) //manager adds new employee?
-	e.POST("/job", createJob)           //Manager should have the ability to manual create jobs, like if someone calls in
-	e.PUT("/job/:id", updateJob)        //manger makes changes to a job or confirms a job
-
+	// Group for manager routes
+	managerGroup := e.Group("/manager")
+	//managerGroup.Use(managerMiddleware)				// Add a middleware for manager authentication
+	managerGroup.GET("/employee", listEmployees)   // Manager view employees
+	managerGroup.POST("/employee", createEmployee) // Manager adds new employee
+	managerGroup.POST("/job", createJob)           // Manager creates a job, needed for cases where a customer call in or a job is recieved from Uhaul for example
+	managerGroup.PUT("/job/:id", updateJob)        // Manager makes changes to a job or confirms a job
 }

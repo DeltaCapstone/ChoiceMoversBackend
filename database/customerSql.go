@@ -12,29 +12,22 @@ import (
 
 // /////////////////////////////////////////////////////////////////////////////////////////////////
 // Customer Route Queries
-func (pg *postgres) GetCustomerById(ctx context.Context, id string) ([]Customer, error) {
-	var customers []Customer
-	var rows pgx.Rows
+func (pg *postgres) GetCustomerById(ctx context.Context, id string) (Customer, error) {
+	var customer Customer
 	var err error
 	ID, er := strconv.Atoi(id)
 	if er != nil {
-		return nil, fmt.Errorf("id is not an integer: %v", err)
+		return customer, fmt.Errorf("id is not an integer: %v", err)
 	}
-	rows, err = pg.db.Query(ctx, "SELECT customer_id, username,first_name, last_name, email, phone_primary FROM customers WHERE customer_id = $1", ID)
+	row := pg.db.QueryRow(ctx,
+		`SELECT customer_id, username,first_name, last_name, 
+		email, phone_primary FROM customers WHERE customer_id = $1`, ID)
 
-	if err != nil {
-		return nil, fmt.Errorf("error querying database: %v", err)
+	if err := row.Scan(&customer.ID, &customer.UserName, &customer.FirstName, &customer.LastName, &customer.Email, &customer.PhonePrimary); err != nil {
+		return customer, fmt.Errorf("error reading row: %v", err)
 	}
-	defer rows.Close()
 
-	for rows.Next() {
-		var customer Customer
-		if err := rows.Scan(&customer.ID, &customer.UserName, &customer.FirstName, &customer.LastName, &customer.Email, &customer.PhonePrimary); err != nil {
-			return nil, fmt.Errorf("error reading row: %v", err)
-		}
-		customers = append(customers, customer)
-	}
-	return customers, nil
+	return customer, nil
 }
 
 type CreateCustomerParams struct {
