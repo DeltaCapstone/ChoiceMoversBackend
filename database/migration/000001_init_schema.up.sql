@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS public.employee_jobs
 
 ALTER TABLE IF EXISTS public.jobs
     ADD FOREIGN KEY (load_addr)
-    REFERENCES public.adddresses (address_id) MATCH SIMPLE
+    REFERENCES public.addresses (address_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
@@ -91,7 +91,7 @@ ALTER TABLE IF EXISTS public.jobs
 
 ALTER TABLE IF EXISTS public.jobs
     ADD FOREIGN KEY (unload_addr)
-    REFERENCES public.adddresses (address_id) MATCH SIMPLE
+    REFERENCES public.addresses (address_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
