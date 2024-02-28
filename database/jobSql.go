@@ -65,7 +65,7 @@ func (pg *postgres) GetJobsByStatus(ctx context.Context, status string) ([]Job, 
 	return jobs, nil
 }
 
-const addrQuery = "SELECT * FROM adddresses WHERE address_id = $1"
+const addrQuery = "SELECT * FROM addresses WHERE address_id = $1"
 
 func getAddr(ctx context.Context, addrID int) (Address, error) {
 	var a Address
