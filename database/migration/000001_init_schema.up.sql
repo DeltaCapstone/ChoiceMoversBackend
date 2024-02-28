@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS public.jobs
     PRIMARY KEY (job_id)
 );
 
-CREATE TABLE IF NOT EXISTS public.adddresses
+CREATE TABLE IF NOT EXISTS public.addresses
 (
     address_id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 ),
     street character varying NOT NULL,

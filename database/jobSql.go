@@ -9,9 +9,9 @@ import (
 //Jobs
 
 const (
-	all       = "Select * from jobs where start_time > CURRENT_DATE"
-	pending   = "Select * from jobs where start_time > CURRENT_DATE AND finalized = false"
-	finalized = "Select * from jobs where start_time > CURRENT_DATE and finalized = true"
+	all       = "SELECT * FROM jobs WHERE start_time > CURRENT_DATE"
+	pending   = "SELECT * FROM jobs WHERE start_time > CURRENT_DATE AND finalized = false"
+	finalized = "SELECT * FROM jobs WHERE start_time > CURRENT_DATE AND finalized = true"
 )
 
 func (pg *postgres) GetJobsByStatus(ctx context.Context, status string) ([]Job, error) {
@@ -33,13 +33,17 @@ func (pg *postgres) GetJobsByStatus(ctx context.Context, status string) ([]Job, 
 	}
 	defer rows.Close()
 
+	var (
+		LoadAddrID   int
+		UnloadAddrID int
+	)
 	for rows.Next() {
 		var j Job
 		if err := rows.Scan(
 			&j.ID,
-			&j.CustomerId,
-			&j.LoadAddr,
-			&j.UnloadAddr,
+			&j.CustomerID,
+			&LoadAddrID,
+			&UnloadAddrID,
 			&j.StartTime,
 			&j.HoursLabor,
 			&j.Finalized,
@@ -54,7 +58,27 @@ func (pg *postgres) GetJobsByStatus(ctx context.Context, status string) ([]Job, 
 		); err != nil {
 			return nil, fmt.Errorf("error reading row: %v", err)
 		}
+		j.LoadAddr, _ = getAddr(ctx, LoadAddrID)
+		j.UnloadAddr, _ = getAddr(ctx, UnloadAddrID)
 		jobs = append(jobs, j)
 	}
 	return jobs, nil
+}
+
+const addrQuery = "SELECT * FROM adddresses WHERE address_id = $1"
+
+func getAddr(ctx context.Context, addrID int) (Address, error) {
+	var a Address
+	row := PgInstance.db.QueryRow(ctx, addrQuery, addrID)
+	row.Scan(
+		&a.AddressID,
+		&a.Street,
+		&a.City,
+		&a.State,
+		&a.Zip,
+		&a.ResType,
+		&a.Flights,
+		&a.AptNum,
+	)
+	return a, nil
 }
