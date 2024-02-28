@@ -59,19 +59,19 @@ type Address struct {
 }
 
 type Job struct {
-	ID         int               `db:"job_id" json:"id"`
-	CustomerID int               `db:"customer_id" json:"customerId"`
-	LoadAddr   Address           `db:"load_addr" json:"loadAddr"`
-	UnloadAddr Address           `db:"unload_addr" json:"unloadAddr"`
-	StartTime  pgtype.Timestamp  `db:"start_time" json:"startTime"`
-	HoursLabor pgtype.Interval   `db:"hours_labor" json:"hoursLabor"`
-	Finalized  bool              `db:"finalized" json:"finalized"`
-	Rooms      pgtype.JSONBCodec `db:"rooms" json:"rooms"`
-	Pack       bool              `db:"pack" json:"pack"`
-	Unpack     bool              `db:"unpack" json:"unpack"`
-	Load       bool              `db:"load" json:"load"`
-	Unload     bool              `db:"unload" json:"unload"`
-	Clean      bool              `db:"clean" json:"clean"`
-	Milage     int               `db:"milage" json:"milage"`
-	Cost       float64           `db:"cost" json:"cost"`
+	ID         int                    `db:"job_id" json:"id"`
+	CustomerID int                    `db:"customer_id" json:"customerId"`
+	LoadAddr   Address                `db:"load_addr" json:"loadAddr"`
+	UnloadAddr Address                `db:"unload_addr" json:"unloadAddr"`
+	StartTime  pgtype.Timestamp       `db:"start_time" json:"startTime"`
+	HoursLabor pgtype.Interval        `db:"hours_labor" json:"hoursLabor"`
+	Finalized  bool                   `db:"finalized" json:"finalized"`
+	Rooms      map[string]interface{} `db:"rooms" json:"rooms"`
+	Pack       bool                   `db:"pack" json:"pack"`
+	Unpack     bool                   `db:"unpack" json:"unpack"`
+	Load       bool                   `db:"load" json:"load"`
+	Unload     bool                   `db:"unload" json:"unload"`
+	Clean      bool                   `db:"clean" json:"clean"`
+	Milage     int                    `db:"milage" json:"milage"`
+	Cost       string                 `db:"cost" json:"cost"`
 }

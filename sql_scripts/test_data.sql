@@ -38,13 +38,13 @@ VALUES ('505 Spruce St', 'Parma', 'OH', '44129', 'Apartment', 2, 'Apt 808');
 
 
 INSERT INTO public.jobs (customer_id, load_addr, unload_addr, start_time, hours_labor, finalized, rooms, pack, unpack, load, unload, clean, milage, cost)
-VALUES (1, 1, 2, '2024-04-25 10:00:00', '4 hours', false, '[]'::jsonb, true, false, true, true, false, 10, 150.00);
+VALUES (1, 1, 2, '2024-04-25 10:00:00', '4 hours', false, '{}'::jsonb, true, false, true, true, false, 10, 150.00);
 
 INSERT INTO public.jobs (customer_id, load_addr, unload_addr, start_time, hours_labor, finalized, rooms, pack, unpack, load, unload, clean, milage, cost)
-VALUES (2, 3, 4, '2024-04-26 12:30:00', '5 hours', false, '[]'::jsonb, true, true,true, true, true, 15, 200.00);
+VALUES (2, 3, 4, '2024-04-26 12:30:00', '5 hours', false, '{}'::jsonb, true, true,true, true, true, 15, 200.00);
 
 INSERT INTO public.jobs (customer_id, load_addr, unload_addr, start_time, hours_labor, finalized, rooms, pack, unpack, load, unload, clean, milage, cost)
-VALUES (3, 5, 6, '2024-04-27 08:45:00', '3 hours', false, '[]'::jsonb, false, false, true, true, false, 8, 120.00);
+VALUES (3, 5, 6, '2024-04-27 08:45:00', '3 hours', false, '{}'::jsonb, false, false, true, true, false, 8, 120.00);
 
 INSERT INTO public.jobs (customer_id, load_addr, unload_addr, start_time, hours_labor, finalized, rooms, pack, unpack, load, unload, clean, milage, cost)
-VALUES (4, 7, 8, '2024-04-28 14:15:00', '6 hours', false, '[]'::jsonb, true, false, true, false, false, 20, 250.00);
+VALUES (4, 7, 8, '2024-04-28 14:15:00', '6 hours', false, '{}'::jsonb, true, false, true, false, false, 20, 250.00);

@@ -34,7 +34,7 @@ func listEmployees(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error retrieving data: %v", err))
 	}
 	if users == nil {
-		return c.String(http.StatusNotFound, fmt.Sprintf("No no employees found."))
+		return c.String(http.StatusNotFound, "No no employees found.")
 	}
 	return c.JSON(http.StatusOK, users)
 }
@@ -61,7 +61,7 @@ func createEmployee(c echo.Context) error {
 	//validate password
 
 	//replace plaintext password with hash
-	hashedPassword, err := utils.HashPassword(newEmployee.PasswordPlain)
+	hashedPassword, _ := utils.HashPassword(newEmployee.PasswordPlain)
 
 	args := DB.CreateEmployeeParams{
 		UserName:     newEmployee.UserName,
