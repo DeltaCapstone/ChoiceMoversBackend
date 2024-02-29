@@ -8,6 +8,7 @@ import (
 	"os"
 	"sync"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -15,6 +16,8 @@ import (
 type postgres struct {
 	db *pgxpool.Pool
 }
+
+var ErrRecordNotFound = pgx.ErrNoRows
 
 var (
 	PgInstance *postgres

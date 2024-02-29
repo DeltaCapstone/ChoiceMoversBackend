@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	DB "github.com/DeltaCapstone/ChoiceMoversBackend/database"
 	"github.com/DeltaCapstone/ChoiceMoversBackend/utils"
@@ -16,6 +17,8 @@ import (
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Employee
 
+//TODO: Redo error handling to get rid of of al lthe sprintf's
+
 type CreateEmployeeRequest struct {
 	UserName      string        `db:"username" json:"userName"`
 	PasswordPlain string        `db:"password_plain" json:"passwordPlain"`
@@ -25,6 +28,11 @@ type CreateEmployeeRequest struct {
 	PhonePrimary  pgtype.Text   `db:"phone_primary" json:"phonePrimary"`
 	PhoneOther    []pgtype.Text `db:"phone_other" json:"phoneOther"`
 	EmployeeType  string        `db:"employee_type" json:"employeeType"`
+}
+
+type EmployeeLoginRequest struct {
+	UserName      string `db:"username" json:"userName"`
+	PasswordPlain string `db:"password_plain" json:"passwordPlain"`
 }
 
 func listEmployees(c echo.Context) error {
@@ -41,14 +49,17 @@ func listEmployees(c echo.Context) error {
 
 func getEmployee(c echo.Context) error {
 	id := c.Param("id")
-	user, err := DB.PgInstance.GetEmployeeById(c.Request().Context(), id)
+	ID, err := strconv.Atoi(id)
+	if err != nil {
+		return fmt.Errorf("id is not an integer: %v", err)
+	}
+	user, err := DB.PgInstance.GetEmployeeById(c.Request().Context(), ID)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error retrieving data: %v", err))
 	}
 	if user.UserName == "" {
 		return c.String(http.StatusNotFound, fmt.Sprintf("No user found with id: %v", id))
 	}
-
 	return c.JSON(http.StatusOK, user)
 }
 

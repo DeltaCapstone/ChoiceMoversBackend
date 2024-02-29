@@ -6,9 +6,11 @@ import (
 
 func CreateRoutes(e *echo.Echo) {
 
+	e.POST("", createCustomer) //signup
+	//e.POST("/login", customerLogin)
+
 	customerGroup := e.Group("/customer")
-	customerGroup.POST("", createCustomer) //signup
-	//customerGroup.POST("/login", customerLogin)
+	//customerGroup.Use(customerAuthMiddleware)
 	customerGroup.GET("/:id", getCustomer)    //view my account
 	customerGroup.PUT("/:id", updateCustomer) //update my account
 	//customerGroup.DELETE("/:id", deleteCustomer) //delete my account
@@ -16,12 +18,15 @@ func CreateRoutes(e *echo.Echo) {
 	//customerGroup.POST("/job", createJobByCustomer)
 	//customerGroup.PUT("/job/:id", updateJobByCustomer)
 
+	//e.POST("/login", employeeLogin)  // Login
+
 	// Group for employee routes
 	employeeGroup := e.Group("/employee")
-	//employeeGroup.POST("/login", employeeLogin)  // Login
+	//employeeGroup.Use(employeeAuthMiddleware)
 	employeeGroup.GET("/:id", getEmployee)    // Employee views their own
 	employeeGroup.PUT("/:id", updateEmployee) // Update my account
-	employeeGroup.GET("/jobs", listJobs)      // View list of jobs by status (pending, confirmed, all)
+	employeeGroup.GET("/jobs", listJobs)      // View list of jobs by status (?status= pending, confirmed, all)
+	//need to figure out how to limit query options for employees vs managers
 	//employeeGroup.POST("/jobs/requestJobAssign/:job_id", requstAssign)
 
 	// Group for manager routes

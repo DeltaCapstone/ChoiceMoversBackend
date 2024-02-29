@@ -2,8 +2,6 @@ package DB
 
 import (
 	"context"
-	"fmt"
-	"strconv"
 
 	"github.com/DeltaCapstone/ChoiceMoversBackend/utils"
 	"github.com/jackc/pgx/v5"
@@ -12,21 +10,15 @@ import (
 
 // /////////////////////////////////////////////////////////////////////////////////////////////////
 // Customer Route Queries
-func (pg *postgres) GetCustomerById(ctx context.Context, id string) (Customer, error) {
+func (pg *postgres) GetCustomerById(ctx context.Context, id int) (Customer, error) {
 	var customer Customer
-	var err error
-	ID, er := strconv.Atoi(id)
-	if er != nil {
-		return customer, fmt.Errorf("id is not an integer: %v", err)
-	}
 	row := pg.db.QueryRow(ctx,
 		`SELECT customer_id, username,first_name, last_name, 
-		email, phone_primary FROM customers WHERE customer_id = $1`, ID)
+		email, phone_primary FROM customers WHERE customer_id = $1`, id)
 
 	if err := row.Scan(&customer.ID, &customer.UserName, &customer.FirstName, &customer.LastName, &customer.Email, &customer.PhonePrimary); err != nil {
-		return customer, fmt.Errorf("error reading row: %v", err)
+		return customer, err
 	}
-
 	return customer, nil
 }
 

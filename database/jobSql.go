@@ -2,7 +2,6 @@ package DB
 
 import (
 	"context"
-	"fmt"
 )
 
 ////////////////////////////////////////////////
@@ -14,6 +13,7 @@ const (
 	finalized = "SELECT * FROM jobs WHERE start_time > CURRENT_DATE AND finalized = true"
 )
 
+// TODO: Figure out error handling for address errors
 func (pg *postgres) GetJobsByStatus(ctx context.Context, status string) ([]Job, error) {
 	var jobs []Job
 	var query string
@@ -29,7 +29,7 @@ func (pg *postgres) GetJobsByStatus(ctx context.Context, status string) ([]Job, 
 	rows, err := pg.db.Query(ctx, query)
 
 	if err != nil {
-		return nil, fmt.Errorf("error querying database: %v", err)
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -56,8 +56,9 @@ func (pg *postgres) GetJobsByStatus(ctx context.Context, status string) ([]Job, 
 			&j.Milage,
 			&j.Cost,
 		); err != nil {
-			return nil, fmt.Errorf("error reading row: %v", err)
+			return nil, err
 		}
+		//need to figure out error handling here
 		j.LoadAddr, _ = getAddr(ctx, LoadAddrID)
 		j.UnloadAddr, _ = getAddr(ctx, UnloadAddrID)
 		jobs = append(jobs, j)
@@ -70,7 +71,7 @@ const addrQuery = "SELECT * FROM addresses WHERE address_id = $1"
 func getAddr(ctx context.Context, addrID int) (Address, error) {
 	var a Address
 	row := PgInstance.db.QueryRow(ctx, addrQuery, addrID)
-	row.Scan(
+	err := row.Scan(
 		&a.AddressID,
 		&a.Street,
 		&a.City,
@@ -80,5 +81,8 @@ func getAddr(ctx context.Context, addrID int) (Address, error) {
 		&a.Flights,
 		&a.AptNum,
 	)
+	if err != nil {
+		return a, err
+	}
 	return a, nil
 }
