@@ -7,7 +7,7 @@ import (
 func CreateRoutes(e *echo.Echo) {
 
 	e.POST("", createCustomer) //signup
-	//e.POST("/login", customerLogin)
+	e.POST("/login", customerLogin)
 
 	customerGroup := e.Group("/customer")
 	//customerGroup.Use(customerAuthMiddleware)

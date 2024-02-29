@@ -107,3 +107,32 @@ func updateCustomer(c echo.Context) error {
 	return c.JSON(http.StatusOK, "Customer updated")
 
 }
+
+func customerLogin(c echo.Context) error {
+	var customerLogin CustomerLoginRequest
+
+	// bind request data to the CustomerLoginRequest struct
+	if err := c.Bind(&customerLogin); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid input")
+	}
+
+	// Get the customer with the username that was submitted
+	user, err := DB.PgInstance.GetCustomerByUserName(c.Request().Context(), customerLogin.UserName)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error retrieving data: %v", err))
+	}
+
+	// Check that the user exists
+	if user.UserName == "" {
+		return c.String(http.StatusNotFound, fmt.Sprintf("No user found with username: %v", customerLogin.UserName))
+	}
+
+	hashedPassword, _ := utils.HashPassword(customerLogin.PasswordPlain)
+
+	// Check that the two passwords match
+	if hashedPassword != user.PasswordHash {
+		return c.String(http.StatusNotFound, fmt.Sprintf("Incorrect password for user with username: %v", customerLogin.UserName))
+	}
+
+	return c.JSON(http.StatusOK, "Login Success")
+}

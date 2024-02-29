@@ -22,6 +22,18 @@ func (pg *postgres) GetCustomerById(ctx context.Context, id int) (Customer, erro
 	return customer, nil
 }
 
+func (pg *postgres) GetCustomerByUserName(ctx context.Context, userName string) (Customer, error) {
+	var customer Customer
+	row := pg.db.QueryRow(ctx,
+		`SELECT customer_id, username,first_name, last_name, 
+		email, phone_primary FROM customers WHERE username = $1`, userName)
+
+	if err := row.Scan(&customer.ID, &customer.UserName, &customer.FirstName, &customer.LastName, &customer.Email, &customer.PhonePrimary); err != nil {
+		return customer, err
+	}
+	return customer, nil
+}
+
 type CreateCustomerParams struct {
 	UserName     string        `db:"username" json:"userName"`
 	PasswordHash string        `db:"password_hash" json:"passwordHash"`
