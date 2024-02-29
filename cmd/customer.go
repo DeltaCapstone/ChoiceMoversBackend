@@ -12,6 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
+	"golang.org/x/crypto/bcrypt"
 )
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -127,10 +128,8 @@ func customerLogin(c echo.Context) error {
 		return c.String(http.StatusNotFound, fmt.Sprintf("No user found with username: %v", customerLogin.UserName))
 	}
 
-	hashedPassword, _ := utils.HashPassword(customerLogin.PasswordPlain)
-
-	// Check that the two passwords match
-	if hashedPassword != user.PasswordHash {
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(customerLogin.PasswordPlain))
+	if err != nil {
 		return c.String(http.StatusNotFound, fmt.Sprintf("Incorrect password for user with username: %v", customerLogin.UserName))
 	}
 
