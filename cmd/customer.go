@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	DB "github.com/DeltaCapstone/ChoiceMoversBackend/database"
 	"github.com/DeltaCapstone/ChoiceMoversBackend/utils"
@@ -36,17 +35,14 @@ type CustomerLoginRequest struct {
 }
 
 func getCustomer(c echo.Context) error {
-	id := c.Param("id")
-	ID, err := strconv.Atoi(id)
-	if err != nil {
-		return fmt.Errorf("id is not an integer: %v", err)
-	}
-	user, err := DB.PgInstance.GetCustomerById(c.Request().Context(), ID)
+	username := c.Param("username")
+
+	user, err := DB.PgInstance.GetCustomerByUserName(c.Request().Context(), username)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error retrieving data: %v", err))
 	}
 	if user.UserName == "" {
-		return c.String(http.StatusNotFound, fmt.Sprintf("No user found with id: %v", id))
+		return c.String(http.StatusNotFound, fmt.Sprintf("No user found with id: %v", username))
 	}
 	return c.JSON(http.StatusOK, user)
 }
@@ -97,7 +93,6 @@ func updateCustomer(c echo.Context) error {
 	if err := c.Bind(&updatedCustomer); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid input")
 	}
-
 	// update operation
 	err := DB.PgInstance.UpdateCustomer(c.Request().Context(), updatedCustomer)
 	if err != nil {

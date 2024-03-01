@@ -11,21 +11,21 @@ func CreateRoutes(e *echo.Echo) {
 
 	customerGroup := e.Group("/customer")
 	//customerGroup.Use(customerAuthMiddleware)
-	customerGroup.GET("/:id", getCustomer)    //view my account
-	customerGroup.PUT("/:id", updateCustomer) //update my account
-	//customerGroup.DELETE("/:id", deleteCustomer) //delete my account
+	customerGroup.GET("/:username", getCustomer) //view my account
+	customerGroup.PUT("/", updateCustomer)       //update my account
+	//customerGroup.DELETE("/:username", deleteCustomer) //delete my account
 	//customerGroup.GET("/job", getCustomerJobs)
 	//customerGroup.POST("/job", createJobByCustomer)
-	//customerGroup.PUT("/job/:id", updateJobByCustomer)
+	//customerGroup.PUT("/job/:job_id", updateJobByCustomer)
 
 	//e.POST("/login", employeeLogin)  // Login
 
 	// Group for employee routes
 	employeeGroup := e.Group("/employee")
 	//employeeGroup.Use(employeeAuthMiddleware)
-	employeeGroup.GET("/:id", getEmployee)    // Employee views their own
-	employeeGroup.PUT("/:id", updateEmployee) // Update my account
-	employeeGroup.GET("/jobs", listJobs)      // View list of jobs by status (?status= pending, confirmed, all)
+	employeeGroup.GET("/:username", getEmployee) // Employee views their own
+	employeeGroup.PUT("/", updateEmployee)       // Update my account
+	employeeGroup.GET("/jobs", listJobs)         // View list of jobs by status (?status= pending, confirmed, all)
 	//need to figure out how to limit query options for employees vs managers
 	//employeeGroup.POST("/jobs/requestJobAssign/:job_id", requstAssign)
 
@@ -35,5 +35,5 @@ func CreateRoutes(e *echo.Echo) {
 	managerGroup.GET("/employee", listEmployees)   // Manager view employees
 	managerGroup.POST("/employee", createEmployee) // Manager adds new employee
 	//managerGroup.POST("/job", createJob)           // Manager creates a job, needed for cases where a customer call in or a job is recieved from Uhaul for example
-	//managerGroup.PUT("/job/:id", updateJob)        // Manager makes changes to a job or confirms a job
+	//managerGroup.PUT("/job/:job_id", updateJob)        // Manager makes changes to a job or confirms a job
 }

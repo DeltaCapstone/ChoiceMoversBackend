@@ -10,11 +10,11 @@ import (
 
 // /////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Employee Route Queries
-func (pg *postgres) GetEmployeeById(ctx context.Context, id int) (Employee, error) {
+func (pg *postgres) GetEmployeeByUsername(ctx context.Context, username string) (Employee, error) {
 	var employee Employee
 	row := pg.db.QueryRow(ctx,
 		`SELECT employee_id, username,first_name, last_name, 
-		email, phone_primary FROM employees WHERE employee_id = $1`, id)
+		email, phone_primary FROM employees WHERE username = $1`, username)
 
 	if err := row.Scan(&employee.ID, &employee.UserName, &employee.FirstName, &employee.LastName, &employee.Email, &employee.PhonePrimary); err != nil {
 		return employee, err

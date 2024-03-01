@@ -11,6 +11,8 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+//TODO: Redo error handling to get rid of of al lthe sprintf's
+
 func listJobs(c echo.Context) error {
 	status := c.QueryParam("status")
 	if status == "" {
