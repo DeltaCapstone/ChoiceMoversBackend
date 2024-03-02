@@ -39,6 +39,7 @@ func listEmployees(c echo.Context) error {
 	//id := c.QueryParam("id")
 	users, err := DB.PgInstance.GetEmployeeList(c.Request().Context())
 	if err != nil {
+		zap.L().Sugar().Errorf("Failed to list employees: ", err.Error())
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error retrieving data: %v", err))
 	}
 	if users == nil {
@@ -51,6 +52,7 @@ func getEmployee(c echo.Context) error {
 	username := c.Param("username")
 	user, err := DB.PgInstance.GetEmployeeByUsername(c.Request().Context(), username)
 	if err != nil {
+		zap.L().Sugar().Errorf("Failed to get employee: ", err.Error())
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error retrieving data: %v", err))
 	}
 	if user.UserName == "" {
@@ -63,8 +65,12 @@ func createEmployee(c echo.Context) error {
 	var newEmployee CreateEmployeeRequest
 	// attempt at binding incoming json to a newUser
 	if err := c.Bind(&newEmployee); err != nil {
+		zap.L().Sugar().Errorf("Failed to create employee: ", err.Error())
 		return c.JSON(http.StatusBadRequest, echo.Map{"Bind error": "Invalid user data"})
 	}
+
+	zap.L().Debug("Creating employee: ", zap.Any("Updated empoyee", newEmployee))
+
 	//validate password
 
 	//replace plaintext password with hash
@@ -107,9 +113,12 @@ func updateEmployee(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid input")
 	}
 
+	zap.L().Debug("Updating employee: ", zap.Any("Updated empoyee", updatedEmployee))
+
 	// update operation
 	err := DB.PgInstance.UpdateEmployee(c.Request().Context(), updatedEmployee)
 	if err != nil {
+		zap.L().Sugar().Errorf("Failed to update employee: ", err.Error())
 		// return internal server error if update fails
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to update employee")
 	}

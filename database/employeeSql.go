@@ -13,10 +13,11 @@ import (
 func (pg *postgres) GetEmployeeByUsername(ctx context.Context, username string) (Employee, error) {
 	var employee Employee
 	row := pg.db.QueryRow(ctx,
-		`SELECT employee_id, username,first_name, last_name, 
-		email, phone_primary FROM employees WHERE username = $1`, username)
+		`SELECT employee_id, username, first_name, last_name, 
+		email, phone_primary, employee_type FROM employees WHERE username = $1`, username)
 
-	if err := row.Scan(&employee.ID, &employee.UserName, &employee.FirstName, &employee.LastName, &employee.Email, &employee.PhonePrimary); err != nil {
+	if err := row.Scan(&employee.ID, &employee.UserName, &employee.FirstName, &employee.LastName,
+		&employee.Email, &employee.PhonePrimary, &employee.EmployeeType); err != nil {
 		return employee, err
 	}
 	return employee, nil
@@ -69,14 +70,11 @@ func (pg *postgres) CreateEmployee(ctx context.Context, newEmployee CreateEmploy
 
 const updateEmployeeQuery = `
 UPDATE employees
-SET username = $1, password_hash = $2, first_name = $3, last_name = $4, email =$5, 
-phone_primary = $6, phone_other = $7, employee_type = $8
-WHERE employee_id = $9`
+SET username = @username, password_hash = @password_hash, first_name = @first_name, last_name = @last_name, email = @email, 
+phone_primary = @phone_primary, phone_other = @phone_other, employee_type = @employee_type
+WHERE username = @username`
 
 func (pg *postgres) UpdateEmployee(ctx context.Context, updatedEmployee Employee) error {
-	_, err := pg.db.Exec(ctx, updateEmployeeQuery,
-		updatedEmployee.UserName, updatedEmployee.PasswordHash,
-		updatedEmployee.FirstName, updatedEmployee.LastName, updatedEmployee.Email,
-		updatedEmployee.PhonePrimary, updatedEmployee.PhoneOther, updatedEmployee.EmployeeType)
+	_, err := pg.db.Exec(ctx, updateEmployeeQuery, pgx.NamedArgs(utils.StructToMap(updatedEmployee, "db")))
 	return err
 }
