@@ -19,7 +19,7 @@ type EmployeeType string
 
 const (
 	FullTime EmployeeType = "Full-time"
-	PartTime EmployeeType = "Part-Time"
+	PartTime EmployeeType = "Part-time"
 	Manager  EmployeeType = "Manager"
 	Admin    EmployeeType = "Admin"
 )
