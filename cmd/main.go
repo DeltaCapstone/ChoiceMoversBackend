@@ -9,6 +9,7 @@ import (
 	DB "github.com/DeltaCapstone/ChoiceMoversBackend/database"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"go.uber.org/zap"
 )
 
 func main() {
@@ -16,7 +17,21 @@ func main() {
 	e := echo.New()
 
 	// Middleware
-	e.Use(middleware.Logger())
+	logger, _ := zap.NewDevelopment()
+	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
+		LogURI:    true,
+		LogStatus: true,
+		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
+			logger.Info("request",
+				zap.String("URI", v.URI),
+				zap.Int("status", v.Status),
+			)
+
+			return nil
+		},
+	}))
+	zap.ReplaceGlobals(logger)
+
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"http://localhost:4200"},
@@ -29,7 +44,7 @@ func main() {
 
 	dbinst, err := DB.NewPG(ctx)
 	if err != nil {
-		e.Logger.Fatal("Unable to initialize the database:", err)
+		logger.Sugar().Fatalf("Unable to initialize the database:", err)
 	}
 	defer dbinst.Close()
 
@@ -38,7 +53,7 @@ func main() {
 	// Start server with graceful shutdown
 	go func() {
 		if err := e.Start(":8080"); err != nil {
-			e.Logger.Info("Shutting down the server")
+			logger.Info("Shutting down the server")
 		}
 	}()
 
