@@ -93,6 +93,9 @@ func updateCustomer(c echo.Context) error {
 	if err := c.Bind(&updatedCustomer); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid input")
 	}
+
+	//verify username on token matches username in struct
+
 	// update operation
 	err := DB.PgInstance.UpdateCustomer(c.Request().Context(), updatedCustomer)
 	if err != nil {
@@ -119,14 +122,23 @@ func customerLogin(c echo.Context) error {
 	}
 
 	// Check that the user exists
+
 	if user.UserName == "" {
 		return c.String(http.StatusNotFound, fmt.Sprintf("No user found with username: %v", customerLogin.UserName))
 	}
-
 	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(customerLogin.PasswordPlain))
 	if err != nil {
 		return c.String(http.StatusNotFound, fmt.Sprintf("Incorrect password for user with username: %v", customerLogin.UserName))
 	}
+
+	/*
+		signedToken := MakeToken(customerLogin.UserName, "Customer")
+
+
+		return c.JSON(http.StatusOK, echo.Map{
+			"token": signedToken,
+		})
+	*/
 
 	return c.JSON(http.StatusOK, "Login Success")
 }
