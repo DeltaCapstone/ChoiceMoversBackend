@@ -3,33 +3,38 @@ package DB
 import (
 	"context"
 
+	models "github.com/DeltaCapstone/ChoiceMoversBackend/models"
 	"github.com/DeltaCapstone/ChoiceMoversBackend/utils"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 // /////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Employee Route Queries
-func (pg *postgres) GetEmployeeByUsername(ctx context.Context, username string) (Employee, error) {
-	var employee Employee
+func (pg *postgres) GetEmployeeByUsername(ctx context.Context, username string) (models.GetEmployeeResponse, error) {
+	var employee models.GetEmployeeResponse
 	row := pg.db.QueryRow(ctx,
-		`SELECT employee_id, username, first_name, last_name, 
+		`SELECT username, first_name, last_name, 
 		email, phone_primary, employee_type FROM employees WHERE username = $1`, username)
 
-	if err := row.Scan(&employee.ID, &employee.UserName, &employee.FirstName, &employee.LastName,
+	if err := row.Scan(&employee.UserName, &employee.FirstName, &employee.LastName,
 		&employee.Email, &employee.PhonePrimary, &employee.EmployeeType); err != nil {
 		return employee, err
 	}
 	return employee, nil
 }
 
-func (pg *postgres) GetEmployeeList(ctx context.Context) ([]Employee, error) {
-	var employees []Employee
+func (pg *postgres) DeleteEmployeeByUsername(ctx context.Context, username string) error {
+	_, err := pg.db.Exec(ctx, `DELETE FROM employees WHERE username = $1`, username)
+	return err
+}
+
+func (pg *postgres) GetEmployeeList(ctx context.Context) ([]models.GetEmployeeResponse, error) {
+	var employees []models.GetEmployeeResponse
 	var rows pgx.Rows
 	var err error
 
 	rows, err = pg.db.Query(ctx,
-		"SELECT employee_id, username,first_name, last_name, email, phone_primary, employee_type FROM employees")
+		"SELECT username,first_name, last_name, email, phone_primary, employee_type FROM employees")
 
 	if err != nil {
 		return nil, err
@@ -37,8 +42,8 @@ func (pg *postgres) GetEmployeeList(ctx context.Context) ([]Employee, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var employee Employee
-		if err := rows.Scan(&employee.ID, &employee.UserName, &employee.FirstName, &employee.LastName, &employee.Email, &employee.PhonePrimary, &employee.EmployeeType); err != nil {
+		var employee models.GetEmployeeResponse
+		if err := rows.Scan(&employee.UserName, &employee.FirstName, &employee.LastName, &employee.Email, &employee.PhonePrimary, &employee.EmployeeType); err != nil {
 			return nil, err
 		}
 		employees = append(employees, employee)
@@ -46,26 +51,13 @@ func (pg *postgres) GetEmployeeList(ctx context.Context) ([]Employee, error) {
 	return employees, nil
 }
 
-type CreateEmployeeParams struct {
-	UserName     string        `db:"username" json:"userName"`
-	PasswordHash string        `db:"password_hash" json:"passwordHash"`
-	FirstName    string        `db:"first_name" json:"firstName"`
-	LastName     string        `db:"last_name" json:"lastName"`
-	Email        string        `db:"email" json:"email"`
-	PhonePrimary pgtype.Text   `db:"phone_primary" json:"phonePrimary"`
-	PhoneOther   []pgtype.Text `db:"phone_other" json:"phoneOther"`
-	EmployeeType string        `db:"employee_type" json:"employeeType"`
-}
-
 const createEmployeeNameQuery = `INSERT INTO employees 
 (username, password_hash, first_name, last_name, email, phone_primary, phone_other, employee_type) VALUES 
 (@username,@password_hash,@first_name,@last_name,@email,@phone_primary,@phone_other,@employee_type) `
 
-func (pg *postgres) CreateEmployee(ctx context.Context, newEmployee CreateEmployeeParams) (string, error) {
-	row := pg.db.QueryRow(ctx, createEmployeeNameQuery, pgx.NamedArgs(utils.StructToMap(newEmployee, "db")))
-	var u string
-	err := row.Scan()
-	return u, err
+func (pg *postgres) CreateEmployee(ctx context.Context, newEmployee models.CreateEmployeeParams) error {
+	_, err := pg.db.Exec(ctx, createEmployeeNameQuery, pgx.NamedArgs(utils.StructToMap(newEmployee, "db")))
+	return err
 }
 
 const updateEmployeeQuery = `
@@ -74,7 +66,7 @@ SET username = @username, password_hash = @password_hash, first_name = @first_na
 phone_primary = @phone_primary, phone_other = @phone_other, employee_type = @employee_type
 WHERE username = @username`
 
-func (pg *postgres) UpdateEmployee(ctx context.Context, updatedEmployee Employee) error {
+func (pg *postgres) UpdateEmployee(ctx context.Context, updatedEmployee models.Employee) error {
 	_, err := pg.db.Exec(ctx, updateEmployeeQuery, pgx.NamedArgs(utils.StructToMap(updatedEmployee, "db")))
 	return err
 }
