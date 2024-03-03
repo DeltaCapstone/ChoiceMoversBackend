@@ -6,10 +6,10 @@ import (
 	"net/http"
 
 	DB "github.com/DeltaCapstone/ChoiceMoversBackend/database"
+	models "github.com/DeltaCapstone/ChoiceMoversBackend/models"
 	"github.com/DeltaCapstone/ChoiceMoversBackend/utils"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
 )
@@ -18,22 +18,6 @@ import (
 //Employee
 
 //TODO: Redo error handling to get rid of of al lthe sprintf's
-
-type CreateEmployeeRequest struct {
-	UserName      string        `db:"username" json:"userName"`
-	PasswordPlain string        `db:"password_plain" json:"passwordPlain"`
-	FirstName     string        `db:"first_name" json:"firstName"`
-	LastName      string        `db:"last_name" json:"lastName"`
-	Email         string        `db:"email" json:"email"`
-	PhonePrimary  pgtype.Text   `db:"phone_primary" json:"phonePrimary"`
-	PhoneOther    []pgtype.Text `db:"phone_other" json:"phoneOther"`
-	EmployeeType  string        `db:"employee_type" json:"employeeType"`
-}
-
-type EmployeeLoginRequest struct {
-	UserName      string `db:"username" json:"userName"`
-	PasswordPlain string `db:"password_plain" json:"passwordPlain"`
-}
 
 func listEmployees(c echo.Context) error {
 	//id := c.QueryParam("id")
@@ -62,21 +46,21 @@ func getEmployee(c echo.Context) error {
 }
 
 func createEmployee(c echo.Context) error {
-	var newEmployee CreateEmployeeRequest
+	var newEmployee models.CreateEmployeeRequest
 	// attempt at binding incoming json to a newUser
 	if err := c.Bind(&newEmployee); err != nil {
 		zap.L().Sugar().Errorf("Failed to create employee: ", err.Error())
 		return c.JSON(http.StatusBadRequest, echo.Map{"Bind error": "Invalid user data"})
 	}
 
-	zap.L().Debug("Creating employee: ", zap.Any("Updated empoyee", newEmployee))
+	zap.L().Debug("Creating employee: ", zap.Any("Created employee", newEmployee))
 
 	//validate password
 
 	//replace plaintext password with hash
 	hashedPassword, _ := utils.HashPassword(newEmployee.PasswordPlain)
 
-	args := DB.CreateEmployeeParams{
+	args := models.CreateEmployeeParams{
 		UserName:     newEmployee.UserName,
 		PasswordHash: hashedPassword,
 		FirstName:    newEmployee.FirstName,
@@ -84,6 +68,7 @@ func createEmployee(c echo.Context) error {
 		Email:        newEmployee.Email,
 		PhonePrimary: newEmployee.PhonePrimary,
 		PhoneOther:   newEmployee.PhoneOther,
+		EmployeeType: newEmployee.EmployeeType,
 	}
 
 	// validation stuff probably needed
@@ -106,7 +91,7 @@ func createEmployee(c echo.Context) error {
 }
 
 func updateEmployee(c echo.Context) error {
-	var updatedEmployee DB.Employee
+	var updatedEmployee models.Employee
 
 	// binding json to employee
 	if err := c.Bind(&updatedEmployee); err != nil {

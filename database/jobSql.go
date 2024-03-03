@@ -2,6 +2,8 @@ package DB
 
 import (
 	"context"
+
+	"github.com/DeltaCapstone/ChoiceMoversBackend/models"
 )
 
 ////////////////////////////////////////////////
@@ -14,8 +16,8 @@ const (
 )
 
 // TODO: Figure out error handling for address errors
-func (pg *postgres) GetJobsByStatus(ctx context.Context, status string) ([]Job, error) {
-	var jobs []Job
+func (pg *postgres) GetJobsByStatus(ctx context.Context, status string) ([]models.Job, error) {
+	var jobs []models.Job
 	var query string
 	switch status {
 	case "all":
@@ -38,7 +40,7 @@ func (pg *postgres) GetJobsByStatus(ctx context.Context, status string) ([]Job, 
 		UnloadAddrID int
 	)
 	for rows.Next() {
-		var j Job
+		var j models.Job
 		if err := rows.Scan(
 			&j.ID,
 			&j.CustomerID,
@@ -68,8 +70,8 @@ func (pg *postgres) GetJobsByStatus(ctx context.Context, status string) ([]Job, 
 
 const addrQuery = "SELECT * FROM addresses WHERE address_id = $1"
 
-func getAddr(ctx context.Context, addrID int) (Address, error) {
-	var a Address
+func getAddr(ctx context.Context, addrID int) (models.Address, error) {
+	var a models.Address
 	row := PgInstance.db.QueryRow(ctx, addrQuery, addrID)
 	err := row.Scan(
 		&a.AddressID,

@@ -21,8 +21,10 @@ func main() {
 	e.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogURI:    true,
 		LogStatus: true,
+		LogMethod: true,
 		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
 			logger.Info("request",
+				zap.String("Method", v.Method),
 				zap.String("URI", v.URI),
 				zap.Int("status", v.Status),
 			)

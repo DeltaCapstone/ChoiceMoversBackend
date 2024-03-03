@@ -6,10 +6,10 @@ import (
 	"net/http"
 
 	DB "github.com/DeltaCapstone/ChoiceMoversBackend/database"
+	models "github.com/DeltaCapstone/ChoiceMoversBackend/models"
 	"github.com/DeltaCapstone/ChoiceMoversBackend/utils"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -18,21 +18,6 @@ import (
 //Customer
 
 //TODO: Redo error handling to get rid of of al lthe sprintf's
-
-type CreateCustomerRequest struct {
-	UserName      string        `db:"username" json:"userName"`
-	PasswordPlain string        `db:"password_plain" json:"passwordPlain"`
-	FirstName     string        `db:"first_name" json:"firstName"`
-	LastName      string        `db:"last_name" json:"lastName"`
-	Email         string        `db:"email" json:"email"`
-	PhonePrimary  pgtype.Text   `db:"phone_primary" json:"phonePrimary"`
-	PhoneOther    []pgtype.Text `db:"phone_other" json:"phoneOther"`
-}
-
-type CustomerLoginRequest struct {
-	UserName      string `db:"username" json:"userName"`
-	PasswordPlain string `db:"password_plain" json:"passwordPlain"`
-}
 
 func getCustomer(c echo.Context) error {
 	username := c.Param("username")
@@ -48,7 +33,7 @@ func getCustomer(c echo.Context) error {
 }
 
 func createCustomer(c echo.Context) error {
-	var newCustomer CreateCustomerRequest
+	var newCustomer models.CreateCustomerRequest
 	// attempt at binding incoming json to a newUser
 	if err := c.Bind(&newCustomer); err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid user data"})
@@ -58,7 +43,7 @@ func createCustomer(c echo.Context) error {
 	//replace plaintext password with hash
 	hashedPassword, _ := utils.HashPassword(newCustomer.PasswordPlain)
 
-	args := DB.CreateCustomerParams{
+	args := models.CreateCustomerParams{
 		UserName:     newCustomer.UserName,
 		PasswordHash: hashedPassword,
 		FirstName:    newCustomer.FirstName,
@@ -88,7 +73,7 @@ func createCustomer(c echo.Context) error {
 }
 
 func updateCustomer(c echo.Context) error {
-	var updatedCustomer DB.Customer
+	var updatedCustomer models.Customer
 	// binding request
 	if err := c.Bind(&updatedCustomer); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid input")
@@ -105,7 +90,7 @@ func updateCustomer(c echo.Context) error {
 }
 
 func customerLogin(c echo.Context) error {
-	var customerLogin CustomerLoginRequest
+	var customerLogin models.CustomerLoginRequest
 
 	// bind request data to the CustomerLoginRequest struct
 	if err := c.Bind(&customerLogin); err != nil {
