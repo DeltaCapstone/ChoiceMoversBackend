@@ -117,6 +117,8 @@ func updateEmployee(c echo.Context) error {
 
 	zap.L().Debug("updateEmployee: ", zap.Any("Updated employee", updatedEmployee))
 
+	//verify username on token matches username in struct
+
 	// update operation
 	err := DB.PgInstance.UpdateEmployee(c.Request().Context(), updatedEmployee)
 	if err != nil {
