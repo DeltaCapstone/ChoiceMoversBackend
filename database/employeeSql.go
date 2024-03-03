@@ -23,6 +23,11 @@ func (pg *postgres) GetEmployeeByUsername(ctx context.Context, username string) 
 	return employee, nil
 }
 
+func (pg *postgres) DeleteEmployeeByUsername(ctx context.Context, username string) error {
+	_, err := pg.db.Exec(ctx, `DELETE FROM employees WHERE username = $1`, username)
+	return err
+}
+
 func (pg *postgres) GetEmployeeList(ctx context.Context) ([]models.GetEmployeeResponse, error) {
 	var employees []models.GetEmployeeResponse
 	var rows pgx.Rows

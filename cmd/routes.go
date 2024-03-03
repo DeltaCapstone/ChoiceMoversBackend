@@ -32,8 +32,9 @@ func CreateRoutes(e *echo.Echo) {
 	// Group for manager routes
 	managerGroup := e.Group("/manager")
 	//managerGroup.Use(managerMiddleware)				// Add a middleware for manager authentication
-	managerGroup.GET("/employee", listEmployees)   // Manager view employees
-	managerGroup.POST("/employee", createEmployee) // Manager adds new employee
+	managerGroup.GET("/employee", listEmployees)               // Manager view employees
+	managerGroup.POST("/employee", createEmployee)             // Manager adds new employee
+	managerGroup.DELETE("/employee/:username", deleteEmployee) // Manager adds new employee
 	//managerGroup.POST("/job", createJob)           // Manager creates a job, needed for cases where a customer call in or a job is recieved from Uhaul for example
 	//managerGroup.PUT("/job/:job_id", updateJob)        // Manager makes changes to a job or confirms a job
 }

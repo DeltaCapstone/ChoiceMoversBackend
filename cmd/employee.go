@@ -32,17 +32,17 @@ func listEmployees(c echo.Context) error {
 	return c.JSON(http.StatusOK, users)
 }
 
-func getEmployee(c echo.Context) error {
+func deleteEmployee(c echo.Context) error {
 	username := c.Param("username")
-	user, err := DB.PgInstance.GetEmployeeByUsername(c.Request().Context(), username)
+
+	zap.L().Debug("deleteEmployee: ", zap.Any("Employee username", username))
+
+	err := DB.PgInstance.DeleteEmployeeByUsername(c.Request().Context(), username)
 	if err != nil {
-		zap.L().Sugar().Errorf("Failed to get employee: ", err.Error())
-		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error retrieving data: %v", err))
+		zap.L().Sugar().Errorf("Failed to delete employee: ", err.Error())
+		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error deleting data: %v", err))
 	}
-	if user.UserName == "" {
-		return c.String(http.StatusNotFound, fmt.Sprintf("No user found with id: %v", username))
-	}
-	return c.JSON(http.StatusOK, user)
+	return c.NoContent(http.StatusNoContent)
 }
 
 func createEmployee(c echo.Context) error {
@@ -53,7 +53,7 @@ func createEmployee(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, echo.Map{"Bind error": "Invalid user data"})
 	}
 
-	zap.L().Debug("Creating employee: ", zap.Any("Created employee", newEmployee))
+	zap.L().Debug("createEmployee", zap.Any("Employee", newEmployee))
 
 	//validate password
 
@@ -90,6 +90,22 @@ func createEmployee(c echo.Context) error {
 	return c.JSON(http.StatusCreated, echo.Map{"username": user})
 }
 
+func getEmployee(c echo.Context) error {
+	username := c.Param("username")
+
+	zap.L().Debug("getEmployee: ", zap.Any("Employee username", username))
+
+	user, err := DB.PgInstance.GetEmployeeByUsername(c.Request().Context(), username)
+	if err != nil {
+		zap.L().Sugar().Errorf("Failed to get employee: ", err.Error())
+		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error retrieving data: %v", err))
+	}
+	if user.UserName == "" {
+		return c.String(http.StatusNotFound, fmt.Sprintf("No user found with id: %v", username))
+	}
+	return c.JSON(http.StatusOK, user)
+}
+
 func updateEmployee(c echo.Context) error {
 	var updatedEmployee models.Employee
 
@@ -98,7 +114,7 @@ func updateEmployee(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid input")
 	}
 
-	zap.L().Debug("Updating employee: ", zap.Any("Updated empoyee", updatedEmployee))
+	zap.L().Debug("updateEmployee: ", zap.Any("Updated employee", updatedEmployee))
 
 	// update operation
 	err := DB.PgInstance.UpdateEmployee(c.Request().Context(), updatedEmployee)
