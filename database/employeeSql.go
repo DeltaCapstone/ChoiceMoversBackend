@@ -55,11 +55,9 @@ const createEmployeeNameQuery = `INSERT INTO employees
 (username, password_hash, first_name, last_name, email, phone_primary, phone_other, employee_type) VALUES 
 (@username,@password_hash,@first_name,@last_name,@email,@phone_primary,@phone_other,@employee_type) `
 
-func (pg *postgres) CreateEmployee(ctx context.Context, newEmployee models.CreateEmployeeParams) (string, error) {
-	row := pg.db.QueryRow(ctx, createEmployeeNameQuery, pgx.NamedArgs(utils.StructToMap(newEmployee, "db")))
-	var u string
-	err := row.Scan()
-	return u, err
+func (pg *postgres) CreateEmployee(ctx context.Context, newEmployee models.CreateEmployeeParams) error {
+	_, err := pg.db.Exec(ctx, createEmployeeNameQuery, pgx.NamedArgs(utils.StructToMap(newEmployee, "db")))
+	return err
 }
 
 const updateEmployeeQuery = `

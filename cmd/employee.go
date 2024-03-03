@@ -73,7 +73,7 @@ func createEmployee(c echo.Context) error {
 
 	// validation stuff probably needed
 
-	user, err := DB.PgInstance.CreateEmployee(c.Request().Context(), args)
+	err := DB.PgInstance.CreateEmployee(c.Request().Context(), args)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
@@ -84,10 +84,11 @@ func createEmployee(c echo.Context) error {
 				return c.JSON(http.StatusConflict, fmt.Sprintf("username or email already in use: %v", err))
 			}
 		}
-		return c.JSON(http.StatusInternalServerError, fmt.Sprintf("Failed to create user: %v", err))
+		zap.L().Sugar().Errorf("Failed to create employee: ", err.Error())
+		return c.JSON(http.StatusInternalServerError, fmt.Sprintf("Failed to create employee: %v", err))
 	}
 
-	return c.JSON(http.StatusCreated, echo.Map{"username": user})
+	return c.JSON(http.StatusCreated, echo.Map{"username": newEmployee.UserName})
 }
 
 func getEmployee(c echo.Context) error {
