@@ -13,13 +13,24 @@ import (
 func (pg *postgres) GetCustomerById(ctx context.Context, id int) (models.Customer, error) {
 	var customer models.Customer
 	row := pg.db.QueryRow(ctx,
-		`SELECT customer_id, username,first_name, last_name, 
+		`SELECT customer_id, username, first_name, last_name, 
 		email, phone_primary FROM customers WHERE customer_id = $1`, id)
 
 	if err := row.Scan(&customer.ID, &customer.UserName, &customer.FirstName, &customer.LastName, &customer.Email, &customer.PhonePrimary); err != nil {
 		return customer, err
 	}
 	return customer, nil
+}
+
+func (pg *postgres) GetCustomerHashByUserName(ctx context.Context, userName string) (string, error) {
+	var hash string
+	row := pg.db.QueryRow(ctx,
+		`SELECT password_hash FROM customers WHERE username = $1`, userName)
+
+	if err := row.Scan(&hash); err != nil {
+		return "", err
+	}
+	return hash, nil
 }
 
 func (pg *postgres) GetCustomerByUserName(ctx context.Context, userName string) (models.Customer, error) {

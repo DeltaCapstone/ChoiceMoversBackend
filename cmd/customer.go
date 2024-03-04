@@ -101,19 +101,19 @@ func customerLogin(c echo.Context) error {
 	}
 
 	// Get the customer with the username that was submitted
-	user, err := DB.PgInstance.GetCustomerByUserName(c.Request().Context(), customerLogin.UserName)
+	hash, err := DB.PgInstance.GetCustomerHashByUserName(c.Request().Context(), customerLogin.UserName)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error retrieving data: %v", err))
 	}
 
 	// Check that the user exists
 
-	if user.UserName == "" {
+	if hash == "" {
 		return c.String(http.StatusNotFound, fmt.Sprintf("No user found with username: %v", customerLogin.UserName))
 	}
-	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(customerLogin.PasswordPlain))
+	err = bcrypt.CompareHashAndPassword([]byte(hash), []byte(customerLogin.PasswordPlain))
 	if err != nil {
-		return c.String(http.StatusNotFound, fmt.Sprintf("Incorrect password for user with username: %v", customerLogin.UserName))
+		return c.String(http.StatusNotFound, fmt.Sprintf("Incorrect password for user with username: %v ", customerLogin.UserName))
 	}
 
 	/*

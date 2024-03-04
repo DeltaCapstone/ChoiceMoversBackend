@@ -1,15 +1,15 @@
 
 -- Inserting test customers with random names
-INSERT INTO customers (username, first_name, last_name, email, phone_primary, password_hash) VALUES ('user_john_d', 'John', 'Doe', 'john.doe@test.com', '330-111-1111', 'abcde');
-INSERT INTO customers (username, first_name, last_name, email, phone_primary, password_hash) VALUES ('user_jane_s', 'Jane', 'Smith', 'jane.smith@test.com', '330-111-1112', 'fghij');
-INSERT INTO customers (username, first_name, last_name, email, phone_primary, password_hash) VALUES ('user_emily_b', 'Emily', 'Brown', 'emily.brown@test.com', '330-111-1113', 'klmno');
-INSERT INTO customers (username, first_name, last_name, email, phone_primary, password_hash) VALUES ('user_mike_w', 'Mike', 'Wilson', 'mike.wilson@test.com', '330-111-1114', 'pqrst');
+INSERT INTO customers (username, first_name, last_name, email, phone_primary, password_hash) VALUES ('user_john_d', 'John', 'Doe', 'john.doe@test.com', '330-111-1111', '$2a$10$rpcIFTYGPDVrS4GpQJzWpOuDay540ZWrsWjvzm13YY9/OqTxjkvcS'); --pw: abcde
+INSERT INTO customers (username, first_name, last_name, email, phone_primary, password_hash) VALUES ('user_jane_s', 'Jane', 'Smith', 'jane.smith@test.com', '330-111-1112', '$2a$10$4QHNTDYIvHPJPa/uV7rnxe1gGuSg9P4sBYiIctHn6Y79BsmkPaKvq'); --pw: fghij
+INSERT INTO customers (username, first_name, last_name, email, phone_primary, password_hash) VALUES ('user_emily_b', 'Emily', 'Brown', 'emily.brown@test.com', '330-111-1113', '$2a$10$ncOlS1qa5ZNWa9OC4k5h7.NujWD1wTcWS5mV.gjy8gSt2EzWP1lGi'); --pw: klmno
+INSERT INTO customers (username, first_name, last_name, email, phone_primary, password_hash) VALUES ('user_mike_w', 'Mike', 'Wilson', 'mike.wilson@test.com', '330-111-1114', '$2a$10$KT6/ddMC3o3wMvPYuAUQSu1kBUeKMUGIOwsUKfOMszHlW4Y5e3Vwu'); --pw: pqrst
 
 -- Inserting test employees with random names
-INSERT INTO employees (username, first_name, last_name, employee_type, email, phone_primary, password_hash) VALUES ('emp_alex_j', 'Alex', 'Johnson', 'Part-time', 'alex.johnson@test.com', '330-111-2222', 'uvwxy');
-INSERT INTO employees (username, first_name, last_name, employee_type, email, phone_primary, password_hash) VALUES ('emp_linda_k', 'Linda', 'King', 'Full-time', 'linda.king@test.com', '330-111-2223', 'zabcd');
-INSERT INTO employees (username, first_name, last_name, employee_type, email, phone_primary, password_hash) VALUES ('emp_david_l', 'David', 'Lee', 'Full-time', 'david.lee@test.com', '330-111-2224', 'efghi');
-INSERT INTO employees (username, first_name, last_name, employee_type, email, phone_primary, password_hash) VALUES ('mgr_sarah_m', 'Sarah', 'Miller', 'Manager', 'sarah.miller@test.com', '330-111-3333', 'jklmn');
+INSERT INTO employees (username, first_name, last_name, employee_type, email, phone_primary, password_hash) VALUES ('emp_alex_j', 'Alex', 'Johnson', 'Part-time', 'alex.johnson@test.com', '330-111-2222', '$2a$10$5CD1oYBcvimXPQOPH035buUP/e4ZfW4qJiabNArF9qobKBfoJuB0m'); --pw: uvwxy
+INSERT INTO employees (username, first_name, last_name, employee_type, email, phone_primary, password_hash) VALUES ('emp_linda_k', 'Linda', 'King', 'Full-time', 'linda.king@test.com', '330-111-2223', '$2a$10$t2nKx8UirO9SXUySR79S5.iTjAGaylkTYIz7Fn7IUzj43nTzgPrw2'); --pw: zabcd
+INSERT INTO employees (username, first_name, last_name, employee_type, email, phone_primary, password_hash) VALUES ('emp_david_l', 'David', 'Lee', 'Full-time', 'david.lee@test.com', '330-111-2224', '$2a$10$JzeCi35FzkECqJYPvEO4QuGx0hRW5W6kykEFjo1/wsxPWKGs1UHpm'); --pw: efghi
+INSERT INTO employees (username, first_name, last_name, employee_type, email, phone_primary, password_hash) VALUES ('mgr_sarah_m', 'Sarah', 'Miller', 'Manager', 'sarah.miller@test.com', '330-111-3333', '$2a$10$mGZwtnxS8SiwGSS1Q2olP.dht8WrCb1o5NRuuANYe4D5LH5hOtmAe'); --pw: jklmn
 
 
 INSERT INTO public.addresses (street, city, state, zip, res_type, flights, apt_num)

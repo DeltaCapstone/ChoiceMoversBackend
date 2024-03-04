@@ -74,7 +74,7 @@ func parseAndValidateToken(tokenString string, claims *jwtCustomClaims) error {
 	// Use a JWT library to validate and parse the token
 	// Example:
 	// token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-	//     return []byte("your-secret-key"), nil
+	//     return []byte("secret"), nil
 	// })
 	// if err != nil || !token.Valid {
 	//     return errors.New("invalid token")
