@@ -12,7 +12,17 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
+	"golang.org/x/crypto/bcrypt"
 )
+
+func managerMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		if c.Get("role") != "Manager" {
+			return echo.NewHTTPError(http.StatusUnauthorized, "Unauthorized")
+		}
+		return next(c)
+	}
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Employee
@@ -128,4 +138,40 @@ func updateEmployee(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, "Employee updated")
+}
+
+func employeeLogin(c echo.Context) error {
+	var employeeLogin models.EmployeeLoginRequest
+
+	// bind request data to the CustomerLoginRequest struct
+	if err := c.Bind(&employeeLogin); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid input")
+	}
+
+	// Get the customer with the username that was submitted
+	hash, err := DB.PgInstance.GetEmployeeHashByUserName(c.Request().Context(), employeeLogin.UserName)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error retrieving data: %v", err))
+	}
+
+	// Check that the user exists
+
+	if hash == "" {
+		return c.String(http.StatusNotFound, fmt.Sprintf("No user found with username: %v", employeeLogin.UserName))
+	}
+	err = bcrypt.CompareHashAndPassword([]byte(hash), []byte(employeeLogin.PasswordPlain))
+	if err != nil {
+		return c.String(http.StatusNotFound, fmt.Sprintf("Incorrect password for user with username: %v ", employeeLogin.UserName))
+	}
+
+	/*
+		signedToken := MakeToken(employeeLogin.UserName, "Customer")
+
+
+		return c.JSON(http.StatusOK, echo.Map{
+			"token": signedToken,
+		})
+	*/
+
+	return c.JSON(http.StatusOK, "Login Success")
 }

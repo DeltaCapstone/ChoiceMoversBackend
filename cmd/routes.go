@@ -10,7 +10,7 @@ func CreateRoutes(e *echo.Echo) {
 	e.POST("/login", customerLogin)
 
 	customerGroup := e.Group("/customer")
-	//customerGroup.Use(customerAuthMiddleware)
+	//customerGroup.Use(token.JWTMiddleware)
 	customerGroup.GET("/:username", getCustomer) //view my account
 	customerGroup.PUT("/", updateCustomer)       //update my account
 	//customerGroup.DELETE("/:username", deleteCustomer) //delete my account
@@ -18,11 +18,11 @@ func CreateRoutes(e *echo.Echo) {
 	//customerGroup.POST("/job", createJobByCustomer)
 	//customerGroup.PUT("/job/:job_id", updateJobByCustomer)
 
-	//e.POST("/login", employeeLogin)  // Login
+	e.POST("/portal/login", employeeLogin) // Login
 
 	// Group for employee routes
 	employeeGroup := e.Group("/employee")
-	//employeeGroup.Use(employeeAuthMiddleware)
+	//employeeGroup.Use(token.JWTMiddleware)
 	employeeGroup.GET("/:username", getEmployee) // Employee views their own
 	employeeGroup.PUT("/", updateEmployee)       // Update my account
 	employeeGroup.GET("/jobs", listJobs)         // View list of jobs by status (?status= pending, confirmed, all)
@@ -31,7 +31,7 @@ func CreateRoutes(e *echo.Echo) {
 
 	// Group for manager routes
 	managerGroup := e.Group("/manager")
-	//managerGroup.Use(managerMiddleware)				// Add a middleware for manager authentication
+	//managerGroup.Use(token.JWTMiddleware, managerMiddleware)   // Add a middleware for manager authentication
 	managerGroup.GET("/employee", listEmployees)               // Manager view employees
 	managerGroup.POST("/employee", createEmployee)             // Manager adds new employee
 	managerGroup.DELETE("/employee/:username", deleteEmployee) // Manager adds new employee

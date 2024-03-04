@@ -23,6 +23,17 @@ func (pg *postgres) GetEmployeeByUsername(ctx context.Context, username string) 
 	return employee, nil
 }
 
+func (pg *postgres) GetEmployeeHashByUserName(ctx context.Context, userName string) (string, error) {
+	var hash string
+	row := pg.db.QueryRow(ctx,
+		`SELECT password_hash FROM employees WHERE username = $1`, userName)
+
+	if err := row.Scan(&hash); err != nil {
+		return "", err
+	}
+	return hash, nil
+}
+
 func (pg *postgres) DeleteEmployeeByUsername(ctx context.Context, username string) error {
 	_, err := pg.db.Exec(ctx, `DELETE FROM employees WHERE username = $1`, username)
 	return err

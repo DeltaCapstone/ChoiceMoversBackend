@@ -1,6 +1,7 @@
 package token
 
 import (
+	"errors"
 	"net/http"
 	"strings"
 	"time"
@@ -9,12 +10,6 @@ import (
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 )
-
-// TODO: what to do here?
-func getKey() string {
-	var key string
-	return key
-}
 
 var config = echojwt.Config{
 	NewClaimsFunc: func(c echo.Context) jwt.Claims {
@@ -40,7 +35,7 @@ func JWTMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 
 		claims := &jwtCustomClaims{}
 		// Validate and parse the token into claims
-		// You should use a JWT library (e.g., github.com/dgrijalva/jwt-go) for this
+
 		if err := parseAndValidateToken(token, claims); err != nil {
 			return echo.NewHTTPError(http.StatusUnauthorized, "Unauthorized")
 		}
@@ -67,18 +62,17 @@ func extractJWTToken(req *http.Request) string {
 	return parts[1]
 }
 
-// parseAndValidateToken validates and parses the JWT token.
-// You should use a JWT library for this (e.g., github.com/dgrijalva/jwt-go).
 func parseAndValidateToken(tokenString string, claims *jwtCustomClaims) error {
 	// Implement your JWT validation logic here
 	// Use a JWT library to validate and parse the token
 	// Example:
-	// token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-	//     return []byte("secret"), nil
-	// })
-	// if err != nil || !token.Valid {
-	//     return errors.New("invalid token")
-	// }
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte("secret"), nil
+	})
+	if err != nil || !token.Valid || token.Method != jwt.SigningMethodHS256 {
+		return errors.New("invalid token")
+	}
+
 	return nil
 }
 
