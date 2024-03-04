@@ -1,6 +1,8 @@
 package main
 
 import (
+	"github.com/DeltaCapstone/ChoiceMoversBackend/token"
+	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 )
 
@@ -11,6 +13,7 @@ func CreateRoutes(e *echo.Echo) {
 
 	customerGroup := e.Group("/customer")
 	//customerGroup.Use(token.JWTMiddleware)
+	customerGroup.Use(echojwt.WithConfig(token.Config))
 	customerGroup.GET("/:username", getCustomer) //view my account
 	customerGroup.PUT("/", updateCustomer)       //update my account
 	//customerGroup.DELETE("/:username", deleteCustomer) //delete my account

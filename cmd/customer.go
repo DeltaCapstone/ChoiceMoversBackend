@@ -7,6 +7,7 @@ import (
 
 	DB "github.com/DeltaCapstone/ChoiceMoversBackend/database"
 	models "github.com/DeltaCapstone/ChoiceMoversBackend/models"
+	"github.com/DeltaCapstone/ChoiceMoversBackend/token"
 	"github.com/DeltaCapstone/ChoiceMoversBackend/utils"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -116,14 +117,13 @@ func customerLogin(c echo.Context) error {
 		return c.String(http.StatusNotFound, fmt.Sprintf("Incorrect password for user with username: %v ", customerLogin.UserName))
 	}
 
-	/*
-		signedToken := MakeToken(customerLogin.UserName, "Customer")
+	signedToken, err := token.MakeToken(customerLogin.UserName, "Customer")
+	if err != nil {
+		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error creating token"))
+	}
+	return c.JSON(http.StatusOK, echo.Map{
+		"token": signedToken,
+	})
 
-
-		return c.JSON(http.StatusOK, echo.Map{
-			"token": signedToken,
-		})
-	*/
-
-	return c.JSON(http.StatusOK, "Login Success")
+	//return c.JSON(http.StatusOK, "Login Success")
 }
