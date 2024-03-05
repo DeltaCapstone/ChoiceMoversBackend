@@ -111,7 +111,7 @@ func customerLogin(c echo.Context) error {
 	}
 
 	// Get the customer with the username that was submitted
-	hash, err := DB.PgInstance.GetCustomerHashByUserName(c.Request().Context(), customerLogin.UserName)
+	id, hash, err := DB.PgInstance.GetCustomerCredentials(c.Request().Context(), customerLogin.UserName)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error retrieving data: %v", err))
 	}
@@ -128,13 +128,11 @@ func customerLogin(c echo.Context) error {
 		//return echo.ErrUnauthorized
 	}
 
-	signedToken, err := token.MakeToken(customerLogin.UserName, "Customer")
+	tokenpair, err := token.MakeTokenPair(id, customerLogin.UserName, "Customer")
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "Error creating token")
 	}
-	return c.JSON(http.StatusOK, echo.Map{
-		"token": signedToken,
-	})
+	return c.JSON(http.StatusOK, tokenpair)
 
 	//return c.JSON(http.StatusOK, "Login Success")
 }

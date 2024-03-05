@@ -17,18 +17,58 @@ var Config = echojwt.Config{
 }
 
 type jwtCustomClaims struct {
-	UserName string `json:"username"`
-	Role     string `json:"role"`
-	jwt.RegisteredClaims
+	Id                   int    `json:"id"`
+	UserName             string `json:"username"`
+	Role                 string `json:"role"`
+	jwt.RegisteredClaims `json:"claims"`
 }
 
-func MakeToken(username string, role string) (string, error) {
+type jwtRefreshClaims struct {
+	Id                   int `json:"id"`
+	jwt.RegisteredClaims `json:"claims"`
+}
+
+func MakeTokenPair(id int, username string, role string) (map[string]string, error) {
+	t, err := MakeToken(id, username, role)
+	if err != nil {
+		return nil, err
+	}
+	rt, err := MakeRefreshToken(id)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]string{
+		"access_token":  t,
+		"refresh_token": rt,
+	}, nil
+}
+
+func MakeToken(id int, username string, role string) (string, error) {
 	// Set custom claims
 	claims := &jwtCustomClaims{
+		id,
 		username,
 		role,
 		jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	signedToken, err := token.SignedString([]byte("secret"))
+	if err != nil {
+		return "", err
+	}
+
+	return signedToken, nil
+}
+
+func MakeRefreshToken(id int) (string, error) {
+	// Set custom claims
+	claims := &jwtRefreshClaims{
+		id,
+		jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

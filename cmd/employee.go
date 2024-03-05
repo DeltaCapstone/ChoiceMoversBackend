@@ -28,7 +28,7 @@ func managerMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 func employeeMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		role := c.Get("role")
-		if (role != "Employee") && (role != "Manager") {
+		if (role != "Full-time") && (role != "Part-Time") && (role != "Manager") {
 			return echo.NewHTTPError(http.StatusUnauthorized, "Unauthorized")
 		}
 		return next(c)
@@ -160,7 +160,7 @@ func employeeLogin(c echo.Context) error {
 	}
 
 	// Get the customer with the username that was submitted
-	hash, err := DB.PgInstance.GetEmployeeHashByUserName(c.Request().Context(), employeeLogin.UserName)
+	id, hash, err := DB.PgInstance.GetEmployeeCredentials(c.Request().Context(), employeeLogin.UserName)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error retrieving data: %v", err))
 	}
@@ -180,13 +180,11 @@ func employeeLogin(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "Could not deterimine role")
 	}
 
-	signedToken, err := token.MakeToken(employeeLogin.UserName, role)
+	tokenpair, err := token.MakeTokenPair(id, employeeLogin.UserName, role)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "Error creating token")
 	}
-	return c.JSON(http.StatusOK, echo.Map{
-		"token": signedToken,
-	})
+	return c.JSON(http.StatusOK, tokenpair)
 
 	//return c.JSON(http.StatusOK, "Login Success")
 }

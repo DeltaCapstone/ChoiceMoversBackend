@@ -23,15 +23,16 @@ func (pg *postgres) GetEmployeeByUsername(ctx context.Context, username string) 
 	return employee, nil
 }
 
-func (pg *postgres) GetEmployeeHashByUserName(ctx context.Context, userName string) (string, error) {
+func (pg *postgres) GetEmployeeCredentials(ctx context.Context, userName string) (int, string, error) {
 	var hash string
+	var id int
 	row := pg.db.QueryRow(ctx,
-		`SELECT password_hash FROM employees WHERE username = $1`, userName)
+		`SELECT employee_id,password_hash FROM employees WHERE username = $1`, userName)
 
-	if err := row.Scan(&hash); err != nil {
-		return "", err
+	if err := row.Scan(&id, &hash); err != nil {
+		return 0, "", err
 	}
-	return hash, nil
+	return id, hash, nil
 }
 
 func (pg *postgres) GetEmployeeRole(ctx context.Context, userName string) (string, error) {

@@ -22,15 +22,16 @@ func (pg *postgres) GetCustomerById(ctx context.Context, id int) (models.GetCust
 	return customer, nil
 }
 
-func (pg *postgres) GetCustomerHashByUserName(ctx context.Context, userName string) (string, error) {
+func (pg *postgres) GetCustomerCredentials(ctx context.Context, userName string) (int, string, error) {
 	var hash string
+	var id int
 	row := pg.db.QueryRow(ctx,
-		`SELECT password_hash FROM customers WHERE username = $1`, userName)
+		`SELECT customer_id,password_hash FROM customers WHERE username = $1`, userName)
 
-	if err := row.Scan(&hash); err != nil {
-		return "", err
+	if err := row.Scan(&id, &hash); err != nil {
+		return 0, "", err
 	}
-	return hash, nil
+	return id, hash, nil
 }
 
 func (pg *postgres) GetCustomerByUserName(ctx context.Context, userName string) (models.Customer, error) {
