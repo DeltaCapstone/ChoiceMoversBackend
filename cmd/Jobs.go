@@ -18,7 +18,7 @@ func listJobs(c echo.Context) error {
 	if status == "" {
 		status = "all"
 	}
-	jobs, err := DB.PgInstance.GetJobsByStatus(c.Request().Context(), status)
+	jobs, err := DB.PgInstance.GetJobsByStatusAndRange(c.Request().Context(), status)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error retrieving data: %v", err))
 	}

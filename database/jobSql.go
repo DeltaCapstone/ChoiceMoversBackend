@@ -16,8 +16,8 @@ const (
 )
 
 // TODO: Figure out error handling for address errors
-func (pg *postgres) GetJobsByStatus(ctx context.Context, status string) ([]models.Job, error) {
-	var jobs []models.Job
+func (pg *postgres) GetJobsByStatusAndRange(ctx context.Context, status string) ([]models.JobResponse, error) {
+	var jobs []models.JobResponse
 	var query string
 	switch status {
 	case "all":
@@ -38,12 +38,13 @@ func (pg *postgres) GetJobsByStatus(ctx context.Context, status string) ([]model
 	var (
 		LoadAddrID   int
 		UnloadAddrID int
+		CustomerID   int
 	)
 	for rows.Next() {
-		var j models.Job
+		var j models.JobResponse
 		if err := rows.Scan(
 			&j.ID,
-			&j.CustomerID,
+			&CustomerID,
 			&LoadAddrID,
 			&UnloadAddrID,
 			&j.StartTime,
@@ -63,6 +64,7 @@ func (pg *postgres) GetJobsByStatus(ctx context.Context, status string) ([]model
 		//need to figure out error handling here
 		j.LoadAddr, _ = getAddr(ctx, LoadAddrID)
 		j.UnloadAddr, _ = getAddr(ctx, UnloadAddrID)
+		j.Customer, _ = pg.GetCustomerById(ctx, CustomerID)
 		jobs = append(jobs, j)
 	}
 	return jobs, nil

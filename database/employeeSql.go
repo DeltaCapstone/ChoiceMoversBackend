@@ -34,6 +34,17 @@ func (pg *postgres) GetEmployeeHashByUserName(ctx context.Context, userName stri
 	return hash, nil
 }
 
+func (pg *postgres) GetEmployeeRole(ctx context.Context, userName string) (string, error) {
+	var role string
+	row := pg.db.QueryRow(ctx,
+		`SELECT employee_type FROM employees WHERE username = $1`, userName)
+
+	if err := row.Scan(&role); err != nil {
+		return "", err
+	}
+	return role, nil
+}
+
 func (pg *postgres) DeleteEmployeeByUsername(ctx context.Context, username string) error {
 	_, err := pg.db.Exec(ctx, `DELETE FROM employees WHERE username = $1`, username)
 	return err

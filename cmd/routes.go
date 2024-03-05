@@ -1,8 +1,6 @@
 package main
 
 import (
-	"github.com/DeltaCapstone/ChoiceMoversBackend/token"
-	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 )
 
@@ -10,10 +8,10 @@ func CreateRoutes(e *echo.Echo) {
 
 	e.POST("", createCustomer) //signup
 	e.POST("/login", customerLogin)
+	//e.POST("/getEstimate",createEstimate)
 
 	customerGroup := e.Group("/customer")
-	//customerGroup.Use(token.JWTMiddleware)
-	customerGroup.Use(echojwt.WithConfig(token.Config))
+	//customerGroup.Use(echojwt.WithConfig(token.Config), customerMiddleware)
 	customerGroup.GET("/:username", getCustomer) //view my account
 	customerGroup.PUT("/", updateCustomer)       //update my account
 	//customerGroup.DELETE("/:username", deleteCustomer) //delete my account
@@ -25,7 +23,7 @@ func CreateRoutes(e *echo.Echo) {
 
 	// Group for employee routes
 	employeeGroup := e.Group("/employee")
-	//employeeGroup.Use(token.JWTMiddleware)
+	//employeeGroup.Use(echojwt.WithConfig(token.Config), employeeMiddleware)
 	employeeGroup.GET("/:username", getEmployee) // Employee views their own
 	employeeGroup.PUT("/", updateEmployee)       // Update my account
 	employeeGroup.GET("/jobs", listJobs)         // View list of jobs by status (?status= pending, confirmed, all)
@@ -34,7 +32,7 @@ func CreateRoutes(e *echo.Echo) {
 
 	// Group for manager routes
 	managerGroup := e.Group("/manager")
-	//managerGroup.Use(token.JWTMiddleware, managerMiddleware)   // Add a middleware for manager authentication
+	//managerGroup.Use(echojwt.WithConfig(token.Config), managerMiddleware) // Add a middleware for manager authentication
 	managerGroup.GET("/employee", listEmployees)               // Manager view employees
 	managerGroup.POST("/employee", createEmployee)             // Manager adds new employee
 	managerGroup.DELETE("/employee/:username", deleteEmployee) // Manager adds new employee

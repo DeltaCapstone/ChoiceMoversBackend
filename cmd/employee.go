@@ -7,6 +7,7 @@ import (
 
 	DB "github.com/DeltaCapstone/ChoiceMoversBackend/database"
 	models "github.com/DeltaCapstone/ChoiceMoversBackend/models"
+	"github.com/DeltaCapstone/ChoiceMoversBackend/token"
 	"github.com/DeltaCapstone/ChoiceMoversBackend/utils"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -18,6 +19,16 @@ import (
 func managerMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		if c.Get("role") != "Manager" {
+			return echo.NewHTTPError(http.StatusUnauthorized, "Unauthorized")
+		}
+		return next(c)
+	}
+}
+
+func employeeMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		role := c.Get("role")
+		if (role != "Employee") && (role != "Manager") {
 			return echo.NewHTTPError(http.StatusUnauthorized, "Unauthorized")
 		}
 		return next(c)
@@ -158,20 +169,24 @@ func employeeLogin(c echo.Context) error {
 
 	if hash == "" {
 		return c.String(http.StatusNotFound, fmt.Sprintf("No user found with username: %v", employeeLogin.UserName))
+		//return echo.ErrUnauthorized
 	}
 	err = bcrypt.CompareHashAndPassword([]byte(hash), []byte(employeeLogin.PasswordPlain))
 	if err != nil {
 		return c.String(http.StatusNotFound, fmt.Sprintf("Incorrect password for user with username: %v ", employeeLogin.UserName))
 	}
+	role, err := DB.PgInstance.GetEmployeeRole(c.Request().Context(), employeeLogin.UserName)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "Could not deterimine role")
+	}
 
-	/*
-		signedToken := MakeToken(employeeLogin.UserName, "Customer")
+	signedToken, err := token.MakeToken(employeeLogin.UserName, role)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "Error creating token")
+	}
+	return c.JSON(http.StatusOK, echo.Map{
+		"token": signedToken,
+	})
 
-
-		return c.JSON(http.StatusOK, echo.Map{
-			"token": signedToken,
-		})
-	*/
-
-	return c.JSON(http.StatusOK, "Login Success")
+	//return c.JSON(http.StatusOK, "Login Success")
 }

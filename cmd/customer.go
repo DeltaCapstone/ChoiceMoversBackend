@@ -15,6 +15,15 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+func customerMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		if c.Get("role") != "Customer" {
+			return echo.NewHTTPError(http.StatusUnauthorized, "Unauthorized")
+		}
+		return next(c)
+	}
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 //Customer
 
@@ -111,15 +120,17 @@ func customerLogin(c echo.Context) error {
 
 	if hash == "" {
 		return c.String(http.StatusNotFound, fmt.Sprintf("No user found with username: %v", customerLogin.UserName))
+		//return echo.ErrUnauthorized
 	}
 	err = bcrypt.CompareHashAndPassword([]byte(hash), []byte(customerLogin.PasswordPlain))
 	if err != nil {
 		return c.String(http.StatusNotFound, fmt.Sprintf("Incorrect password for user with username: %v ", customerLogin.UserName))
+		//return echo.ErrUnauthorized
 	}
 
 	signedToken, err := token.MakeToken(customerLogin.UserName, "Customer")
 	if err != nil {
-		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error creating token"))
+		return c.String(http.StatusInternalServerError, "Error creating token")
 	}
 	return c.JSON(http.StatusOK, echo.Map{
 		"token": signedToken,

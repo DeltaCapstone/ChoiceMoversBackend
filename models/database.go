@@ -61,8 +61,8 @@ type Address struct {
 type Job struct {
 	ID         int                    `db:"job_id" json:"id"`
 	CustomerID int                    `db:"customer_id" json:"customerId"`
-	LoadAddr   Address                `db:"load_addr" json:"loadAddr"`
-	UnloadAddr Address                `db:"unload_addr" json:"unloadAddr"`
+	LoadAddr   int                    `db:"load_addr" json:"loadAddr"`
+	UnloadAddr int                    `db:"unload_addr" json:"unloadAddr"`
 	StartTime  pgtype.Timestamp       `db:"start_time" json:"startTime"`
 	HoursLabor pgtype.Interval        `db:"hours_labor" json:"hoursLabor"`
 	Finalized  bool                   `db:"finalized" json:"finalized"`

@@ -10,13 +10,13 @@ import (
 
 // /////////////////////////////////////////////////////////////////////////////////////////////////
 // Customer Route Queries
-func (pg *postgres) GetCustomerById(ctx context.Context, id int) (models.Customer, error) {
-	var customer models.Customer
+func (pg *postgres) GetCustomerById(ctx context.Context, id int) (models.GetCustomerResponse, error) {
+	var customer models.GetCustomerResponse
 	row := pg.db.QueryRow(ctx,
-		`SELECT customer_id, username, first_name, last_name, 
-		email, phone_primary FROM customers WHERE customer_id = $1`, id)
+		`SELECT username, first_name, last_name, 
+		email, phone_primary, phone_other FROM customers WHERE customer_id = $1`, id)
 
-	if err := row.Scan(&customer.ID, &customer.UserName, &customer.FirstName, &customer.LastName, &customer.Email, &customer.PhonePrimary); err != nil {
+	if err := row.Scan(&customer.UserName, &customer.FirstName, &customer.LastName, &customer.Email, &customer.PhonePrimary, &customer.PhoneOther); err != nil {
 		return customer, err
 	}
 	return customer, nil

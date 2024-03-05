@@ -22,6 +22,28 @@ type jwtCustomClaims struct {
 	jwt.RegisteredClaims
 }
 
+func MakeToken(username string, role string) (string, error) {
+	// Set custom claims
+	claims := &jwtCustomClaims{
+		username,
+		role,
+		jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	signedToken, err := token.SignedString([]byte("secret"))
+	if err != nil {
+		return "", err
+	}
+
+	return signedToken, nil
+}
+
+///////////////////////////////////////////////////////////////
+//Pretty sure this just does what echojwt does so not neccessary
+
 /*
 // JWTMiddleware validates the JWT token and sets the user role in the context.
 
@@ -76,21 +98,3 @@ type jwtCustomClaims struct {
 		return nil
 	}
 */
-func MakeToken(username string, role string) (string, error) {
-	// Set custom claims
-	claims := &jwtCustomClaims{
-		username,
-		role,
-		jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 72)),
-		},
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	signedToken, err := token.SignedString([]byte("secret"))
-	if err != nil {
-		return "", err
-	}
-
-	return signedToken, nil
-}
