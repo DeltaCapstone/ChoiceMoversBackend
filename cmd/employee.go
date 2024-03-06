@@ -9,6 +9,7 @@ import (
 	models "github.com/DeltaCapstone/ChoiceMoversBackend/models"
 	"github.com/DeltaCapstone/ChoiceMoversBackend/token"
 	"github.com/DeltaCapstone/ChoiceMoversBackend/utils"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/labstack/echo/v4"
@@ -18,7 +19,13 @@ import (
 
 func managerMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		if c.Get("role") != "Manager" {
+		user := c.Get("user").(*jwt.Token)
+		claims := user.Claims.(*token.JwtCustomClaims)
+		role := claims.Role
+		c.Set("username", claims.UserName)
+		c.Set("role", claims.Role)
+		//return c.String(http.StatusFound, fmt.Sprintf("your role is %v", role))
+		if role != "Manager" {
 			return echo.NewHTTPError(http.StatusUnauthorized, "Unauthorized")
 		}
 		return next(c)
@@ -27,7 +34,12 @@ func managerMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 
 func employeeMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		role := c.Get("role")
+		user := c.Get("user").(*jwt.Token)
+		claims := user.Claims.(*token.JwtCustomClaims)
+		role := claims.Role
+		c.Set("username", claims.UserName)
+		c.Set("role", claims.Role)
+		//return c.String(http.StatusFound, fmt.Sprintf("your role is %v", role))
 		if (role != "Full-time") && (role != "Part-Time") && (role != "Manager") {
 			return echo.NewHTTPError(http.StatusUnauthorized, "Unauthorized")
 		}
@@ -40,6 +52,9 @@ func employeeMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 
 //TODO: Redo error handling to get rid of of al lthe sprintf's
 
+// //////////////////////////////////////
+// Manager routes
+// /////////////////////////////////////
 func listEmployees(c echo.Context) error {
 	//id := c.QueryParam("id")
 	users, err := DB.PgInstance.GetEmployeeList(c.Request().Context())
@@ -112,8 +127,11 @@ func createEmployee(c echo.Context) error {
 	return c.JSON(http.StatusCreated, echo.Map{"username": newEmployee.UserName})
 }
 
+// /////////////////////////////////////////
+// Self routes
+// /////////////////////////////////////////
 func getEmployee(c echo.Context) error {
-	username := c.Param("username")
+	username := c.Get("username").(string)
 
 	zap.L().Debug("getEmployee: ", zap.Any("Employee username", username))
 
@@ -180,11 +198,19 @@ func employeeLogin(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "Could not deterimine role")
 	}
 
-	tokenpair, err := token.MakeTokenPair(id, employeeLogin.UserName, role)
+	token, err := token.MakeTokenPair(id, employeeLogin.UserName, role)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "Error creating token")
 	}
-	return c.JSON(http.StatusOK, tokenpair)
+	return c.JSON(http.StatusOK, echo.Map{"accessToken": token})
+
+	/*
+		tokenpair, err := token.MakeTokenPair(id, customerLogin.UserName, role)
+		if err != nil {
+			return c.String(http.StatusInternalServerError, "Error creating token")
+		}
+		return c.JSON(http.StatusOK, tokenpair)
+	*/
 
 	//return c.JSON(http.StatusOK, "Login Success")
 }

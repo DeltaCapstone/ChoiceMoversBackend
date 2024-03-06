@@ -10,20 +10,20 @@ import (
 
 var Config = echojwt.Config{
 	NewClaimsFunc: func(c echo.Context) jwt.Claims {
-		return new(jwtCustomClaims)
+		return new(JwtCustomClaims)
 	},
 	SigningMethod: jwt.SigningMethodHS256.Name,
 	SigningKey:    []byte("secret"),
 }
 
-type jwtCustomClaims struct {
+type JwtCustomClaims struct {
 	Id                   int    `json:"id"`
 	UserName             string `json:"username"`
 	Role                 string `json:"role"`
 	jwt.RegisteredClaims `json:"claims"`
 }
 
-type jwtRefreshClaims struct {
+type JwtRefreshClaims struct {
 	Id                   int `json:"id"`
 	jwt.RegisteredClaims `json:"claims"`
 }
@@ -38,14 +38,14 @@ func MakeTokenPair(id int, username string, role string) (map[string]string, err
 		return nil, err
 	}
 	return map[string]string{
-		"access_token":  t,
-		"refresh_token": rt,
+		"accessToken":  t,
+		"refreshToken": rt,
 	}, nil
 }
 
 func MakeToken(id int, username string, role string) (string, error) {
 	// Set custom claims
-	claims := &jwtCustomClaims{
+	claims := &JwtCustomClaims{
 		id,
 		username,
 		role,
@@ -65,7 +65,7 @@ func MakeToken(id int, username string, role string) (string, error) {
 
 func MakeRefreshToken(id int) (string, error) {
 	// Set custom claims
-	claims := &jwtRefreshClaims{
+	claims := &JwtRefreshClaims{
 		id,
 		jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
@@ -94,7 +94,7 @@ func MakeRefreshToken(id int) (string, error) {
 				return echo.NewHTTPError(http.StatusUnauthorized, "Unauthorized")
 			}
 
-			claims := &jwtCustomClaims{}
+			claims := &JwtCustomClaims{}
 			// Validate and parse the token into claims
 
 			if err := parseAndValidateToken(token, claims); err != nil {
@@ -124,7 +124,7 @@ func MakeRefreshToken(id int) (string, error) {
 		return parts[1]
 	}
 
-	func parseAndValidateToken(tokenString string, claims *jwtCustomClaims) error {
+	func parseAndValidateToken(tokenString string, claims *JwtCustomClaims) error {
 		// Implement your JWT validation logic here
 		// Use a JWT library to validate and parse the token
 		// Example:

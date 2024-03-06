@@ -9,6 +9,7 @@ import (
 	models "github.com/DeltaCapstone/ChoiceMoversBackend/models"
 	"github.com/DeltaCapstone/ChoiceMoversBackend/token"
 	"github.com/DeltaCapstone/ChoiceMoversBackend/utils"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/labstack/echo/v4"
@@ -17,10 +18,18 @@ import (
 
 func customerMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		if c.Get("role") != "Customer" {
+		user := c.Get("user").(*jwt.Token)
+		claims := user.Claims.(*token.JwtCustomClaims)
+		role := claims.Role
+		c.Set("username", claims.UserName)
+		c.Set("role", claims.Role)
+		//return c.String(http.StatusFound, fmt.Sprintf("your role is %v", role))
+
+		if role != "Customer" {
 			return echo.NewHTTPError(http.StatusUnauthorized, "Unauthorized")
 		}
 		return next(c)
+
 	}
 }
 
@@ -30,7 +39,7 @@ func customerMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 //TODO: Redo error handling to get rid of of al lthe sprintf's
 
 func getCustomer(c echo.Context) error {
-	username := c.Param("username")
+	username := c.Get("username").(string)
 
 	user, err := DB.PgInstance.GetCustomerByUserName(c.Request().Context(), username)
 	if err != nil {
@@ -128,11 +137,19 @@ func customerLogin(c echo.Context) error {
 		//return echo.ErrUnauthorized
 	}
 
-	tokenpair, err := token.MakeTokenPair(id, customerLogin.UserName, "Customer")
+	token, err := token.MakeToken(id, customerLogin.UserName, "Customer")
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "Error creating token")
 	}
-	return c.JSON(http.StatusOK, tokenpair)
+	return c.JSON(http.StatusOK, echo.Map{"accessToken": token})
+
+	/*
+		tokenpair, err := token.MakeTokenPair(id, customerLogin.UserName, "Customer")
+		if err != nil {
+			return c.String(http.StatusInternalServerError, "Error creating token")
+		}
+		return c.JSON(http.StatusOK, tokenpair)
+	*/
 
 	//return c.JSON(http.StatusOK, "Login Success")
 }
