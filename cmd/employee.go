@@ -40,7 +40,7 @@ func employeeMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		c.Set("username", claims.UserName)
 		c.Set("role", claims.Role)
 		//return c.String(http.StatusFound, fmt.Sprintf("your role is %v", role))
-		if (role != "Full-time") && (role != "Part-Time") && (role != "Manager") {
+		if (role != "Full-time") && (role != "Part-time") && (role != "Manager") {
 			return echo.NewHTTPError(http.StatusUnauthorized, "Unauthorized")
 		}
 		return next(c)
@@ -198,7 +198,7 @@ func employeeLogin(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "Could not deterimine role")
 	}
 
-	token, err := token.MakeTokenPair(id, employeeLogin.UserName, role)
+	token, err := token.MakeToken(id, employeeLogin.UserName, role)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "Error creating token")
 	}
