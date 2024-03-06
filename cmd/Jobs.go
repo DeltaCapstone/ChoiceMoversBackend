@@ -34,6 +34,11 @@ func listJobs(c echo.Context) error {
 	return c.JSON(http.StatusOK, jobs)
 }
 
+func createOrFindAddress(address models.Address) (int, error) {
+
+	return 0, nil
+}
+
 // Calculates how many hours a job should take
 func jobHours(jobRequest models.CreateJobRequest) (pgtype.Interval, error) {
 
@@ -41,7 +46,7 @@ func jobHours(jobRequest models.CreateJobRequest) (pgtype.Interval, error) {
 }
 
 // Calculate the total cost of a job
-func jobCost(jobRequest models.CreateJobRequest, hours pgtype.Interval) (string, error) {
+func jobCost(jobRequest models.CreateJobRequest, hours pgtype.Interval, milage int) (string, error) {
 
 	return "", nil
 }
@@ -53,32 +58,45 @@ func jobMilage(jobRequest models.CreateJobRequest) (int, error) {
 }
 
 // Job POST Route to create a job
-func createJob(c echo.Context) error {
+func CreateJob(c echo.Context) error {
 	var jobRequest models.CreateJobRequest
-	// attempt at binding incoming json to a newUser
+	// attempt at binding incoming json to a jobRequest
 	if err := c.Bind(&jobRequest); err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid job request data"})
 	}
 
+	loadAddrID, err := createOrFindAddress(jobRequest.LoadAddr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid job request data"})
+	}
+
+	unloadAddrID, err := createOrFindAddress(jobRequest.UnloadAddr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid job request data"})
+	}
+
+	// Calculate Labor Hours
 	hours, err := jobHours(jobRequest)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid job request data"})
 	}
 
-	cost, err := jobCost(jobRequest, hours)
+	// Calculate the milage
+	milage, err := jobMilage(jobRequest)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid job request data"})
 	}
 
-	milage, err := jobMilage(jobRequest)
+	// Calculate the cost of the job
+	cost, err := jobCost(jobRequest, hours, milage)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid job request data"})
 	}
 
 	args := models.Job{
 		CustomerID: jobRequest.CustomerID,
-		LoadAddr:   jobRequest.LoadAddr.AddressID,
-		UnloadAddr: jobRequest.UnloadAddr.AddressID,
+		LoadAddr:   loadAddrID,
+		UnloadAddr: unloadAddrID,
 		StartTime:  jobRequest.StartTime,
 		HoursLabor: hours,
 		Finalized:  false,
