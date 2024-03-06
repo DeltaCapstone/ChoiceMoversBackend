@@ -107,4 +107,5 @@ type JobResponse struct {
 	Clean      bool                   `db:"clean" json:"clean"`
 	Milage     int                    `db:"milage" json:"milage"`
 	Cost       string                 `db:"cost" json:"cost"`
+	//AssignedEmp []Employee             `json:"assignedEmployees"`
 }

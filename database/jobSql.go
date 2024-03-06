@@ -4,31 +4,32 @@ import (
 	"context"
 
 	"github.com/DeltaCapstone/ChoiceMoversBackend/models"
+	"github.com/jackc/pgx/v5"
 )
 
 ////////////////////////////////////////////////
 //Jobs
 
 const (
-	all       = "SELECT * FROM jobs WHERE start_time > CURRENT_DATE"
-	pending   = "SELECT * FROM jobs WHERE start_time > CURRENT_DATE AND finalized = false"
-	finalized = "SELECT * FROM jobs WHERE start_time > CURRENT_DATE AND finalized = true"
+	all = "SELECT * FROM jobs WHERE start_time >= @start AND start_time <= @end"
+	//pending   = "SELECT * FROM jobs WHERE start_time >= @start AND start_time <= @end AND finalized = false"
+	finalized = "SELECT * FROM jobs WHERE start_time >= @start AND start_time <= @end AND finalized = true"
 )
 
 // TODO: Figure out error handling for address errors
-func (pg *postgres) GetJobsByStatusAndRange(ctx context.Context, status string) ([]models.JobResponse, error) {
+func (pg *postgres) GetJobsByStatusAndRange(ctx context.Context, status string, start string, end string) ([]models.JobResponse, error) {
 	var jobs []models.JobResponse
 	var query string
 	switch status {
 	case "all":
 		query = all
-	case "pending":
-		query = pending
+	//case "pending":
+	//	query = pending
 	case "finalized":
 		query = finalized
 	}
 
-	rows, err := pg.db.Query(ctx, query)
+	rows, err := pg.db.Query(ctx, query, pgx.NamedArgs{"start": start, "end": end})
 
 	if err != nil {
 		return nil, err
