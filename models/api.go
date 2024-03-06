@@ -108,3 +108,16 @@ type JobResponse struct {
 	Milage     int                    `db:"milage" json:"milage"`
 	Cost       string                 `db:"cost" json:"cost"`
 }
+
+type CreateJobRequest struct {
+	CustomerID int                    `json:"customer"`
+	LoadAddr   Address                `json:"loadAddr"`
+	UnloadAddr Address                `json:"unloadAddr"`
+	StartTime  pgtype.Timestamp       `db:"start_time" json:"startTime"`
+	Rooms      map[string]interface{} `db:"rooms" json:"rooms"`
+	Pack       bool                   `db:"pack" json:"pack"`
+	Unpack     bool                   `db:"unpack" json:"unpack"`
+	Load       bool                   `db:"load" json:"load"`
+	Unload     bool                   `db:"unload" json:"unload"`
+	Clean      bool                   `db:"clean" json:"clean"`
+}

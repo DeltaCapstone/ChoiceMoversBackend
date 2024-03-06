@@ -2,10 +2,16 @@ package main
 
 import (
 	//"errors"
+	"errors"
 	"fmt"
 	"net/http"
 
 	DB "github.com/DeltaCapstone/ChoiceMoversBackend/database"
+	models "github.com/DeltaCapstone/ChoiceMoversBackend/models"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/jackc/pgx/v5/pgtype"
+
 	//"github.com/jackc/pgerrcode"
 	//"github.com/jackc/pgx/v5/pgconn"
 	"github.com/labstack/echo/v4"
@@ -26,4 +32,79 @@ func listJobs(c echo.Context) error {
 		return c.String(http.StatusNotFound, fmt.Sprintf("No jobs found with status: %v", status))
 	}
 	return c.JSON(http.StatusOK, jobs)
+}
+
+// Calculates how many hours a job should take
+func jobHours(jobRequest models.CreateJobRequest) (pgtype.Interval, error) {
+
+	return pgtype.Interval{}, nil
+}
+
+// Calculate the total cost of a job
+func jobCost(jobRequest models.CreateJobRequest, hours pgtype.Interval) (string, error) {
+
+	return "", nil
+}
+
+// Calculate the milage of a job
+func jobMilage(jobRequest models.CreateJobRequest) (int, error) {
+
+	return 0, nil
+}
+
+// Job POST Route to create a job
+func createJob(c echo.Context) error {
+	var jobRequest models.CreateJobRequest
+	// attempt at binding incoming json to a newUser
+	if err := c.Bind(&jobRequest); err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid job request data"})
+	}
+
+	hours, err := jobHours(jobRequest)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid job request data"})
+	}
+
+	cost, err := jobCost(jobRequest, hours)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid job request data"})
+	}
+
+	milage, err := jobMilage(jobRequest)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid job request data"})
+	}
+
+	args := models.Job{
+		CustomerID: jobRequest.CustomerID,
+		LoadAddr:   jobRequest.LoadAddr.AddressID,
+		UnloadAddr: jobRequest.UnloadAddr.AddressID,
+		StartTime:  jobRequest.StartTime,
+		HoursLabor: hours,
+		Finalized:  false,
+		Rooms:      jobRequest.Rooms,
+		Pack:       jobRequest.Pack,
+		Unpack:     jobRequest.Unpack,
+		Load:       jobRequest.Load,
+		Unload:     jobRequest.Unload,
+		Clean:      jobRequest.Clean,
+		Milage:     milage,
+		Cost:       cost,
+	}
+
+	user, err := DB.PgInstance.CreateJob(c.Request().Context(), args)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			switch pgErr.Code {
+			case pgerrcode.UniqueViolation:
+				fallthrough
+			case pgerrcode.NotNullViolation:
+				return c.JSON(http.StatusConflict, fmt.Sprintf("Duplicate job: %v", err))
+			}
+		}
+		return c.JSON(http.StatusInternalServerError, fmt.Sprintf("Failed to create job: %v", err))
+	}
+
+	return c.JSON(http.StatusCreated, echo.Map{"job id": user})
 }

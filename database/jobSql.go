@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"github.com/DeltaCapstone/ChoiceMoversBackend/models"
+	"github.com/DeltaCapstone/ChoiceMoversBackend/utils"
+	"github.com/jackc/pgx/v5"
 )
 
 ////////////////////////////////////////////////
@@ -89,4 +91,17 @@ func getAddr(ctx context.Context, addrID int) (models.Address, error) {
 		return a, err
 	}
 	return a, nil
+}
+
+const createJobQuery = `INSERT INTO jobs 
+(customer_id, load_addr, unload_addr, start_time, hours_labor, finalized, rooms, pack, unpack,
+	load, unload, clean, milage, cost) VALUES 
+(@customer_id, @load_addr, @unload_addr, @start_time, @hours_labor, @finalized, @rooms, @pack, @unpack,
+	@load, @unload, @clean, @milage, @cost) `
+
+func (pg *postgres) CreateJob(ctx context.Context, newJob models.Job) (string, error) {
+	rows := pg.db.QueryRow(ctx, createJobQuery, pgx.NamedArgs(utils.StructToMap(newJob, "db")))
+	var u string
+	err := rows.Scan(&u)
+	return u, err
 }
