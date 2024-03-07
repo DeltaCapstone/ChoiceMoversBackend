@@ -131,8 +131,12 @@ func createEmployee(c echo.Context) error {
 // Self routes
 // /////////////////////////////////////////
 func getEmployee(c echo.Context) error {
-	username := c.Get("username").(string)
-
+	var username string
+	if c.Get("role") == "Manager" {
+		username = c.Param("username")
+	} else {
+		username = c.Get("username").(string)
+	}
 	zap.L().Debug("getEmployee: ", zap.Any("Employee username", username))
 
 	user, err := DB.PgInstance.GetEmployeeByUsername(c.Request().Context(), username)
