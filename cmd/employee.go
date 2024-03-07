@@ -157,7 +157,7 @@ func getEmployee(c echo.Context, username string) error {
 }
 
 func updateEmployee(c echo.Context) error {
-	var updatedEmployee models.Employee
+	var updatedEmployee models.GetEmployeeResponse
 
 	// binding json to employee
 	if err := c.Bind(&updatedEmployee); err != nil {
