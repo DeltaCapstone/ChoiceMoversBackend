@@ -66,6 +66,7 @@ func (pg *postgres) GetJobsByStatusAndRange(ctx context.Context, status string, 
 		j.LoadAddr, _ = getAddr(ctx, LoadAddrID)
 		j.UnloadAddr, _ = getAddr(ctx, UnloadAddrID)
 		j.Customer, _ = pg.GetCustomerById(ctx, CustomerID)
+		j.AssignedEmp, _ = getAssignedEmployees(ctx, j.ID)
 		jobs = append(jobs, j)
 	}
 	return jobs, nil
@@ -90,4 +91,36 @@ func getAddr(ctx context.Context, addrID int) (models.Address, error) {
 		return a, err
 	}
 	return a, nil
+}
+
+const assignedEmpsQuery = `SELECT username, first_name,last_name,email,phone_primary,phone_other,employee_type
+	FROM employee_jobs JOIN employee ON employee_jobs.emp_id = employees.employee_id WHERE job_id = $1`
+
+func getAssignedEmployees(ctx context.Context, jobID int) ([]models.GetEmployeeResponse, error) {
+	var employees []models.GetEmployeeResponse
+	var rows pgx.Rows
+	var err error
+
+	rows, err = PgInstance.db.Query(ctx, assignedEmpsQuery, jobID)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var employee models.GetEmployeeResponse
+		if err := rows.Scan(
+			&employee.UserName,
+			&employee.FirstName,
+			&employee.LastName,
+			&employee.Email,
+			&employee.PhonePrimary,
+			&employee.PhoneOther,
+			&employee.EmployeeType); err != nil {
+			return nil, err
+		}
+		employees = append(employees, employee)
+	}
+	return employees, nil
 }

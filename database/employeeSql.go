@@ -57,7 +57,7 @@ func (pg *postgres) GetEmployeeList(ctx context.Context) ([]models.GetEmployeeRe
 	var err error
 
 	rows, err = pg.db.Query(ctx,
-		"SELECT username,first_name, last_name, email, phone_primary, employee_type FROM employees")
+		"SELECT username,first_name, last_name, email, phone_primary,phone_other employee_type FROM employees")
 
 	if err != nil {
 		return nil, err
@@ -66,7 +66,14 @@ func (pg *postgres) GetEmployeeList(ctx context.Context) ([]models.GetEmployeeRe
 
 	for rows.Next() {
 		var employee models.GetEmployeeResponse
-		if err := rows.Scan(&employee.UserName, &employee.FirstName, &employee.LastName, &employee.Email, &employee.PhonePrimary, &employee.EmployeeType); err != nil {
+		if err := rows.Scan(
+			&employee.UserName,
+			&employee.FirstName,
+			&employee.LastName,
+			&employee.Email,
+			&employee.PhonePrimary,
+			&employee.PhoneOther,
+			&employee.EmployeeType); err != nil {
 			return nil, err
 		}
 		employees = append(employees, employee)

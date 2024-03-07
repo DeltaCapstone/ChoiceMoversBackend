@@ -16,6 +16,7 @@ var Config = echojwt.Config{
 	SigningKey:    []byte("secret"),
 }
 
+// SHOULD THIS ID BE USER ID OR TOKEN ID???????
 type JwtCustomClaims struct {
 	Id                   int    `json:"id"`
 	UserName             string `json:"username"`
@@ -23,6 +24,7 @@ type JwtCustomClaims struct {
 	jwt.RegisteredClaims `json:"claims"`
 }
 
+// SAME????
 type JwtRefreshClaims struct {
 	Id                   int `json:"id"`
 	jwt.RegisteredClaims `json:"claims"`
