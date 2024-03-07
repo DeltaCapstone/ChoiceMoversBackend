@@ -99,7 +99,7 @@ func createJobByCustomer(c echo.Context) error {
 	}
 
 	args := models.Job{
-		CustomerID: jobRequest.CustomerID,
+		Customer:   jobRequest.UserName,
 		LoadAddr:   loadAddrID,
 		UnloadAddr: unloadAddrID,
 		StartTime:  jobRequest.StartTime,

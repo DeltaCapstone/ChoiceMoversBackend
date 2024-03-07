@@ -115,7 +115,7 @@ type JobResponse struct {
 }
 
 type CreateJobRequest struct {
-	CustomerID int                    `json:"customer"`
+	UserName   string                 `json:"customer"`
 	LoadAddr   Address                `json:"loadAddr"`
 	UnloadAddr Address                `json:"unloadAddr"`
 	StartTime  pgtype.Timestamp       `db:"start_time" json:"startTime"`
