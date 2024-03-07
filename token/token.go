@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 )
@@ -17,23 +18,24 @@ var Config = echojwt.Config{
 }
 
 type JwtCustomClaims struct {
-	Id                   int    `json:"id"`
 	UserName             string `json:"username"`
 	Role                 string `json:"role"`
+	TokenID              uuid.UUID
 	jwt.RegisteredClaims `json:"claims"`
 }
 
 type JwtRefreshClaims struct {
-	Id                   int `json:"id"`
+	UserName             string `json:"username"`
+	TokenID              uuid.UUID
 	jwt.RegisteredClaims `json:"claims"`
 }
 
-func MakeTokenPair(id int, username string, role string) (map[string]string, error) {
-	t, err := MakeToken(id, username, role)
+func MakeTokenPair(username string, role string) (map[string]string, error) {
+	t, err := MakeToken(username, role)
 	if err != nil {
 		return nil, err
 	}
-	rt, err := MakeRefreshToken(id)
+	rt, err := MakeRefreshToken(username)
 	if err != nil {
 		return nil, err
 	}
@@ -43,14 +45,19 @@ func MakeTokenPair(id int, username string, role string) (map[string]string, err
 	}, nil
 }
 
-func MakeToken(id int, username string, role string) (string, error) {
+func MakeToken(username string, role string) (string, error) {
 	// Set custom claims
+	newTokenID, err := uuid.NewRandom()
+	if err != nil {
+		return "", err
+	}
 	claims := &JwtCustomClaims{
-		id,
 		username,
 		role,
+		newTokenID,
 		jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 60)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -63,12 +70,18 @@ func MakeToken(id int, username string, role string) (string, error) {
 	return signedToken, nil
 }
 
-func MakeRefreshToken(id int) (string, error) {
+func MakeRefreshToken(username string) (string, error) {
 	// Set custom claims
+	newTokenID, err := uuid.NewRandom()
+	if err != nil {
+		return "", err
+	}
 	claims := &JwtRefreshClaims{
-		id,
+		username,
+		newTokenID,
 		jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

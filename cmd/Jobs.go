@@ -20,11 +20,16 @@ import (
 //TODO: Redo error handling to get rid of of al lthe sprintf's
 
 func listJobs(c echo.Context) error {
-	status := c.QueryParam("status")
-	if status == "" {
+	startDate := c.QueryParam("start")
+	endDate := c.QueryParam("end")
+	var status string
+	if c.Get("role").(string) == "Manager" {
 		status = "all"
+	} else {
+		status = "finalized"
 	}
-	jobs, err := DB.PgInstance.GetJobsByStatusAndRange(c.Request().Context(), status)
+
+	jobs, err := DB.PgInstance.GetJobsByStatusAndRange(c.Request().Context(), status, startDate, endDate)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error retrieving data: %v", err))
 	}

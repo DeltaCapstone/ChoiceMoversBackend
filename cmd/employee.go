@@ -40,7 +40,7 @@ func employeeMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		c.Set("username", claims.UserName)
 		c.Set("role", claims.Role)
 		//return c.String(http.StatusFound, fmt.Sprintf("your role is %v", role))
-		if (role != "Full-time") && (role != "Part-Time") && (role != "Manager") {
+		if (role != "Full-time") && (role != "Part-time") && (role != "Manager") {
 			return echo.NewHTTPError(http.StatusUnauthorized, "Unauthorized")
 		}
 		return next(c)
@@ -130,8 +130,18 @@ func createEmployee(c echo.Context) error {
 // /////////////////////////////////////////
 // Self routes
 // /////////////////////////////////////////
-func getEmployee(c echo.Context) error {
-	username := c.Get("username").(string)
+
+// wrapper for getEmployee when used with employee/profile
+func viewMyEmployeeProfile(c echo.Context) error {
+	return getEmployee(c, c.Get("username").(string))
+}
+
+// wrapper for getEmployee when used with manager/employee/:username
+func viewSomeEmployee(c echo.Context) error {
+	return getEmployee(c, c.Param("username"))
+}
+
+func getEmployee(c echo.Context, username string) error {
 
 	zap.L().Debug("getEmployee: ", zap.Any("Employee username", username))
 
@@ -147,7 +157,7 @@ func getEmployee(c echo.Context) error {
 }
 
 func updateEmployee(c echo.Context) error {
-	var updatedEmployee models.Employee
+	var updatedEmployee models.GetEmployeeResponse
 
 	// binding json to employee
 	if err := c.Bind(&updatedEmployee); err != nil {
@@ -178,7 +188,7 @@ func employeeLogin(c echo.Context) error {
 	}
 
 	// Get the customer with the username that was submitted
-	id, hash, err := DB.PgInstance.GetEmployeeCredentials(c.Request().Context(), employeeLogin.UserName)
+	hash, err := DB.PgInstance.GetEmployeeCredentials(c.Request().Context(), employeeLogin.UserName)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error retrieving data: %v", err))
 	}
@@ -198,7 +208,7 @@ func employeeLogin(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "Could not deterimine role")
 	}
 
-	token, err := token.MakeTokenPair(id, employeeLogin.UserName, role)
+	token, err := token.MakeToken(employeeLogin.UserName, role)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "Error creating token")
 	}

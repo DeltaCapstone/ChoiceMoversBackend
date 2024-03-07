@@ -4,7 +4,6 @@ BEGIN;
 
 CREATE TABLE IF NOT EXISTS public.customers
 (
-	customer_id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
     username character varying(255) UNIQUE NOT NULL,
     password_hash character varying(60) NOT NULL,  --bcrypt
     first_name character varying(255) NOT NULL,
@@ -12,7 +11,7 @@ CREATE TABLE IF NOT EXISTS public.customers
     email character varying(255) UNIQUE NOT NULL,
     phone_primary text NOT NULL,
     phone_other text[],
-    PRIMARY KEY (customer_id)
+    PRIMARY KEY (username)
 );
 
 DO $$
@@ -27,7 +26,6 @@ END$$;
 
 CREATE TABLE IF NOT EXISTS public.employees
 (
-    employee_id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
     username character varying(255) UNIQUE NOT NULL,
     password_hash character varying(60) NOT NULL,  --bcrypt
     first_name character varying(255) NOT NULL,
@@ -36,13 +34,14 @@ CREATE TABLE IF NOT EXISTS public.employees
     phone_primary text NOT NULL,
     phone_other text[],
     employee_type Employee_type NOT NULL,
-    PRIMARY KEY (employee_id)
+    employee_priority integer NOT NULL,
+    PRIMARY KEY (username)
 );
 
 CREATE TABLE IF NOT EXISTS public.jobs
 (
     job_id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
-    customer_id integer NOT NULL,
+    customer_username character varying,
     load_addr integer,
     unload_addr integer,
     start_time timestamp with time zone,
@@ -56,17 +55,19 @@ CREATE TABLE IF NOT EXISTS public.jobs
     clean boolean NOT NULL DEFAULT False,
     milage integer NOT NULL DEFAULT 0,
     cost money NOT NULL DEFAULT 0,
+    notes TEXT,
     PRIMARY KEY (job_id)
 );
 
 CREATE TABLE IF NOT EXISTS public.addresses
 (
-    address_id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 ),
+    address_id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
     street character varying NOT NULL,
     city character varying NOT NULL,
     state character varying NOT NULL,
     zip character varying NOT NULL,
     res_type Residence_type NOT NULL,
+    square_feet integer,
     flights integer NOT NULL DEFAULT 0,
     apt_num character varying NOT NULL,
     PRIMARY KEY (address_id)
@@ -74,11 +75,10 @@ CREATE TABLE IF NOT EXISTS public.addresses
 
 CREATE TABLE IF NOT EXISTS public.employee_jobs
 (
-    emp_id integer,
+    employee_username character varying,
     job_id integer,
-    requested boolean,
-    assigned boolean,
-    PRIMARY KEY (emp_id, job_id)
+    manager_override boolean,
+    PRIMARY KEY (employee_username, job_id)
 );
 
 ALTER TABLE IF EXISTS public.jobs
@@ -98,16 +98,16 @@ ALTER TABLE IF EXISTS public.jobs
 
 
 ALTER TABLE IF EXISTS public.jobs
-    ADD FOREIGN KEY (customer_id)
-    REFERENCES public.customers (customer_id) MATCH SIMPLE
+    ADD FOREIGN KEY (customer_username)
+    REFERENCES public.customers (username) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
 
 ALTER TABLE IF EXISTS public.employee_jobs
-    ADD FOREIGN KEY (emp_id)
-    REFERENCES public.employees (employee_id) MATCH SIMPLE
+    ADD FOREIGN KEY (employee_username)
+    REFERENCES public.employees (username) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;

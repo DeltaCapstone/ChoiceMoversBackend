@@ -12,25 +12,25 @@ import (
 //Jobs
 
 const (
-	all       = "SELECT * FROM jobs WHERE start_time > CURRENT_DATE"
-	pending   = "SELECT * FROM jobs WHERE start_time > CURRENT_DATE AND finalized = false"
-	finalized = "SELECT * FROM jobs WHERE start_time > CURRENT_DATE AND finalized = true"
+	all = "SELECT * FROM jobs WHERE start_time >= @start AND start_time <= @end"
+	//pending   = "SELECT * FROM jobs WHERE start_time >= @start AND start_time <= @end AND finalized = false"
+	finalized = "SELECT * FROM jobs WHERE start_time >= @start AND start_time <= @end AND finalized = true"
 )
 
 // TODO: Figure out error handling for address errors
-func (pg *postgres) GetJobsByStatusAndRange(ctx context.Context, status string) ([]models.JobResponse, error) {
+func (pg *postgres) GetJobsByStatusAndRange(ctx context.Context, status string, start string, end string) ([]models.JobResponse, error) {
 	var jobs []models.JobResponse
 	var query string
 	switch status {
 	case "all":
 		query = all
-	case "pending":
-		query = pending
+	//case "pending":
+	//	query = pending
 	case "finalized":
 		query = finalized
 	}
 
-	rows, err := pg.db.Query(ctx, query)
+	rows, err := pg.db.Query(ctx, query, pgx.NamedArgs{"start": start, "end": end})
 
 	if err != nil {
 		return nil, err
@@ -40,13 +40,13 @@ func (pg *postgres) GetJobsByStatusAndRange(ctx context.Context, status string) 
 	var (
 		LoadAddrID   int
 		UnloadAddrID int
-		CustomerID   int
+		Customer     string
 	)
 	for rows.Next() {
 		var j models.JobResponse
 		if err := rows.Scan(
 			&j.ID,
-			&CustomerID,
+			&Customer,
 			&LoadAddrID,
 			&UnloadAddrID,
 			&j.StartTime,
@@ -66,7 +66,8 @@ func (pg *postgres) GetJobsByStatusAndRange(ctx context.Context, status string) 
 		//need to figure out error handling here
 		j.LoadAddr, _ = getAddr(ctx, LoadAddrID)
 		j.UnloadAddr, _ = getAddr(ctx, UnloadAddrID)
-		j.Customer, _ = pg.GetCustomerById(ctx, CustomerID)
+		j.Customer, _ = pg.GetCustomerByUserName(ctx, Customer)
+		j.AssignedEmp, _ = getAssignedEmployees(ctx, j.ID)
 		jobs = append(jobs, j)
 	}
 	return jobs, nil
@@ -84,6 +85,7 @@ func getAddr(ctx context.Context, addrID int) (models.Address, error) {
 		&a.State,
 		&a.Zip,
 		&a.ResType,
+		&a.SquareFeet,
 		&a.Flights,
 		&a.AptNum,
 	)
@@ -104,4 +106,37 @@ func (pg *postgres) CreateJob(ctx context.Context, newJob models.Job) (string, e
 	var u string
 	err := rows.Scan(&u)
 	return u, err
+}
+
+const assignedEmpsQuery = `SELECT username, first_name,last_name,email,phone_primary,phone_other,employee_type, employee_priority
+	FROM employee_jobs JOIN employee ON employee_jobs.employee_username = employees.username WHERE job_id = $1`
+
+func getAssignedEmployees(ctx context.Context, jobID int) ([]models.GetEmployeeResponse, error) {
+	var employees []models.GetEmployeeResponse
+	var rows pgx.Rows
+	var err error
+
+	rows, err = PgInstance.db.Query(ctx, assignedEmpsQuery, jobID)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var employee models.GetEmployeeResponse
+		if err := rows.Scan(
+			&employee.UserName,
+			&employee.FirstName,
+			&employee.LastName,
+			&employee.Email,
+			&employee.PhonePrimary,
+			&employee.PhoneOther,
+			&employee.EmployeeType,
+			&employee.EmployeePriority); err != nil {
+			return nil, err
+		}
+		employees = append(employees, employee)
+	}
+	return employees, nil
 }

@@ -10,38 +10,32 @@ import (
 
 // /////////////////////////////////////////////////////////////////////////////////////////////////
 // Customer Route Queries
-func (pg *postgres) GetCustomerById(ctx context.Context, id int) (models.GetCustomerResponse, error) {
+
+func (pg *postgres) GetCustomerCredentials(ctx context.Context, userName string) (string, error) {
+	var hash string
+	row := pg.db.QueryRow(ctx,
+		`SELECT password_hash FROM customers WHERE username = $1`, userName)
+
+	if err := row.Scan(&hash); err != nil {
+		return "", err
+	}
+	return hash, nil
+}
+
+func (pg *postgres) GetCustomerByUserName(ctx context.Context, userName string) (models.GetCustomerResponse, error) {
 	var customer models.GetCustomerResponse
 	row := pg.db.QueryRow(ctx,
-		`SELECT username, first_name, last_name, 
-		email, phone_primary, phone_other FROM customers WHERE customer_id = $1`, id)
+		`SELECT username,first_name, last_name, 
+		email, phone_primary, phone_other FROM customers WHERE username = $1`, userName)
 
-	if err := row.Scan(&customer.UserName, &customer.FirstName, &customer.LastName, &customer.Email, &customer.PhonePrimary, &customer.PhoneOther); err != nil {
-		return customer, err
-	}
-	return customer, nil
-}
-
-func (pg *postgres) GetCustomerCredentials(ctx context.Context, userName string) (int, string, error) {
-	var hash string
-	var id int
-	row := pg.db.QueryRow(ctx,
-		`SELECT customer_id,password_hash FROM customers WHERE username = $1`, userName)
-
-	if err := row.Scan(&id, &hash); err != nil {
-		return 0, "", err
-	}
-	return id, hash, nil
-}
-
-func (pg *postgres) GetCustomerByUserName(ctx context.Context, userName string) (models.Customer, error) {
-	var customer models.Customer
-	row := pg.db.QueryRow(ctx,
-		`SELECT customer_id, username,first_name, last_name, 
-		email, phone_primary FROM customers WHERE username = $1`, userName)
-
-	if err := row.Scan(&customer.ID, &customer.UserName, &customer.FirstName, &customer.LastName, &customer.Email, &customer.PhonePrimary); err != nil {
-		return customer, err
+	if err := row.Scan(
+		&customer.UserName,
+		&customer.FirstName,
+		&customer.LastName,
+		&customer.Email,
+		&customer.PhonePrimary,
+		&customer.PhoneOther); err != nil {
+		return models.GetCustomerResponse{}, err
 	}
 	return customer, nil
 }
@@ -61,7 +55,7 @@ func (pg *postgres) CreateCustomer(ctx context.Context, newCustomer models.Creat
 const updateCustomerQuery = `
 UPDATE customers
 SET username = $1, password_hash = $2, first_name = $3, last_name = $4, email =$5, phone_primary = $6, phone_other = $7
-WHERE customer_id = $8
+WHERE username = $1
 `
 
 func (pg *postgres) UpdateCustomer(ctx context.Context, updatedCustomer models.Customer) error {

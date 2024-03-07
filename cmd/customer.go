@@ -120,12 +120,10 @@ func customerLogin(c echo.Context) error {
 	}
 
 	// Get the customer with the username that was submitted
-	id, hash, err := DB.PgInstance.GetCustomerCredentials(c.Request().Context(), customerLogin.UserName)
+	hash, err := DB.PgInstance.GetCustomerCredentials(c.Request().Context(), customerLogin.UserName)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error retrieving data: %v", err))
 	}
-
-	// Check that the user exists
 
 	if hash == "" {
 		return c.String(http.StatusNotFound, fmt.Sprintf("No user found with username: %v", customerLogin.UserName))
@@ -137,7 +135,7 @@ func customerLogin(c echo.Context) error {
 		//return echo.ErrUnauthorized
 	}
 
-	token, err := token.MakeToken(id, customerLogin.UserName, "Customer")
+	token, err := token.MakeToken(customerLogin.UserName, "Customer")
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "Error creating token")
 	}

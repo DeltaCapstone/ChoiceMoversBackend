@@ -26,10 +26,9 @@ func CreateRoutes(e *echo.Echo) {
 	// Group for employee routes
 	employeeGroup := e.Group("/employee")
 	employeeGroup.Use(echojwt.WithConfig(token.Config), employeeMiddleware)
-	employeeGroup.GET("/profile", getEmployee)    // Employee views their own
-	employeeGroup.PUT("/profile", updateEmployee) // Update my account
-	employeeGroup.GET("/jobs", listJobs)          // View list of jobs by status (?status= pending, confirmed, all)
-	//need to figure out how to limit query options for employees vs managers
+	employeeGroup.GET("/profile", viewMyEmployeeProfile) // Employee views their own
+	employeeGroup.PUT("/profile", updateEmployee)        // Update my account
+	employeeGroup.GET("/jobs", listJobs)                 // View list of jobs by status (?status= pending, confirmed, all)
 	//employeeGroup.POST("/jobs/requestJobAssign/:job_id", requstAssign)
 
 	// Group for manager routes
@@ -37,7 +36,7 @@ func CreateRoutes(e *echo.Echo) {
 	managerGroup.Use(echojwt.WithConfig(token.Config), managerMiddleware) // Add a middleware for manager authentication
 	managerGroup.GET("/employee", listEmployees)                          // Manager view employees
 	managerGroup.POST("/employee", createEmployee)
-	//managerGroup.GET("/employee/:username", viewEmployee)             // Manager views employee info
+	managerGroup.GET("/employee/:username", viewSomeEmployee)  // Manager views employee info
 	managerGroup.DELETE("/employee/:username", deleteEmployee) // Manager adds new employee
 	//managerGroup.PUT("/employee/:username", editEmployee)		//manager makes changes  to employee
 	//managerGroup.POST("/job", createJob)           // Manager creates a job, needed for cases where a customer call in or a job is recieved from Uhaul for example
