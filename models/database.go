@@ -5,7 +5,6 @@ import (
 )
 
 type Customer struct {
-	ID           int           `db:"customer_id,omitempty" json:"customer,omitempty"`
 	UserName     string        `db:"username" json:"userName"`
 	PasswordHash string        `db:"password_hash" json:"passwordHash"`
 	FirstName    string        `db:"first_name" json:"firstName"`
@@ -25,15 +24,15 @@ const (
 )
 
 type Employee struct {
-	ID           int           `db:"employee_id,omitempty" json:"employeeId,omitempty"`
-	UserName     string        `db:"username" json:"userName"`
-	PasswordHash string        `db:"password_hash" json:"passwordHash"`
-	FirstName    string        `db:"first_name" json:"firstName"`
-	LastName     string        `db:"last_name" json:"lastName"`
-	Email        string        `db:"email" json:"email"`
-	PhonePrimary pgtype.Text   `db:"phone_primary" json:"phonePrimary"`
-	PhoneOther   []pgtype.Text `db:"phone_other" json:"phoneOther"`
-	EmployeeType EmployeeType  `db:"employee_type" json:"employeeType"`
+	UserName         string        `db:"username" json:"userName"`
+	PasswordHash     string        `db:"password_hash" json:"passwordHash"`
+	FirstName        string        `db:"first_name" json:"firstName"`
+	LastName         string        `db:"last_name" json:"lastName"`
+	Email            string        `db:"email" json:"email"`
+	PhonePrimary     pgtype.Text   `db:"phone_primary" json:"phonePrimary"`
+	PhoneOther       []pgtype.Text `db:"phone_other" json:"phoneOther"`
+	EmployeeType     EmployeeType  `db:"employee_type" json:"employeeType"`
+	EmployeePriority int           `db:"employee_priority" json:"employeePriority"`
 }
 
 type ResidenceType string
@@ -48,19 +47,20 @@ const (
 )
 
 type Address struct {
-	AddressID int           `db:"address_id,omitempty" json:"addressId"`
-	Street    string        `db:"street" json:"street"`
-	City      string        `db:"city" json:"city"`
-	State     string        `db:"state" json:"state"`
-	Zip       string        `db:"zip" json:"zip"`
-	ResType   ResidenceType `db:"res_type" json:"resType"`
-	Flights   int           `db:"flights" json:"flights"`
-	AptNum    string        `db:"apt_num" json:"aptNum"`
+	AddressID  int           `db:"address_id,omitempty" json:"addressId"`
+	Street     string        `db:"street" json:"street"`
+	City       string        `db:"city" json:"city"`
+	State      string        `db:"state" json:"state"`
+	Zip        string        `db:"zip" json:"zip"`
+	ResType    ResidenceType `db:"res_type" json:"resType"`
+	SquareFeet int           `db:"square_feet" json:"sqareFeet"`
+	Flights    int           `db:"flights" json:"flights"`
+	AptNum     string        `db:"apt_num" json:"aptNum"`
 }
 
 type Job struct {
 	ID         int                    `db:"job_id" json:"id"`
-	CustomerID int                    `db:"customer_id" json:"customerId"`
+	Customer   string                 `db:"customer_username" json:"customerUsername"`
 	LoadAddr   int                    `db:"load_addr" json:"loadAddr"`
 	UnloadAddr int                    `db:"unload_addr" json:"unloadAddr"`
 	StartTime  pgtype.Timestamp       `db:"start_time" json:"startTime"`
@@ -73,5 +73,6 @@ type Job struct {
 	Unload     bool                   `db:"unload" json:"unload"`
 	Clean      bool                   `db:"clean" json:"clean"`
 	Milage     int                    `db:"milage" json:"milage"`
+	Notes      pgtype.Text            `db:"notes" json:"notes"`
 	Cost       string                 `db:"cost" json:"cost"`
 }

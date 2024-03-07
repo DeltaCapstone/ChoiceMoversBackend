@@ -39,13 +39,13 @@ func (pg *postgres) GetJobsByStatusAndRange(ctx context.Context, status string, 
 	var (
 		LoadAddrID   int
 		UnloadAddrID int
-		CustomerID   int
+		Customer     string
 	)
 	for rows.Next() {
 		var j models.JobResponse
 		if err := rows.Scan(
 			&j.ID,
-			&CustomerID,
+			&Customer,
 			&LoadAddrID,
 			&UnloadAddrID,
 			&j.StartTime,
@@ -65,7 +65,7 @@ func (pg *postgres) GetJobsByStatusAndRange(ctx context.Context, status string, 
 		//need to figure out error handling here
 		j.LoadAddr, _ = getAddr(ctx, LoadAddrID)
 		j.UnloadAddr, _ = getAddr(ctx, UnloadAddrID)
-		j.Customer, _ = pg.GetCustomerById(ctx, CustomerID)
+		j.Customer, _ = pg.GetCustomerByUserName(ctx, Customer)
 		j.AssignedEmp, _ = getAssignedEmployees(ctx, j.ID)
 		jobs = append(jobs, j)
 	}
@@ -84,6 +84,7 @@ func getAddr(ctx context.Context, addrID int) (models.Address, error) {
 		&a.State,
 		&a.Zip,
 		&a.ResType,
+		&a.SquareFeet,
 		&a.Flights,
 		&a.AptNum,
 	)
@@ -93,8 +94,8 @@ func getAddr(ctx context.Context, addrID int) (models.Address, error) {
 	return a, nil
 }
 
-const assignedEmpsQuery = `SELECT username, first_name,last_name,email,phone_primary,phone_other,employee_type
-	FROM employee_jobs JOIN employee ON employee_jobs.emp_id = employees.employee_id WHERE job_id = $1`
+const assignedEmpsQuery = `SELECT username, first_name,last_name,email,phone_primary,phone_other,employee_type, employee_priority
+	FROM employee_jobs JOIN employee ON employee_jobs.employee_username = employees.username WHERE job_id = $1`
 
 func getAssignedEmployees(ctx context.Context, jobID int) ([]models.GetEmployeeResponse, error) {
 	var employees []models.GetEmployeeResponse
@@ -117,7 +118,8 @@ func getAssignedEmployees(ctx context.Context, jobID int) ([]models.GetEmployeeR
 			&employee.Email,
 			&employee.PhonePrimary,
 			&employee.PhoneOther,
-			&employee.EmployeeType); err != nil {
+			&employee.EmployeeType,
+			&employee.EmployeePriority); err != nil {
 			return nil, err
 		}
 		employees = append(employees, employee)

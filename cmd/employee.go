@@ -188,7 +188,7 @@ func employeeLogin(c echo.Context) error {
 	}
 
 	// Get the customer with the username that was submitted
-	id, hash, err := DB.PgInstance.GetEmployeeCredentials(c.Request().Context(), employeeLogin.UserName)
+	hash, err := DB.PgInstance.GetEmployeeCredentials(c.Request().Context(), employeeLogin.UserName)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error retrieving data: %v", err))
 	}
@@ -208,7 +208,7 @@ func employeeLogin(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "Could not deterimine role")
 	}
 
-	token, err := token.MakeToken(id, employeeLogin.UserName, role)
+	token, err := token.MakeToken(employeeLogin.UserName, role)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "Error creating token")
 	}
