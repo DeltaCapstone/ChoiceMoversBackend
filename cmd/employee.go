@@ -130,13 +130,19 @@ func createEmployee(c echo.Context) error {
 // /////////////////////////////////////////
 // Self routes
 // /////////////////////////////////////////
-func getEmployee(c echo.Context) error {
-	var username string
-	if c.Get("role") == "Manager" {
-		username = c.Param("username")
-	} else {
-		username = c.Get("username").(string)
-	}
+
+// wrapper for getEmployee when used with employee/profile
+func viewMyEmployeeProfile(c echo.Context) error {
+	return getEmployee(c, c.Get("username").(string))
+}
+
+// wrapper for getEmployee when used with manager/employee/:username
+func viewSomeEmployee(c echo.Context) error {
+	return getEmployee(c, c.Param("username"))
+}
+
+func getEmployee(c echo.Context, username string) error {
+
 	zap.L().Debug("getEmployee: ", zap.Any("Employee username", username))
 
 	user, err := DB.PgInstance.GetEmployeeByUsername(c.Request().Context(), username)
