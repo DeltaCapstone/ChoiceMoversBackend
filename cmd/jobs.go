@@ -39,9 +39,21 @@ func listJobs(c echo.Context) error {
 	return c.JSON(http.StatusOK, jobs)
 }
 
-func createAddress(address models.Address) (int, error) {
-
-	return 0, nil
+func createAddress(address models.Address, c echo.Context) (int, error) {
+	addr_id, err := DB.PgInstance.CreateAddress(c.Request().Context(), address)
+	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			switch pgErr.Code {
+			case pgerrcode.UniqueViolation:
+				fallthrough
+			case pgerrcode.NotNullViolation:
+				return 0, err
+			}
+		}
+		return 0, err
+	}
+	return addr_id, nil
 }
 
 // Calculates how many hours a job should take
@@ -70,12 +82,12 @@ func createJobByCustomer(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid job request data"})
 	}
 
-	loadAddrID, err := createAddress(jobRequest.LoadAddr)
+	loadAddrID, err := createAddress(jobRequest.LoadAddr, c)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid job request data"})
 	}
 
-	unloadAddrID, err := createAddress(jobRequest.UnloadAddr)
+	unloadAddrID, err := createAddress(jobRequest.UnloadAddr, c)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid job request data"})
 	}
@@ -115,7 +127,7 @@ func createJobByCustomer(c echo.Context) error {
 		Cost:       cost,
 	}
 
-	user, err := DB.PgInstance.CreateJob(c.Request().Context(), args)
+	job_id, err := DB.PgInstance.CreateJob(c.Request().Context(), args)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
@@ -129,5 +141,5 @@ func createJobByCustomer(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, fmt.Sprintf("Failed to create job: %v", err))
 	}
 
-	return c.JSON(http.StatusCreated, echo.Map{"job id": user})
+	return c.JSON(http.StatusCreated, echo.Map{"job id": job_id})
 }

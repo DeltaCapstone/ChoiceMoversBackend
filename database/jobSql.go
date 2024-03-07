@@ -2,6 +2,7 @@ package DB
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/DeltaCapstone/ChoiceMoversBackend/models"
 	"github.com/DeltaCapstone/ChoiceMoversBackend/utils"
@@ -139,4 +140,16 @@ func getAssignedEmployees(ctx context.Context, jobID int) ([]models.GetEmployeeR
 		employees = append(employees, employee)
 	}
 	return employees, nil
+}
+
+const createAddress = `INSERT INTO addresses 
+(street, city, state, ip, res_type, square_feet, flights, apt_num) VALUES 
+(@street, @city, @state, @ip, @res_type, @square_feet, @flights, @apt_num) RETURNING address_id`
+
+func (pg *postgres) CreateAddress(ctx context.Context, newJob models.Address) (int, error) {
+	rows := pg.db.QueryRow(ctx, createAddress, pgx.NamedArgs(utils.StructToMap(newJob, "db")))
+	var u string
+	err := rows.Scan(&u)
+	id, _ := strconv.Atoi(u)
+	return id, err
 }
