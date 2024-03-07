@@ -18,7 +18,7 @@ func CreateRoutes(e *echo.Echo) {
 	customerGroup.PUT("/profile", updateCustomer) //update my account
 	//customerGroup.DELETE("/:username", deleteCustomer) //delete my account
 	//customerGroup.GET("/job", getCustomerJobs)
-	//customerGroup.POST("/job", createJobByCustomer)
+	customerGroup.POST("/job", createJobByCustomer)
 	//customerGroup.PUT("/job/:job_id", updateJobByCustomer)
 
 	e.POST("/portal/login", employeeLogin) // Login

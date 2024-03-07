@@ -34,7 +34,7 @@ func listJobs(c echo.Context) error {
 	return c.JSON(http.StatusOK, jobs)
 }
 
-func createOrFindAddress(address models.Address) (int, error) {
+func createAddress(address models.Address) (int, error) {
 
 	return 0, nil
 }
@@ -45,32 +45,32 @@ func jobHours(jobRequest models.CreateJobRequest) (pgtype.Interval, error) {
 	return pgtype.Interval{}, nil
 }
 
-// Calculate the total cost of a job
-func jobCost(jobRequest models.CreateJobRequest, hours pgtype.Interval, milage int) (string, error) {
-
-	return "", nil
-}
-
 // Calculate the milage of a job
 func jobMilage(jobRequest models.CreateJobRequest) (int, error) {
 
 	return 0, nil
 }
 
+// Calculate the total cost of a job
+func jobCost(jobRequest models.CreateJobRequest, hours pgtype.Interval, milage int) (string, error) {
+
+	return "", nil
+}
+
 // Job POST Route to create a job
-func CreateJob(c echo.Context) error {
+func createJobByCustomer(c echo.Context) error {
 	var jobRequest models.CreateJobRequest
 	// attempt at binding incoming json to a jobRequest
 	if err := c.Bind(&jobRequest); err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid job request data"})
 	}
 
-	loadAddrID, err := createOrFindAddress(jobRequest.LoadAddr)
+	loadAddrID, err := createAddress(jobRequest.LoadAddr)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid job request data"})
 	}
 
-	unloadAddrID, err := createOrFindAddress(jobRequest.UnloadAddr)
+	unloadAddrID, err := createAddress(jobRequest.UnloadAddr)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid job request data"})
 	}
