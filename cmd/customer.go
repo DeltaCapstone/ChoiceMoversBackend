@@ -92,13 +92,16 @@ func createCustomer(c echo.Context) error {
 }
 
 func updateCustomer(c echo.Context) error {
-	var updatedCustomer models.Customer
+	var updatedCustomer models.UpdateCustomerParams
 	// binding request
 	if err := c.Bind(&updatedCustomer); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid input")
 	}
 
 	//verify username on token matches username in struct
+	if c.Get("username") != updatedCustomer.UserName {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid input: username doesnt match")
+	}
 
 	// update operation
 	err := DB.PgInstance.UpdateCustomer(c.Request().Context(), updatedCustomer)

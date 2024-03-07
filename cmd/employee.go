@@ -157,7 +157,7 @@ func getEmployee(c echo.Context, username string) error {
 }
 
 func updateEmployee(c echo.Context) error {
-	var updatedEmployee models.GetEmployeeResponse
+	var updatedEmployee models.UpdateEmployeeParams
 
 	// binding json to employee
 	if err := c.Bind(&updatedEmployee); err != nil {
@@ -166,7 +166,9 @@ func updateEmployee(c echo.Context) error {
 
 	zap.L().Debug("updateEmployee: ", zap.Any("Updated employee", updatedEmployee))
 
-	//verify username on token matches username in struct
+	if c.Get("username") != updatedEmployee.UserName {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid input: username doesnt match")
+	}
 
 	// update operation
 	err := DB.PgInstance.UpdateEmployee(c.Request().Context(), updatedEmployee)
@@ -176,6 +178,17 @@ func updateEmployee(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to update employee")
 	}
 
+	return c.JSON(http.StatusOK, "Employee updated")
+}
+
+func updateEmployeeTypePriority(c echo.Context) error {
+	var updatedEmployee models.UpdateEmployeeTypePriorityParams
+	if err := c.Bind(&updatedEmployee); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid input")
+	}
+	zap.L().Debug("updateEmployee: ", zap.Any("Updated employee", updatedEmployee))
+
+	//db querry
 	return c.JSON(http.StatusOK, "Employee updated")
 }
 
