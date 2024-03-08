@@ -59,10 +59,11 @@ func listEmployees(c echo.Context) error {
 	//id := c.QueryParam("id")
 	users, err := DB.PgInstance.GetEmployeeList(c.Request().Context())
 	if err != nil {
-		zap.L().Sugar().Errorf("Failed to list employees: ", err.Error())
+		zap.L().Sugar().Errorf("Error querying db for employess: ", err.Error())
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error retrieving data: %v", err))
 	}
 	if users == nil {
+		zap.L().Sugar().Errorf("No Employees Found: ")
 		return c.String(http.StatusNotFound, "No no employees found.")
 	}
 	return c.JSON(http.StatusOK, users)
@@ -85,7 +86,7 @@ func createEmployee(c echo.Context) error {
 	var newEmployee models.CreateEmployeeRequest
 	// attempt at binding incoming json to a newUser
 	if err := c.Bind(&newEmployee); err != nil {
-		zap.L().Sugar().Errorf("Failed to create employee: ", err.Error())
+		zap.L().Sugar().Errorf("Incorrect data format for creating employee: ", err.Error())
 		return c.JSON(http.StatusBadRequest, echo.Map{"Bind error": "Invalid user data"})
 	}
 
@@ -97,14 +98,15 @@ func createEmployee(c echo.Context) error {
 	hashedPassword, _ := utils.HashPassword(newEmployee.PasswordPlain)
 
 	args := models.CreateEmployeeParams{
-		UserName:     newEmployee.UserName,
-		PasswordHash: hashedPassword,
-		FirstName:    newEmployee.FirstName,
-		LastName:     newEmployee.LastName,
-		Email:        newEmployee.Email,
-		PhonePrimary: newEmployee.PhonePrimary,
-		PhoneOther:   newEmployee.PhoneOther,
-		EmployeeType: newEmployee.EmployeeType,
+		UserName:         newEmployee.UserName,
+		PasswordHash:     hashedPassword,
+		FirstName:        newEmployee.FirstName,
+		LastName:         newEmployee.LastName,
+		Email:            newEmployee.Email,
+		PhonePrimary:     newEmployee.PhonePrimary,
+		PhoneOther:       newEmployee.PhoneOther,
+		EmployeeType:     newEmployee.EmployeeType,
+		EmployeePriority: newEmployee.EmployeePriority,
 	}
 
 	// validation stuff probably needed
@@ -120,7 +122,7 @@ func createEmployee(c echo.Context) error {
 				return c.JSON(http.StatusConflict, fmt.Sprintf("username or email already in use: %v", err))
 			}
 		}
-		zap.L().Sugar().Errorf("Failed to create employee: ", err.Error())
+		zap.L().Sugar().Errorf("Error adding employee to db: ", err.Error())
 		return c.JSON(http.StatusInternalServerError, fmt.Sprintf("Failed to create employee: %v", err))
 	}
 
@@ -151,7 +153,7 @@ func getEmployee(c echo.Context, username string) error {
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error retrieving data: %v", err))
 	}
 	if user.UserName == "" {
-		return c.String(http.StatusNotFound, fmt.Sprintf("No user found with id: %v", username))
+		return c.String(http.StatusNotFound, fmt.Sprintf("No user found with username: %v", username))
 	}
 	return c.JSON(http.StatusOK, user)
 }
@@ -168,14 +170,14 @@ func updateEmployee(c echo.Context) error {
 	zap.L().Debug("updateEmployee: ", zap.Any("Updated employee", updatedEmployee))
 
 	if c.Get("username") != updatedEmployee.UserName {
+		zap.L().Sugar().Errorf("Token username does not match updateEmployeeParams. ")
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid input: username doesnt match")
 	}
 
 	// update operation
 	err := DB.PgInstance.UpdateEmployee(c.Request().Context(), updatedEmployee)
 	if err != nil {
-		zap.L().Sugar().Errorf("Failed to update employee: ", err.Error())
-		// return internal server error if update fails
+		zap.L().Sugar().Errorf("Failed to update employee in db: ", err.Error())
 		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to update employee")
 	}
 
@@ -198,32 +200,36 @@ func employeeLogin(c echo.Context) error {
 
 	// bind request data to the CustomerLoginRequest struct
 	if err := c.Bind(&employeeLogin); err != nil {
+		zap.L().Sugar().Errorf("Invalid loggin request format: ", err.Error())
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid input")
 	}
 
 	// Get the customer with the username that was submitted
 	hash, err := DB.PgInstance.GetEmployeeCredentials(c.Request().Context(), employeeLogin.UserName)
 	if err != nil {
+		zap.L().Sugar().Errorf("Could not retrieve credentials for comparison: ", err.Error())
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error retrieving data: %v", err))
 	}
 
-	// Check that the user exists
-
 	if hash == "" {
+		zap.L().Sugar().Errorf("could not find employee with that username. ")
 		return c.String(http.StatusNotFound, fmt.Sprintf("No user found with username: %v", employeeLogin.UserName))
 		//return echo.ErrUnauthorized
 	}
 	err = bcrypt.CompareHashAndPassword([]byte(hash), []byte(employeeLogin.PasswordPlain))
 	if err != nil {
+		zap.L().Sugar().Errorf("Wrong password supplied: ", err.Error())
 		return c.String(http.StatusNotFound, fmt.Sprintf("Incorrect password for user with username: %v ", employeeLogin.UserName))
 	}
 	role, err := DB.PgInstance.GetEmployeeRole(c.Request().Context(), employeeLogin.UserName)
 	if err != nil {
+		zap.L().Sugar().Errorf("Could not retrieve role: ", err.Error())
 		return c.String(http.StatusInternalServerError, "Could not deterimine role")
 	}
 
 	token, err := token.MakeToken(employeeLogin.UserName, role)
 	if err != nil {
+		zap.L().Sugar().Errorf("problem making token: ", err.Error())
 		return c.String(http.StatusInternalServerError, "Error creating token")
 	}
 	return c.JSON(http.StatusOK, echo.Map{"accessToken": token})
