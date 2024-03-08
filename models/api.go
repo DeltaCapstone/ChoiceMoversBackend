@@ -45,7 +45,7 @@ type UpdateEmployeeTypePriorityParams struct {
 	EmployeePriority int    `db:"employee_priority" json:"employeePriority"`
 }
 
-type UpdateEmplyeePassowrdRequest struct {
+type UpdateEmployeePasswordRequest struct {
 	UserName    string `json:"userName"`
 	PasswordOld string `json:"passwordOld"`
 	PasswordNew string `json:"passwordNew"`
