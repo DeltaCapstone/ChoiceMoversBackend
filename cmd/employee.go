@@ -161,6 +161,7 @@ func updateEmployee(c echo.Context) error {
 
 	// binding json to employee
 	if err := c.Bind(&updatedEmployee); err != nil {
+		zap.L().Sugar().Errorf("Failed to update employee: ", err.Error())
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid input")
 	}
 
