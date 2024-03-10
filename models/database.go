@@ -1,6 +1,9 @@
 package models
 
 import (
+	"time"
+
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -75,4 +78,29 @@ type Job struct {
 	Milage     int                    `db:"milage" json:"milage"`
 	Notes      pgtype.Text            `db:"notes" json:"notes"`
 	Cost       string                 `db:"cost" json:"cost"`
+}
+
+// /////////////////////////////////////////////////////////////////
+// Session
+type Session struct {
+	ID           uuid.UUID `db:"id" json:"id"`
+	Username     string    `db:"username" json:"username"`
+	Role         string    `db:"role" json:"role"`
+	RefreshToken string    `db:"refresh_token" json:"refresh_token"`
+	UserAgent    string    `db:"user_agent" json:"user_agent"`
+	ClientIp     string    `db:"client_ip" json:"client_ip"`
+	IsBlocked    bool      `db:"is_blocked" json:"is_blocked"`
+	ExpiresAt    time.Time `db:"expries_at" json:"expires_at"`
+	CreatedAt    time.Time `db:"create_at" json:"created_at"`
+}
+
+type CreateSessionParams struct {
+	ID           uuid.UUID `db:"id" json:"id"`
+	Username     string    `db:"username" json:"username"`
+	Role         string    `db:"role" json:"role"`
+	RefreshToken string    `db:"refresh_token" json:"refresh_token"`
+	UserAgent    string    `db:"user_agent" json:"user_agent"`
+	ClientIp     string    `db:"client_ip" json:"client_ip"`
+	IsBlocked    bool      `db:"is_blocked" json:"is_blocked"`
+	ExpiresAt    time.Time `db:"expires_at" json:"expires_at"`
 }

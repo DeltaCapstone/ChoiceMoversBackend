@@ -30,26 +30,11 @@ type JwtRefreshClaims struct {
 	jwt.RegisteredClaims `json:"claims"`
 }
 
-func MakeTokenPair(username string, role string) (map[string]string, error) {
-	t, err := MakeToken(username, role)
-	if err != nil {
-		return nil, err
-	}
-	rt, err := MakeRefreshToken(username)
-	if err != nil {
-		return nil, err
-	}
-	return map[string]string{
-		"accessToken":  t,
-		"refreshToken": rt,
-	}, nil
-}
-
-func MakeToken(username string, role string) (string, error) {
+func MakeAccessToken(username string, role string) (string, *JwtCustomClaims, error) {
 	// Set custom claims
 	newTokenID, err := uuid.NewRandom()
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 	claims := &JwtCustomClaims{
 		username,
@@ -64,17 +49,17 @@ func MakeToken(username string, role string) (string, error) {
 
 	signedToken, err := token.SignedString([]byte("secret"))
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 
-	return signedToken, nil
+	return signedToken, claims, nil
 }
 
-func MakeRefreshToken(username string) (string, error) {
+func MakeRefreshToken(username string) (string, *JwtRefreshClaims, error) {
 	// Set custom claims
 	newTokenID, err := uuid.NewRandom()
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 	claims := &JwtRefreshClaims{
 		username,
@@ -88,10 +73,10 @@ func MakeRefreshToken(username string) (string, error) {
 
 	signedToken, err := token.SignedString([]byte("secret"))
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 
-	return signedToken, nil
+	return signedToken, claims, nil
 }
 
 ///////////////////////////////////////////////////////////////
