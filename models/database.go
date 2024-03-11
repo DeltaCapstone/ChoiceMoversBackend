@@ -90,7 +90,7 @@ type Session struct {
 	UserAgent    string    `db:"user_agent" json:"user_agent"`
 	ClientIp     string    `db:"client_ip" json:"client_ip"`
 	IsBlocked    bool      `db:"is_blocked" json:"is_blocked"`
-	ExpiresAt    time.Time `db:"expries_at" json:"expires_at"`
+	ExpiresAt    time.Time `db:"expires_at" json:"expires_at"`
 	CreatedAt    time.Time `db:"create_at" json:"created_at"`
 }
 

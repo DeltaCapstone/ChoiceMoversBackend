@@ -19,3 +19,23 @@ func (pg *postgres) CreateSession(c context.Context, s models.CreateSessionParam
 	err := row.Scan(&sid)
 	return sid, err
 }
+
+const getSession = `SELECT id, username, role, refresh_token, user_agent, 
+client_ip, is_blocked, expires_at, created_at FROM sessions WHERE id = $1`
+
+func (pg *postgres) GetSession(c context.Context, sid uuid.UUID) (models.Session, error) {
+	var s models.Session
+	row := pg.db.QueryRow(c, getSession, sid)
+	err := row.Scan(
+		&s.ID,
+		&s.Username,
+		&s.Role,
+		&s.RefreshToken,
+		&s.UserAgent,
+		&s.ClientIp,
+		&s.IsBlocked,
+		&s.ExpiresAt,
+		&s.CreatedAt,
+	)
+	return s, err
+}

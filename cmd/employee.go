@@ -22,7 +22,7 @@ func managerMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		user := c.Get("user").(*jwt.Token)
 		claims := user.Claims.(*token.JwtCustomClaims)
 		role := claims.Role
-		c.Set("username", claims.UserName)
+		c.Set("username", claims.Username)
 		c.Set("role", claims.Role)
 		//return c.String(http.StatusFound, fmt.Sprintf("your role is %v", role))
 		if role != "Manager" {
@@ -37,7 +37,7 @@ func employeeMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		user := c.Get("user").(*jwt.Token)
 		claims := user.Claims.(*token.JwtCustomClaims)
 		role := claims.Role
-		c.Set("username", claims.UserName)
+		c.Set("username", claims.Username)
 		c.Set("role", claims.Role)
 		//return c.String(http.StatusFound, fmt.Sprintf("your role is %v", role))
 		if (role != "Full-time") && (role != "Part-time") && (role != "Manager") {
