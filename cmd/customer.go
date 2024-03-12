@@ -22,7 +22,7 @@ func customerMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		user := c.Get("user").(*jwt.Token)
 		claims := user.Claims.(*token.JwtCustomClaims)
 		role := claims.Role
-		c.Set("username", claims.UserName)
+		c.Set("username", claims.Username)
 		c.Set("role", claims.Role)
 		//return c.String(http.StatusFound, fmt.Sprintf("your role is %v", role))
 
@@ -149,20 +149,41 @@ func customerLogin(c echo.Context) error {
 		//return echo.ErrUnauthorized
 	}
 
-	token, err := token.MakeToken(customerLogin.UserName, "Customer")
+	accessToken, accessClaims, err := token.MakeAccessToken(customerLogin.UserName, "Customer")
 	if err != nil {
-		zap.L().Sugar().Errorf("problem making token: ", err.Error())
-		return c.String(http.StatusInternalServerError, "Error creating token")
+		zap.L().Sugar().Errorf("problem making access token: ", err.Error())
+		return c.String(http.StatusInternalServerError, "Error creating access token")
 	}
-	return c.JSON(http.StatusOK, echo.Map{"accessToken": token})
 
-	/*
-		tokenpair, err := token.MakeTokenPair(id, customerLogin.UserName, "Customer")
-		if err != nil {
-			return c.String(http.StatusInternalServerError, "Error creating token")
-		}
-		return c.JSON(http.StatusOK, tokenpair)
-	*/
+	refreshToken, refreshClaims, err := token.MakeAccessToken(customerLogin.UserName, "Customer")
+	if err != nil {
+		zap.L().Sugar().Errorf("problem making refresh token: ", err.Error())
+		return c.String(http.StatusInternalServerError, "Error creating refresh token")
+	}
 
-	//return c.JSON(http.StatusOK, "Login Success")
+	sessionId, err := DB.PgInstance.CreateSession(c.Request().Context(), models.CreateSessionParams{
+		ID:           refreshClaims.TokenID,
+		Username:     customerLogin.UserName,
+		RefreshToken: refreshToken,
+		UserAgent:    c.Request().UserAgent(),
+		ClientIp:     c.RealIP(),
+		IsBlocked:    false,
+		ExpiresAt:    refreshClaims.ExpiresAt.Time,
+	})
+	if err != nil {
+		zap.L().Sugar().Errorf("problem creating session: ", err.Error())
+		return c.String(http.StatusInternalServerError, "Error creating session")
+	}
+
+	rsp := models.CustomerLoginResponse{
+		SessionId:             sessionId,
+		AccessToken:           accessToken,
+		AccessTokenExpiresAt:  accessClaims.ExpiresAt.Time,
+		RefreshToken:          refreshToken,
+		RefreshTokenExpiresAt: refreshClaims.ExpiresAt.Time,
+		Username:              customerLogin.UserName,
+	}
+
+	return c.JSON(http.StatusOK, rsp)
+
 }

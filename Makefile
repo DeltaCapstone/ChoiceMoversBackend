@@ -23,9 +23,10 @@ dropdb:
 	docker exec -it db dropdb -U $(PGUSER) $(PGDATABASE)
 
 cleandb:
-	docker compose stop
-	rm -r db_data
-	docker compose start 
+	docker exec -it db dropdb -U $(PGUSER) $(PGDATABASE)
+	docker exec -it db createdb --username=$(PGUSER) --owner=$(PGUSER) $(PGDATABASE)
+	migrate -path database/migration -database "$(PGURL)" -verbose up
+	./insert_test_data.sh
 
 migrateup:
 	migrate -path database/migration -database "$(PGURL)" -verbose up
@@ -41,3 +42,4 @@ migratedown1:
 
 new_migration:
 	migrate create -ext sql -dir database/migration -seq $(name)
+

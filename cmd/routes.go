@@ -11,6 +11,7 @@ func CreateRoutes(e *echo.Echo) {
 	e.POST("", createCustomer) //signup
 	e.POST("/login", customerLogin)
 	//e.POST("/getEstimate",createEstimate)
+	e.POST("/renewAccess", renewAccessToken)
 
 	customerGroup := e.Group("/customer")
 	customerGroup.Use(echojwt.WithConfig(token.Config), customerMiddleware)

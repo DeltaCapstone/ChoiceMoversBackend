@@ -1,6 +1,11 @@
 package models
 
-import "github.com/jackc/pgx/v5/pgtype"
+import (
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
+)
 
 // ---------------------------
 // EMPLOYEE
@@ -67,6 +72,15 @@ type GetEmployeeResponse struct {
 	EmployeePriority int           `db:"employee_priority" json:"employeePriority"`
 }
 
+type EmployeeLoginResponse struct {
+	SessionId             uuid.UUID `json:"sessionId"`
+	AccessToken           string    `json:"AccessToken"`
+	AccessTokenExpiresAt  time.Time `json:"accessTokenExpiresAt"`
+	RefreshToken          string    `json:"refreshToken"`
+	RefreshTokenExpiresAt time.Time `json:"refreshTokenExpiresAt"`
+	Username              string    `json:"username"`
+}
+
 // ---------------------------
 // CUSTOMER
 // ---------------------------
@@ -118,6 +132,15 @@ type GetCustomerResponse struct {
 type CustomerLoginRequest struct {
 	UserName      string `db:"username" json:"userName"`
 	PasswordPlain string `db:"password_plain" json:"passwordPlain"`
+}
+
+type CustomerLoginResponse struct {
+	SessionId             uuid.UUID `json:"sessionId"`
+	AccessToken           string    `json:"accessToken"`
+	AccessTokenExpiresAt  time.Time `json:"accessTokenExpiresAt"`
+	RefreshToken          string    `json:"refreshToken"`
+	RefreshTokenExpiresAt time.Time `json:"refreshTokenExpiresAt"`
+	Username              string    `json:"username"`
 }
 
 // ---------------------------

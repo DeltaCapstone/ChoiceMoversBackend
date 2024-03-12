@@ -22,7 +22,7 @@ func managerMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		user := c.Get("user").(*jwt.Token)
 		claims := user.Claims.(*token.JwtCustomClaims)
 		role := claims.Role
-		c.Set("username", claims.UserName)
+		c.Set("username", claims.Username)
 		c.Set("role", claims.Role)
 		//return c.String(http.StatusFound, fmt.Sprintf("your role is %v", role))
 		if role != "Manager" {
@@ -37,7 +37,7 @@ func employeeMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		user := c.Get("user").(*jwt.Token)
 		claims := user.Claims.(*token.JwtCustomClaims)
 		role := claims.Role
-		c.Set("username", claims.UserName)
+		c.Set("username", claims.Username)
 		c.Set("role", claims.Role)
 		//return c.String(http.StatusFound, fmt.Sprintf("your role is %v", role))
 		if (role != "Full-time") && (role != "Part-time") && (role != "Manager") {
@@ -221,26 +221,47 @@ func employeeLogin(c echo.Context) error {
 		zap.L().Sugar().Errorf("Wrong password supplied: ", err.Error())
 		return c.String(http.StatusNotFound, fmt.Sprintf("Incorrect password for user with username: %v ", employeeLogin.UserName))
 	}
+
 	role, err := DB.PgInstance.GetEmployeeRole(c.Request().Context(), employeeLogin.UserName)
 	if err != nil {
 		zap.L().Sugar().Errorf("Could not retrieve role: ", err.Error())
 		return c.String(http.StatusInternalServerError, "Could not deterimine role")
 	}
 
-	token, err := token.MakeToken(employeeLogin.UserName, role)
+	accessToken, accessClaims, err := token.MakeAccessToken(employeeLogin.UserName, role)
 	if err != nil {
-		zap.L().Sugar().Errorf("problem making token: ", err.Error())
-		return c.String(http.StatusInternalServerError, "Error creating token")
+		zap.L().Sugar().Errorf("problem making access token: ", err.Error())
+		return c.String(http.StatusInternalServerError, "Error creating access token")
 	}
-	return c.JSON(http.StatusOK, echo.Map{"accessToken": token})
 
-	/*
-		tokenpair, err := token.MakeTokenPair(id, customerLogin.UserName, role)
-		if err != nil {
-			return c.String(http.StatusInternalServerError, "Error creating token")
-		}
-		return c.JSON(http.StatusOK, tokenpair)
-	*/
+	refreshToken, refreshClaims, err := token.MakeAccessToken(employeeLogin.UserName, role)
+	if err != nil {
+		zap.L().Sugar().Errorf("problem making refresh token: ", err.Error())
+		return c.String(http.StatusInternalServerError, "Error creating refresh token")
+	}
 
-	//return c.JSON(http.StatusOK, "Login Success")
+	sessionId, err := DB.PgInstance.CreateSession(c.Request().Context(), models.CreateSessionParams{
+		ID:           refreshClaims.TokenID,
+		Username:     employeeLogin.UserName,
+		RefreshToken: refreshToken,
+		UserAgent:    c.Request().UserAgent(),
+		ClientIp:     c.RealIP(),
+		IsBlocked:    false,
+		ExpiresAt:    refreshClaims.ExpiresAt.Time,
+	})
+	if err != nil {
+		zap.L().Sugar().Errorf("problem creating session: ", err.Error())
+		return c.String(http.StatusInternalServerError, "Error creating session")
+	}
+
+	rsp := models.EmployeeLoginResponse{
+		SessionId:             sessionId,
+		AccessToken:           accessToken,
+		AccessTokenExpiresAt:  accessClaims.ExpiresAt.Time,
+		RefreshToken:          refreshToken,
+		RefreshTokenExpiresAt: refreshClaims.ExpiresAt.Time,
+		Username:              employeeLogin.UserName,
+	}
+
+	return c.JSON(http.StatusOK, rsp)
 }
