@@ -79,9 +79,22 @@ func deleteEmployee(c echo.Context) error {
 		zap.L().Sugar().Errorf("Failed to delete employee: ", err.Error())
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error deleting data: %v", err))
 	}
-	return c.NoContent(http.StatusNoContent)
+	return c.NoContent(http.StatusOK)
 }
 
+/*
+	func addEmployee(c echo.Context) error {
+		e := c.Param("email")
+		t, claims, err := token.MakeEmployeeSignupToken(e)
+		if err != nil {
+
+		}
+		DB.PgInstance.NewEmployeeSignup(c.Request().Context())
+		url := "www.choicemovers.com/portal?token=" + t
+
+		return c.NoContent(http.StatusOK)
+	}
+*/
 func createEmployee(c echo.Context) error {
 	var newEmployee models.CreateEmployeeRequest
 	// attempt at binding incoming json to a newUser
