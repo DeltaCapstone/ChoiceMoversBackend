@@ -37,6 +37,18 @@ type JwtRefreshClaims struct {
 	jwt.RegisteredClaims `json:"claims"`
 }
 
+type JwtEmployeeSignupClaims struct {
+	Email                string    `json:"email"`
+	TokenID              uuid.UUID `json:"tokenId"`
+	jwt.RegisteredClaims `json:"claims"`
+}
+
+const (
+	AccessDuration         = time.Minute * 60
+	RefreshDuration        = time.Hour * 24
+	EmployeeSignupDuration = time.Minute * 15
+)
+
 func MakeAccessToken(username string, role string) (string, *JwtCustomClaims, error) {
 	// Set custom claims
 	newTokenID, err := uuid.NewRandom()
@@ -48,7 +60,7 @@ func MakeAccessToken(username string, role string) (string, *JwtCustomClaims, er
 		role,
 		newTokenID,
 		jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 60)), //add this to a config file?
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(AccessDuration)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
@@ -73,7 +85,7 @@ func MakeRefreshToken(username string) (string, *JwtRefreshClaims, error) {
 		username,
 		newTokenID,
 		jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)), //add this to a config file?
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(RefreshDuration)), //add this to a config file?
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
@@ -86,6 +98,31 @@ func MakeRefreshToken(username string) (string, *JwtRefreshClaims, error) {
 	}
 
 	return signedToken, claims, nil
+}
+
+func MakeEmployeeSignupToken(email string) (string, *JwtEmployeeSignupClaims, error) {
+	newTokenID, err := uuid.NewRandom()
+	if err != nil {
+		return "", nil, err
+	}
+	claims := &JwtEmployeeSignupClaims{
+		email,
+		newTokenID,
+		jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(EmployeeSignupDuration)), //add this to a config file?
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	key, _ := GetKey(token)
+	signedToken, err := token.SignedString(key)
+	if err != nil {
+		return "", nil, err
+	}
+
+	return signedToken, claims, nil
+
 }
 
 ///////////////////////////////////////////////////////////////
