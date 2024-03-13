@@ -11,7 +11,9 @@ func CreateRoutes(e *echo.Echo) {
 	e.POST("", createCustomer) //signup
 	e.POST("/login", customerLogin)
 	//e.POST("/getEstimate",createEstimate)
-	e.POST("/portal", createEmployee)      //signup
+
+	e.POST("/portal", createEmployee) //signup
+
 	e.POST("/portal/login", employeeLogin) // Login
 
 	e.POST("/renewAccess", renewAccessToken)
