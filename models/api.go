@@ -74,7 +74,7 @@ type GetEmployeeResponse struct {
 
 type EmployeeLoginResponse struct {
 	SessionId             uuid.UUID `json:"sessionId"`
-	AccessToken           string    `json:"AccessToken"`
+	AccessToken           string    `json:"accessToken"`
 	AccessTokenExpiresAt  time.Time `json:"accessTokenExpiresAt"`
 	RefreshToken          string    `json:"refreshToken"`
 	RefreshTokenExpiresAt time.Time `json:"refreshTokenExpiresAt"`
