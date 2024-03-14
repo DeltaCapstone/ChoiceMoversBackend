@@ -5,6 +5,7 @@ import (
 
 	models "github.com/DeltaCapstone/ChoiceMoversBackend/models"
 	"github.com/DeltaCapstone/ChoiceMoversBackend/utils"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -83,6 +84,21 @@ func (pg *postgres) GetEmployeeList(ctx context.Context) ([]models.GetEmployeeRe
 		employees = append(employees, employee)
 	}
 	return employees, nil
+}
+
+func (pg *postgres) AddEmployeeSignup(ctx context.Context, newEmployeeSignUp models.EmployeeSignup) error {
+	//inserting sign up detials
+	return nil
+}
+
+func (pg *postgres) GetEmployeeSignup(ctx context.Context, id uuid.UUID) (models.EmployeeSignup, error) {
+	//returns stored signup details
+	return models.EmployeeSignup{}, nil
+}
+
+func (pg *postgres) UseEmployeeSignup(ctx context.Context, id uuid.UUID) error {
+	//change row 'used' to true
+	return nil
 }
 
 const createEmployeeNameQuery = `INSERT INTO employees 

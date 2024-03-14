@@ -82,25 +82,66 @@ func deleteEmployee(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
-/*
-	func addEmployee(c echo.Context) error {
-		e := c.Param("email")
-		t, claims, err := token.MakeEmployeeSignupToken(e)
-		if err != nil {
+// config
+const empSignupURL = "www.choicemovers.com/portal?token="
+const signupMessage = "use the link to create your Employee Account on choicemovers.com \n\r"
 
-		}
-		DB.PgInstance.NewEmployeeSignup(c.Request().Context())
-		url := "www.choicemovers.com/portal?token=" + t
+func addEmployee(c echo.Context) error {
+	e := c.QueryParam("email")
+	//make a token for the link and to store
+	t, claims, err := token.MakeEmployeeSignupToken(e)
+	if err != nil {
 
-		return c.NoContent(http.StatusOK)
 	}
-*/
+	//store
+	newEmployee := models.EmployeeSignup{
+		Id:          claims.TokenID,
+		Email:       e,
+		SignupToken: t,
+		ExpiresAt:   claims.ExpiresAt.Time,
+		Used:        false,
+	}
+	DB.PgInstance.AddEmployeeSignup(c.Request().Context(), newEmployee)
+	//make url
+	url := empSignupURL + t + "\n\r"
+	//email it
+
+	return c.NoContent(http.StatusOK)
+}
+
 func createEmployee(c echo.Context) error {
+	//check token
+	token := c.QueryParam("token")
+	claims, err := VerifyEmployeeSignupToken(token)
+	if err != nil {
+		zap.L().Sugar().Errorf("Could not parse signup token in url or invalid token: ", err.Error())
+		return c.JSON(http.StatusBadRequest, fmt.Sprintf("could not parse url token or invalid token: %v", err.Error()))
+	}
+
+	su, err := DB.PgInstance.GetEmployeeSignup(c.Request().Context(), claims.TokenID)
+	if err != nil {
+		zap.L().Sugar().Errorf("Signup token does not exist: ", err.Error())
+		return c.JSON(http.StatusUnauthorized, "signup token does not exist")
+	}
+	if su.Email != claims.Email ||
+		su.Id != claims.TokenID ||
+		su.SignupToken != token ||
+		su.Used {
+		zap.L().Sugar().Errorf("tokens do not match or this token is already used.")
+		return c.JSON(http.StatusBadRequest, "token does not match stored parameters or has already been used.")
+	}
+	// set the signup 'used' field in db to true
+	err = DB.PgInstance.UseEmployeeSignup(c.Request().Context(), claims.TokenID)
+
 	var newEmployee models.CreateEmployeeRequest
 	// attempt at binding incoming json to a newUser
 	if err := c.Bind(&newEmployee); err != nil {
 		zap.L().Sugar().Errorf("Incorrect data format for creating employee: ", err.Error())
 		return c.JSON(http.StatusBadRequest, echo.Map{"Bind error": "Invalid user data"})
+	}
+
+	if newEmployee.Email != claims.Email {
+		return c.JSON(http.StatusUnauthorized, "email entered does not match link recipiant")
 	}
 
 	zap.L().Debug("createEmployee", zap.Any("Employee", newEmployee))
@@ -124,7 +165,7 @@ func createEmployee(c echo.Context) error {
 
 	// validation stuff probably needed
 
-	err := DB.PgInstance.CreateEmployee(c.Request().Context(), args)
+	err = DB.PgInstance.CreateEmployee(c.Request().Context(), args)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
