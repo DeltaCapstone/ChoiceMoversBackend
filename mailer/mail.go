@@ -8,7 +8,7 @@ import (
 )
 
 // config
-const CMEmail = "auto@choicemovers.com"
+const CMEmail = "choicemovers@gmail.com"
 const CMEmailPw = "secret"
 
 const (
@@ -16,24 +16,54 @@ const (
 	smtpServerAddress = "smtp.gmail.com:587"
 )
 
-func sendMail(
-	subject string,
-	to []string,
-	message string,
-	attachments []string,
-) error {
-	m := email.NewEmail()
-	m.From = CMEmail
-	m.To = to
-	m.Text = []byte(message)
+type EmailSender interface {
+	SendEmail(
+		subject string,
+		content string,
+		to []string,
+		cc []string,
+		bcc []string,
+		attachFiles []string,
+	) error
+}
 
-	for _, f := range attachments {
-		_, err := m.AttachFile(f)
+type GmailSender struct {
+	name              string
+	fromEmailAddress  string
+	fromEmailPassword string
+}
+
+func NewGmailSender(name string, fromEmailAddress string, fromEmailPassword string) EmailSender {
+	return &GmailSender{
+		name:              name,
+		fromEmailAddress:  fromEmailAddress,
+		fromEmailPassword: fromEmailPassword,
+	}
+}
+
+func (sender *GmailSender) SendEmail(
+	subject string,
+	content string,
+	to []string,
+	cc []string,
+	bcc []string,
+	attachFiles []string,
+) error {
+	e := email.NewEmail()
+	e.From = fmt.Sprintf("%s <%s>", sender.name, sender.fromEmailAddress)
+	e.Subject = subject
+	e.HTML = []byte(content)
+	e.To = to
+	e.Cc = cc
+	e.Bcc = bcc
+
+	for _, f := range attachFiles {
+		_, err := e.AttachFile(f)
 		if err != nil {
 			return fmt.Errorf("failed to attach file %s: %w", f, err)
 		}
 	}
 
-	smtpAuth := smtp.PlainAuth("", CMEmail, CMEmailPw, smtpAuthAddress)
-	return m.Send(smtpServerAddress, smtpAuth)
+	smtpAuth := smtp.PlainAuth("", sender.fromEmailAddress, sender.fromEmailPassword, smtpAuthAddress)
+	return e.Send(smtpServerAddress, smtpAuth)
 }
