@@ -40,23 +40,38 @@ CREATE TABLE IF NOT EXISTS public.employees
 
 CREATE TABLE IF NOT EXISTS public.jobs
 (
+CREATE TABLE IF NOT EXISTS public.jobs
+(
     job_id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
     customer_username character varying,
     load_addr integer,
     unload_addr integer,
     start_time timestamp with time zone,
-    hours_labor interval NOT NULL DEFAULT '0 hours',
-    finalized boolean NOT NULL DEFAULT False,
-    rooms jsonb,
-    pack boolean NOT NULL DEFAULT False,
-    unpack boolean NOT NULL DEFAULT False,
-    load boolean NOT NULL DEFAULT False,
-    unload boolean NOT NULL DEFAULT False,
-    clean boolean NOT NULL DEFAULT False,
-    milage integer NOT NULL DEFAULT 0,
+    end_time timestamp with time zone,
+
+    rooms jsonb,    
+    special_items jsonb, 
+    small integer,
+    medium integer,
+    large integer,
+    boxes integer, 
+    pack boolean NOT NULL DEFAULT False, 
+    unpack boolean NOT NULL DEFAULT False, 
+    load boolean NOT NULL DEFAULT False, 
+    unload boolean NOT NULL DEFAULT False, 
+
+    clean boolean NOT NULL DEFAULT False, 
+
+    man_hours interval NOT NULL DEFAULT '0 hours', 
+    number_worker integer DEFAULT 2, 
+    milage integer NOT NULL DEFAULT 0, 
     cost money NOT NULL DEFAULT 0,
+    ammount_payed money,
+
     notes TEXT,
+    finalized boolean NOT NULL DEFAULT False,
     PRIMARY KEY (job_id)
+);
 );
 
 CREATE TABLE IF NOT EXISTS public.addresses
