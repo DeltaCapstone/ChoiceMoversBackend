@@ -35,7 +35,7 @@ func (pg *postgres) GetJobsByStatusAndRange(ctx context.Context, status string, 
 		if err := scanStructfromRows(rows, &j); err != nil {
 			return nil, err
 		}
-		er, err := pg.getEstimateForJob(ctx, j.EstID)
+		er, err := pg.getEstimateForJob(ctx, j.EstimateID)
 		if err != nil {
 			return nil, err
 		}

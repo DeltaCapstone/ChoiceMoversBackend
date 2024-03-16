@@ -60,8 +60,8 @@ type Address struct {
 }
 
 type Job struct {
-	JobID int `db:"job_id" json:"jobId"`
-	EstID int `db:"est_id" json:"estId"`
+	JobID      int `db:"job_id" json:"jobId"`
+	EstimateID int `db:"estimate_id" json:"estimateId"`
 
 	ManHours pgtype.Interval `db:"man_hours" json:"ManHours"`
 	Rate     float64         `db:"rate" json:"Rate"`
