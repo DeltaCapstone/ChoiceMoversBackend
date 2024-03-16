@@ -7,7 +7,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type user struct {
+type Customer struct {
 	UserName     string        `db:"username" json:"userName"`
 	PasswordHash string        `db:"password_hash" json:"passwordHash"`
 	FirstName    string        `db:"first_name" json:"firstName"`
@@ -15,10 +15,6 @@ type user struct {
 	Email        string        `db:"email" json:"email"`
 	PhonePrimary pgtype.Text   `db:"phone_primary" json:"phonePrimary"`
 	PhoneOther   []pgtype.Text `db:"phone_other" json:"phoneOther"`
-}
-
-type Customer struct {
-	user
 }
 
 type EmployeeType string
@@ -31,9 +27,15 @@ const (
 )
 
 type Employee struct {
-	user
-	EmployeeType     EmployeeType `db:"employee_type" json:"employeeType"`
-	EmployeePriority int          `db:"employee_priority" json:"employeePriority"`
+	UserName         string        `db:"username" json:"userName"`
+	PasswordHash     string        `db:"password_hash" json:"passwordHash"`
+	FirstName        string        `db:"first_name" json:"firstName"`
+	LastName         string        `db:"last_name" json:"lastName"`
+	Email            string        `db:"email" json:"email"`
+	PhonePrimary     pgtype.Text   `db:"phone_primary" json:"phonePrimary"`
+	PhoneOther       []pgtype.Text `db:"phone_other" json:"phoneOther"`
+	EmployeeType     EmployeeType  `db:"employee_type" json:"employeeType"`
+	EmployeePriority int           `db:"employee_priority" json:"employeePriority"`
 }
 
 type ResidenceType string
