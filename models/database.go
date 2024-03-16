@@ -110,6 +110,22 @@ type Estimate struct {
 	EstimateCost     float64         `db:"estimated_cost" json:"estimatedCost"`
 }
 
+type EstimateJobJoin struct {
+	Estimate
+	JobID int `db:"job_id" json:"jobId"`
+
+	ManHours pgtype.Interval `db:"man_hours" json:"ManHours"`
+	Rate     float64         `db:"rate" json:"Rate"`
+	Cost     float64         `db:"cost" json:"Cost"`
+
+	Finalized      bool            `db:"finalized" json:"finalized"` //meaning customer agrees to all the job parameters
+	ActualManHours pgtype.Interval `db:"actual_man_hours" json:"actualManHours"`
+	FinalCost      float64         `db:"final_cost" json:"finalCost"`
+	AmmountPaid    float64         `db:"ammount_payed" json:"ammountPaid"`
+
+	Notes pgtype.Text `db:"notes" json:"notes"`
+}
+
 // /////////////////////////////////////////////////////////////////
 // Session
 type Session struct {

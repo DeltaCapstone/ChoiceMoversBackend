@@ -204,16 +204,16 @@ type EstimateResponse struct {
 	EstimateCost     float64         `db:"estimated_cost" json:"estimatedCost"`
 }
 
-func (jr *JobResponse) MakeFromJob(j Job) {
-	jr.JobID = j.JobID
-	jr.ManHours = j.ManHours
-	jr.Rate = j.Rate
-	jr.Cost = j.Cost
-	jr.Finalized = j.Finalized
-	jr.ActualManHours = j.ActualManHours
-	jr.FinalCost = j.FinalCost
-	jr.AmmountPaid = j.AmmountPaid
-	jr.Notes = j.Notes
+func (jr *JobResponse) MakeFromJoin(ej EstimateJobJoin) {
+	jr.JobID = ej.JobID
+	jr.ManHours = ej.ManHours
+	jr.Rate = ej.Rate
+	jr.Cost = ej.Cost
+	jr.Finalized = ej.Finalized
+	jr.ActualManHours = ej.ActualManHours
+	jr.FinalCost = ej.FinalCost
+	jr.AmmountPaid = ej.AmmountPaid
+	jr.Notes = ej.Notes
 }
 
 func (er *EstimateResponse) MakeFromEstimate(e Estimate) {
