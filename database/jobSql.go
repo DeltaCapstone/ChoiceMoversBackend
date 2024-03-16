@@ -32,11 +32,11 @@ func (pg *postgres) GetJobsByStatusAndRange(ctx context.Context, status string, 
 
 	for rows.Next() {
 		var ej models.EstimateJobJoin
-		if err := scanStructfromRows(rows, &ej); err != nil {
+		if err := scanStruct(rows, &ej); err != nil {
 			return nil, err
 		}
 		var er models.EstimateResponse
-		er.MakeFromEstimate(ej.Estimate)
+		er.MakeFromJoin(ej)
 
 		if ej.LoadAddrID != 0 {
 			er.LoadAddr, _ = getAddr(ctx, ej.LoadAddrID)

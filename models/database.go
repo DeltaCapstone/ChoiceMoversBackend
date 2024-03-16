@@ -111,7 +111,38 @@ type Estimate struct {
 }
 
 type EstimateJobJoin struct {
-	Estimate
+	EstimateID       int              `db:"estimate_id" json:"estimateId"`
+	CustomerUsername string           `db:"customer_username" json:"customerUsername"`
+	LoadAddrID       int              `db:"load_addr_id" json:"loadAddrID"`
+	UnloadAddrID     int              `db:"unload_addr_id" json:"unloadAddrID"`
+	StartTime        pgtype.Timestamp `db:"start_time" json:"startTime"`
+	EndTime          pgtype.Timestamp `db:"end_time" json:"endTime"`
+
+	Rooms      map[string]interface{} `db:"rooms" json:"rooms"`
+	Special    map[string]interface{} `db:"special" json:"special"`
+	Small      int                    `db:"small_items" json:"smallItems"`
+	Medium     int                    `db:"medium_items" json:"mediumItems"`
+	Large      int                    `db:"large_items" json:"largeItems"`
+	Boxes      int                    `db:"boxes" json:"boxes"`
+	ItemLoad   int                    `db:"item_load" json:"itemLoad"`
+	FlightMult float64                `db:"flight_mult" json:"flightMult"`
+
+	Pack   bool `db:"pack" json:"pack"`
+	Unpack bool `db:"unpack" json:"unpack"`
+	Load   bool `db:"load" json:"load"`
+	Unload bool `db:"unload" json:"unload"`
+
+	Clean bool `db:"clean" json:"clean"`
+
+	NeedTruck     bool `db:"need_truck" json:"needTruck"`
+	NumberWorkers int  `db:"number_workers" json:"numberWorkers"`
+	DistToJob     int  `db:"dist_to_job" json:"distToJob"`
+	DistMove      int  `db:"dist_move" json:"distMove"`
+
+	EstimateManHours pgtype.Interval `db:"estimated_man_hours" json:"estimatedManHours"`
+	EstimateRate     float64         `db:"estimated_rate" json:"estimatedRate"`
+	EstimateCost     float64         `db:"estimated_cost" json:"estimatedCost"`
+
 	JobID int `db:"job_id" json:"jobId"`
 
 	ManHours pgtype.Interval `db:"man_hours" json:"ManHours"`

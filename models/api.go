@@ -217,28 +217,28 @@ func (jr *JobResponse) MakeFromJoin(ej EstimateJobJoin) {
 
 }
 
-func (er *EstimateResponse) MakeFromEstimate(e Estimate) {
-	er.EstimateID = e.EstimateID
-	er.StartTime = e.StartTime
-	er.EndTime = e.EndTime
-	er.Rooms = e.Rooms
-	er.Special = e.Special
-	er.Small = e.Small
-	er.Medium = e.Medium
-	er.Large = e.Large
-	er.Boxes = e.Boxes
-	er.ItemLoad = e.ItemLoad
-	er.FlightMult = e.FlightMult
-	er.Pack = e.Pack
-	er.Unpack = e.Unpack
-	er.Load = e.Load
-	er.Unload = e.Unload
-	er.Clean = e.Clean
-	er.NeedTruck = e.NeedTruck
-	er.NumberWorkers = e.NumberWorkers
-	er.DistToJob = e.DistToJob
-	er.DistMove = e.DistMove
-	er.EstimateManHours = e.EstimateManHours
-	er.EstimateRate = e.EstimateRate
-	er.EstimateCost = e.EstimateCost
+func (er *EstimateResponse) MakeFromJoin(ej EstimateJobJoin) {
+	er.EstimateID = ej.EstimateID
+	er.StartTime = ej.StartTime
+	er.EndTime = ej.EndTime
+	er.Rooms = ej.Rooms
+	er.Special = ej.Special
+	er.Small = ej.Small
+	er.Medium = ej.Medium
+	er.Large = ej.Large
+	er.Boxes = ej.Boxes
+	er.ItemLoad = ej.ItemLoad
+	er.FlightMult = ej.FlightMult
+	er.Pack = ej.Pack
+	er.Unpack = ej.Unpack
+	er.Load = ej.Load
+	er.Unload = ej.Unload
+	er.Clean = ej.Clean
+	er.NeedTruck = ej.NeedTruck
+	er.NumberWorkers = ej.NumberWorkers
+	er.DistToJob = ej.DistToJob
+	er.DistMove = ej.DistMove
+	er.EstimateManHours = ej.EstimateManHours
+	er.EstimateRate = ej.EstimateRate
+	er.EstimateCost = ej.EstimateCost
 }

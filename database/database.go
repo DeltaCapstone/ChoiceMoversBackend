@@ -13,6 +13,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"go.uber.org/zap"
 )
 
 type postgres struct {
@@ -103,6 +104,7 @@ func scanStruct(row pgx.Row, dest interface{}) error {
 	}
 
 	if err := row.Scan(columns...); err != nil {
+		zap.L().Sugar().Errorf(err.Error())
 		return err
 	}
 	return nil
