@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS public.jobs
     finalized boolean NOT NULL DEFAULT False,
     actual_man_hours interval NOT NULL DEFAULT '0 hours',
     final_cost numeric(10,2), 
-    ammount_payed numeric(10,2),
+    amount_payed numeric(10,2),
 
     notes TEXT,
     PRIMARY KEY (job_id)

@@ -70,7 +70,7 @@ type Job struct {
 	Finalized      bool            `db:"finalized" json:"finalized"` //meaning customer agrees to all the job parameters
 	ActualManHours pgtype.Interval `db:"actual_man_hours" json:"actualManHours"`
 	FinalCost      float64         `db:"final_cost" json:"finalCost"`
-	AmmountPaid    float64         `db:"ammount_payed" json:"ammountPaid"`
+	AmountPaid     float64         `db:"amount_payed" json:"amountPaid"`
 
 	Notes pgtype.Text `db:"notes" json:"notes"`
 }

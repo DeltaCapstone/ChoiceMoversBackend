@@ -164,7 +164,7 @@ type JobResponse struct {
 	Finalized      bool            `db:"finalized" json:"finalized"` //meaning customer agrees to all the job parameters
 	ActualManHours pgtype.Interval `db:"actual_man_hours" json:"actualManHours"`
 	FinalCost      float64         `db:"final_cost" json:"finalCost"`
-	AmmountPaid    float64         `db:"ammount_payed" json:"ammountPaid"`
+	AmountPaid     float64         `db:"ammount_payed" json:"ammountPaid"`
 
 	Notes       pgtype.Text           `db:"notes" json:"notes"`
 	AssignedEmp []GetEmployeeResponse `json:"assignedEmployees"`
@@ -212,7 +212,7 @@ func (jr *JobResponse) MakeFromJob(j Job) {
 	jr.Finalized = j.Finalized
 	jr.ActualManHours = j.ActualManHours
 	jr.FinalCost = j.FinalCost
-	jr.AmmountPaid = j.AmmountPaid
+	jr.AmountPaid = j.AmountPaid
 	jr.Notes = j.Notes
 }
 
