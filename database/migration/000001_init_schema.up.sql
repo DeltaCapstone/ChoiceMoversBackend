@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS public.employees
 CREATE TABLE IF NOT EXISTS public.jobs
 (
     job_id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
-    est_id integer,
+    estimate_id integer,
 
     man_hours interval NOT NULL DEFAULT '0 hours',
     rate numeric(10,2),
@@ -141,7 +141,7 @@ ALTER TABLE IF EXISTS public.estimates
     NOT VALID;
 
 ALTER TABLE IF EXISTS public.jobs
-    ADD FOREIGN KEY (est_id)
+    ADD FOREIGN KEY (estimate_id)
     REFERENCES public.estimates (estimate_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION

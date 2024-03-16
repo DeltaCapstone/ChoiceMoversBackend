@@ -42,7 +42,7 @@ VALUES
 
 -- Inserting 4 jobs
 INSERT INTO public.jobs 
-    (est_id, man_hours, rate, cost, finalized, actual_man_hours, final_cost, ammount_payed, notes) 
+    (estimate_id, man_hours, rate, cost, finalized, actual_man_hours, final_cost, ammount_payed, notes) 
 VALUES 
     (1, '8 hours', 20.00, 160.00, true, '8 hours', 160.00, 150.00, 'Job completed successfully.'),
     (2, '8 hours', 25.00, 200.00, true, '8 hours', 200.00, 180.00, 'Additional items requested by the customer.'),
