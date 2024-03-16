@@ -154,21 +154,90 @@ type JobsDisplayRequest struct {
 }
 
 type JobResponse struct {
-	ID          int                    `db:"job_id" json:"id"`
-	Customer    GetCustomerResponse    `json:"customer"`
-	LoadAddr    Address                `json:"loadAddr"`
-	UnloadAddr  Address                `json:"unloadAddr"`
-	StartTime   pgtype.Timestamp       `db:"start_time" json:"startTime"`
-	HoursLabor  pgtype.Interval        `db:"hours_labor" json:"hoursLabor"`
-	Finalized   bool                   `db:"finalized" json:"finalized"`
-	Rooms       map[string]interface{} `db:"rooms" json:"rooms"`
-	Pack        bool                   `db:"pack" json:"pack"`
-	Unpack      bool                   `db:"unpack" json:"unpack"`
-	Load        bool                   `db:"load" json:"load"`
-	Unload      bool                   `db:"unload" json:"unload"`
-	Clean       bool                   `db:"clean" json:"clean"`
-	Milage      int                    `db:"milage" json:"milage"`
-	Cost        string                 `db:"cost" json:"cost"`
-	Notes       pgtype.Text            `db:"notes" json:"notes"`
-	AssignedEmp []GetEmployeeResponse  `json:"assignedEmployees"`
+	JobID int `db:"job_id" json:"jobId"`
+	EstimateResponse
+
+	ManHours pgtype.Interval `db:"man_hours" json:"ManHours"`
+	Rate     float64         `db:"rate" json:"Rate"`
+	Cost     float64         `db:"cost" json:"Cost"`
+
+	Finalized      bool            `db:"finalized" json:"finalized"` //meaning customer agrees to all the job parameters
+	ActualManHours pgtype.Interval `db:"actual_man_hours" json:"actualManHours"`
+	FinalCost      float64         `db:"final_cost" json:"finalCost"`
+	AmmountPaid    float64         `db:"ammount_payed" json:"ammountPaid"`
+
+	Notes       pgtype.Text           `db:"notes" json:"notes"`
+	AssignedEmp []GetEmployeeResponse `json:"assignedEmployees"`
+}
+
+type EstimateResponse struct {
+	EstimateID int                 `db:"estimate_id" json:"estimateId"`
+	Customer   GetCustomerResponse `json:"customer"`
+	LoadAddr   Address             `json:"loadAddr"`
+	UnloadAddr Address             `json:"unloadAddr"`
+	StartTime  pgtype.Timestamp    `db:"start_time" json:"startTime"`
+	EndTime    pgtype.Timestamp    `db:"end_time" json:"endTime"`
+
+	Rooms      map[string]interface{} `db:"rooms" json:"rooms"`
+	Special    map[string]interface{} `db:"special" json:"special"`
+	Small      int                    `db:"small_items" json:"smallItems"`
+	Medium     int                    `db:"medium_items" json:"mediumItems"`
+	Large      int                    `db:"large_items" json:"largeItems"`
+	Boxes      int                    `db:"boxes" json:"boxes"`
+	ItemLoad   int                    `db:"item_load" json:"itemLoad"`
+	FlightMult float64                `db:"flight_mult" json:"flightMult"`
+
+	Pack   bool `db:"pack" json:"pack"`
+	Unpack bool `db:"unpack" json:"unpack"`
+	Load   bool `db:"load" json:"load"`
+	Unload bool `db:"unload" json:"unload"`
+
+	Clean bool `db:"clean" json:"clean"`
+
+	NeedTruck     bool `db:"need_truck" json:"needTruck"`
+	NumberWorkers int  `db:"number_workers" json:"numberWorkers"`
+	DistToJob     int  `db:"dist_to_job" json:"distToJob"`
+	DistMove      int  `db:"dist_move" json:"distMove"`
+
+	EstimateManHours pgtype.Interval `db:"estimated_man_hours" json:"estimatedManHours"`
+	EstimateRate     float64         `db:"estimated_rate" json:"estimatedRate"`
+	EstimateCost     float64         `db:"estimated_cost" json:"estimatedCost"`
+}
+
+func (jr *JobResponse) MakeFromJob(j Job) {
+	jr.JobID = j.JobID
+	jr.ManHours = j.ManHours
+	jr.Rate = j.Rate
+	jr.Cost = j.Cost
+	jr.Finalized = j.Finalized
+	jr.ActualManHours = j.ActualManHours
+	jr.FinalCost = j.FinalCost
+	jr.AmmountPaid = j.AmmountPaid
+	jr.Notes = j.Notes
+}
+
+func (er *EstimateResponse) MakeFromEstimate(e Estimate) {
+	er.EstimateID = e.EstimateID
+	er.StartTime = e.StartTime
+	er.EndTime = e.EndTime
+	er.Rooms = e.Rooms
+	er.Special = e.Special
+	er.Small = e.Small
+	er.Medium = e.Medium
+	er.Large = e.Large
+	er.Boxes = e.Boxes
+	er.ItemLoad = e.ItemLoad
+	er.FlightMult = e.FlightMult
+	er.Pack = e.Pack
+	er.Unpack = e.Unpack
+	er.Load = e.Load
+	er.Unload = e.Unload
+	er.Clean = e.Clean
+	er.NeedTruck = e.NeedTruck
+	er.NumberWorkers = e.NumberWorkers
+	er.DistToJob = e.DistToJob
+	er.DistMove = e.DistMove
+	er.EstimateManHours = e.EstimateManHours
+	er.EstimateRate = e.EstimateRate
+	er.EstimateCost = e.EstimateCost
 }

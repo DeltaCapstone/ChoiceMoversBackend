@@ -5,7 +5,7 @@ BEGIN;
 CREATE TABLE IF NOT EXISTS public.customers
 (
     username character varying(255) UNIQUE NOT NULL,
-    password_hash character varying(60) NOT NULL,  --bcrypt
+    password_hash character varying(60) NOT NULL,  
     first_name character varying(255) NOT NULL,
     last_name character varying(255) NOT NULL,
     email character varying(255) UNIQUE NOT NULL,
@@ -27,7 +27,7 @@ END$$;
 CREATE TABLE IF NOT EXISTS public.employees
 (
     username character varying(255) UNIQUE NOT NULL,
-    password_hash character varying(60) NOT NULL,  --bcrypt
+    password_hash character varying(60) NOT NULL,  
     first_name character varying(255) NOT NULL,
     last_name character varying(255) NOT NULL,
     email character varying(255) UNIQUE NOT NULL,
@@ -38,23 +38,44 @@ CREATE TABLE IF NOT EXISTS public.employees
     PRIMARY KEY (username)
 );
 
-CREATE TABLE IF NOT EXISTS public.jobs
-(
+
 CREATE TABLE IF NOT EXISTS public.jobs
 (
     job_id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
+    est_id integer,
+
+    man_hours interval NOT NULL DEFAULT '0 hours',
+    rate numeric(10,2),
+    cost numeric(10,2),
+
+    finalized boolean NOT NULL DEFAULT False,
+    actual_man_hours interval NOT NULL DEFAULT '0 hours',
+    final_cost numeric(10,2), 
+    ammount_payed numeric(10,2),
+
+    notes TEXT,
+    PRIMARY KEY (job_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.estimates
+(
+    estimate_id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
     customer_username character varying,
-    load_addr integer,
-    unload_addr integer,
+
+    load_addr_id integer,
+    unload_addr_id integer,
     start_time timestamp with time zone,
     end_time timestamp with time zone,
 
     rooms jsonb,    
-    special_items jsonb, 
-    small integer,
-    medium integer,
-    large integer,
+    special jsonb, 
+    small_items integer,
+    medium_items integer,
+    large_large integer,
     boxes integer, 
+    item_load integer,
+    flight_mult numeric(3,1) DEFAULT 1,
+
     pack boolean NOT NULL DEFAULT False, 
     unpack boolean NOT NULL DEFAULT False, 
     load boolean NOT NULL DEFAULT False, 
@@ -62,16 +83,16 @@ CREATE TABLE IF NOT EXISTS public.jobs
 
     clean boolean NOT NULL DEFAULT False, 
 
-    man_hours interval NOT NULL DEFAULT '0 hours', 
-    number_worker integer DEFAULT 2, 
-    milage integer NOT NULL DEFAULT 0, 
-    cost money NOT NULL DEFAULT 0,
-    ammount_payed money,
+    need_truck boolean,
+    number_workers integer DEFAULT 2, 
+    dist_to_job integer NOT NULL DEFAULT 0, 
+    dist_move integer NOT NULL DEFAULT 0, 
 
-    notes TEXT,
-    finalized boolean NOT NULL DEFAULT False,
-    PRIMARY KEY (job_id)
-);
+    estimated_man_hours interval NOT NULL DEFAULT '0 hours', 
+    estimated_rate numeric(10,2),
+    estimated_cost numeric(10,2),
+
+    PRIMARY KEY (estimate_id)
 );
 
 CREATE TABLE IF NOT EXISTS public.addresses
@@ -96,29 +117,35 @@ CREATE TABLE IF NOT EXISTS public.employee_jobs
     PRIMARY KEY (employee_username, job_id)
 );
 
-ALTER TABLE IF EXISTS public.jobs
-    ADD FOREIGN KEY (load_addr)
+ALTER TABLE IF EXISTS public.estimates
+    ADD FOREIGN KEY (load_addr_id)
     REFERENCES public.addresses (address_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
 
-ALTER TABLE IF EXISTS public.jobs
-    ADD FOREIGN KEY (unload_addr)
+ALTER TABLE IF EXISTS public.estimates
+    ADD FOREIGN KEY (unload_addr_id)
     REFERENCES public.addresses (address_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
 
-ALTER TABLE IF EXISTS public.jobs
+ALTER TABLE IF EXISTS public.estimates
     ADD FOREIGN KEY (customer_username)
     REFERENCES public.customers (username) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
+ALTER TABLE IF EXISTS public.jobs
+    ADD FOREIGN KEY (est_id)
+    REFERENCES public.estimates (estimate_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION
+    NOT VALID;
 
 ALTER TABLE IF EXISTS public.employee_jobs
     ADD FOREIGN KEY (employee_username)
