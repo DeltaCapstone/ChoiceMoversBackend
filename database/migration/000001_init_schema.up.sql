@@ -71,7 +71,7 @@ CREATE TABLE IF NOT EXISTS public.estimates
     special jsonb, 
     small_items integer,
     medium_items integer,
-    large_large integer,
+    large_items integer,
     boxes integer, 
     item_load integer,
     flight_mult numeric(3,1) DEFAULT 1,

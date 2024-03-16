@@ -38,7 +38,7 @@ VALUES
     ('user_john_d', 1, 2, '2024-04-10 08:00:00', '2024-04-10 16:00:00', '{"bedroom": 2, "living_room": 1}', '{}', 5, 3, 1, 10, 100, 1.0, true, false, true, false, true, true, 3, 10, 20, '4 hours', 25.00, 100.00),
     ('user_jane_s', 3, 4, '2024-04-15 10:00:00', '2024-04-15 18:00:00', '{"bedroom": 3, "kitchen": 1}', '{}', 7, 4, 2, 15, 120, 1.2, true, true, true, false, false, false, 2, 15, 25, '5 hours', 30.00, 150.00),
     ('user_emily_b', 5, 6, '2024-04-20 09:00:00', '2024-04-20 17:00:00', '{"bedroom": 4, "bathroom": 2}', '{"fragile_items": ["vases", "glasses"]}', 8, 5, 3, 20, 130, 1.5, false, true, false, true, true, true, 4, 20, 30, '6 hours', 35.00, 180.00),
-    ('uuser_mike_wser4', 7, 8, '2024-04-25 11:00:00', '2024-04-25 19:00:00', '{"living_room": 1, "dining_room": 1}', '{"antiques": ["painting", "sculpture"]}', 6, 4, 2, 12, 110, 1.3, true, false, false, true, false, true, 3, 18, 22, '4.5 hours', 28.00, 130.00);
+    ('user_mike_w', 7, 8, '2024-04-25 11:00:00', '2024-04-25 19:00:00', '{"living_room": 1, "dining_room": 1}', '{"antiques": ["painting", "sculpture"]}', 6, 4, 2, 12, 110, 1.3, true, false, false, true, false, true, 3, 18, 22, '4.5 hours', 28.00, 130.00);
 
 -- Inserting 4 jobs
 INSERT INTO public.jobs 
