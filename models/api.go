@@ -164,7 +164,7 @@ type JobResponse struct {
 	Finalized      bool            `db:"finalized" json:"finalized"` //meaning customer agrees to all the job parameters
 	ActualManHours pgtype.Interval `db:"actual_man_hours" json:"actualManHours"`
 	FinalCost      float64         `db:"final_cost" json:"finalCost"`
-	AmmountPaid    float64         `db:"ammount_payed" json:"ammountPaid"`
+	AmountPaid     float64         `db:"ammount_payed" json:"ammountPaid"`
 
 	Notes       pgtype.Text           `db:"notes" json:"notes"`
 	AssignedEmp []GetEmployeeResponse `json:"assignedEmployees"`
@@ -212,8 +212,9 @@ func (jr *JobResponse) MakeFromJoin(ej EstimateJobJoin) {
 	jr.Finalized = ej.Finalized
 	jr.ActualManHours = ej.ActualManHours
 	jr.FinalCost = ej.FinalCost
-	jr.AmmountPaid = ej.AmmountPaid
+	jr.AmountPaid = ej.AmountPaid
 	jr.Notes = ej.Notes
+
 }
 
 func (er *EstimateResponse) MakeFromEstimate(e Estimate) {
