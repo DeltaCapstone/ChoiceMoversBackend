@@ -12,10 +12,10 @@ VALUES
 INSERT INTO employees 
     (username, first_name, last_name, employee_type, employee_priority, email, phone_primary, password_hash)
 VALUES 
-    ('emp_alex_j', 'Alex', 'Johnson', 'Part-time',3 ,'alex.johnson@test.com', '330-111-2222', '$2a$10$5CD1oYBcvimXPQOPH035buUP/e4ZfW4qJiabNArF9qobKBfoJuB0m'), --pw: uvwxy
-    ('emp_linda_k', 'Linda', 'King', 'Full-time', 2,'linda.king@test.com', '330-111-2223', '$2a$10$t2nKx8UirO9SXUySR79S5.iTjAGaylkTYIz7Fn7IUzj43nTzgPrw2'), --pw: zabcd
-    ('emp_david_l', 'David', 'Lee', 'Full-time', 1,'david.lee@test.com', '330-111-2224', '$2a$10$JzeCi35FzkECqJYPvEO4QuGx0hRW5W6kykEFjo1/wsxPWKGs1UHpm'), --pw: efghi
-    ('mgr_sarah_m', 'Sarah', 'Miller', 'Manager', 1,'sarah.miller@test.com', '330-111-3333', '$2a$10$mGZwtnxS8SiwGSS1Q2olP.dht8WrCb1o5NRuuANYe4D5LH5hOtmAe'); --pw: jklmn
+    ('alex.j', 'Alex', 'Johnson', 'Part-time',3 ,'alex.johnson@test.com', '330-111-2222', '$2y$10$eACI6jHv5kopEk92l6KVqO63LvyVYxCvWjXta5Cq9AGCeoy2a1Vvq'), --pw: password
+    ('linda.k', 'Linda', 'King', 'Full-time', 2,'linda.king@test.com', '330-111-2223', '$2y$10$eACI6jHv5kopEk92l6KVqO63LvyVYxCvWjXta5Cq9AGCeoy2a1Vvq'), --pw: password
+    ('david.l', 'David', 'Lee', 'Full-time', 1,'david.lee@test.com', '330-111-2224', '$2y$10$eACI6jHv5kopEk92l6KVqO63LvyVYxCvWjXta5Cq9AGCeoy2a1Vvq'), --pw: password
+    ('sarah.m', 'Sarah', 'Miller', 'Manager', 1,'sarah.miller@test.com', '330-111-3333', '$2y$10$eACI6jHv5kopEk92l6KVqO63LvyVYxCvWjXta5Cq9AGCeoy2a1Vvq'); --pw: password
 
 
 INSERT INTO public.addresses 
