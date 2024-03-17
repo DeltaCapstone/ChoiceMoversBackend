@@ -10,7 +10,24 @@ import (
 ////////////////////////////////////////////////
 //Jobs
 
-const listJobsQuery = `SELECT * FROM estimates NATURAL JOIN jobs WHERE start_time >= @start AND start_time <= @end`
+const listJobsQuery = `SELECT 
+estimate_id, customer_username,load_addr_id,unload_addr_id,start_time,end_time,rooms,special,
+small_items,medium_items,large_items,boxes,item_load,flight_mult,pack,unpack,load,unload,
+clean,need_truck,number_workers,
+dist_to_job,dist_move,
+estimated_man_hours,
+estimated_rate,
+estimated_cost,
+job_id,
+man_hours,
+rate,
+cost,
+finalized,
+actual_man_hours,
+final_cost,
+amount_payed,
+notes   
+FROM estimates NATURAL JOIN jobs WHERE start_time >= @start AND start_time <= @end`
 
 // TODO: Figure out error handling for address errors
 func (pg *postgres) GetJobsByStatusAndRange(ctx context.Context, status string, start string, end string) ([]models.JobResponse, error) {

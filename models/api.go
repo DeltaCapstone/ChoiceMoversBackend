@@ -205,18 +205,21 @@ type EstimateResponse struct {
 	EstimateCost     float64 `db:"estimated_cost" json:"estimatedCost"`
 }
 
-func intervalToISO(us int64) string {
+func intervalToISO(i pgtype.Interval) string {
+	us := i.Microseconds
+	d := i.Days
 	temp, _ := time.ParseDuration(fmt.Sprintf("%vus", us))
-	return temp.String()
+	val := fmt.Sprintf("P%vT", d) + temp.String()
+	return val
 }
 
 func (jr *JobResponse) MakeFromJoin(ej EstimateJobJoin) {
 	jr.JobID = ej.JobID
-	jr.ManHours = intervalToISO(ej.ManHours.Microseconds)
+	jr.ManHours = intervalToISO(ej.ManHours)
 	jr.Rate = ej.Rate
 	jr.Cost = ej.Cost
 	jr.Finalized = ej.Finalized
-	jr.ActualManHours = intervalToISO(ej.ActualManHours.Microseconds)
+	jr.ActualManHours = intervalToISO(ej.ActualManHours)
 	jr.FinalCost = ej.FinalCost
 	jr.AmountPaid = ej.AmountPaid
 	jr.Notes = ej.Notes
@@ -244,7 +247,7 @@ func (er *EstimateResponse) MakeFromJoin(ej EstimateJobJoin) {
 	er.NumberWorkers = ej.NumberWorkers
 	er.DistToJob = ej.DistToJob
 	er.DistMove = ej.DistMove
-	er.EstimateManHours = intervalToISO(ej.EstimateManHours.Microseconds)
+	er.EstimateManHours = intervalToISO(ej.EstimateManHours)
 	er.EstimateRate = ej.EstimateRate
 	er.EstimateCost = ej.EstimateCost
 }
