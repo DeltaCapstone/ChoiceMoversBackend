@@ -12,6 +12,7 @@ func CreateRoutes(e *echo.Echo) {
 	e.POST("/login", customerLogin)
 	//e.POST("/getEstimate",createEstimate)
 	e.POST("/renewAccess", renewAccessToken)
+	e.POST("/estimate", createEstimate)
 
 	customerGroup := e.Group("/customer")
 	customerGroup.Use(echojwt.WithConfig(token.Config), customerMiddleware)
@@ -19,7 +20,7 @@ func CreateRoutes(e *echo.Echo) {
 	customerGroup.PUT("/profile", updateCustomer) //update my account
 	//customerGroup.DELETE("/:username", deleteCustomer) //delete my account
 	//customerGroup.GET("/job", getCustomerJobs)
-	customerGroup.POST("/job", createJobByCustomer)
+	// customerGroup.POST("/estimate", createEstimate)
 	//customerGroup.PUT("/job/:job_id", updateJobByCustomer)
 
 	e.POST("/portal/login", employeeLogin) // Login

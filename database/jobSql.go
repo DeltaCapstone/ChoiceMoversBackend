@@ -95,14 +95,49 @@ func getAddr(ctx context.Context, addrID int) (models.Address, error) {
 	return a, nil
 }
 
-const createJobQuery = `INSERT INTO jobs 
-(customer_id, load_addr, unload_addr, start_time, hours_labor, finalized, rooms, pack, unpack,
-	load, unload, clean, milage, cost) VALUES 
-(@customer_id, @load_addr, @unload_addr, @start_time, @hours_labor, @finalized, @rooms, @pack, @unpack,
-	@load, @unload, @clean, @milage, @cost) `
+const createEstimateQuery = `INSERT INTO jobs 
+(customer_username, load_addr_id, unload_addr_id, start_time, end_time, rooms, special, small_items, medium_items, large_items, 
+	boxes, item_load, flight_mult, pack, unpack, load, unload, clean, need_truck, number_workers, dist_to_job, dist_move,
+	estimated_man_hours, estimated_rate, estimated_cost) VALUES 
+(@customer_username, @load_addr_id, @unload_addr_id, @start_time, @end_time, @rooms, @special, @small_items, @medium_items, @large_items,
+	@boxes, @item_load, @flight_mult, @pack, @unpack, @load, @unload, @clean, @need_truck, @number_workers, @dist_to_job, @dist_move,
+	@estimated_man_hours, @estimated_rate, @estimated_cost) `
 
-func (pg *postgres) CreateJob(ctx context.Context, newJob models.Job) (string, error) {
-	rows := pg.db.QueryRow(ctx, createJobQuery, pgx.NamedArgs(utils.StructToMap(newJob, "db")))
+// estimate_id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
+// customer_username character varying,
+
+// load_addr_id integer,
+// unload_addr_id integer,
+// start_time timestamp with time zone,
+// end_time timestamp with time zone,
+
+// rooms jsonb,
+// special jsonb,
+// small_items integer,
+// medium_items integer,
+// large_items integer,
+// boxes integer,
+// item_load integer,
+// flight_mult numeric(3,1) DEFAULT 1,
+
+// pack boolean NOT NULL DEFAULT False,
+// unpack boolean NOT NULL DEFAULT False,
+// load boolean NOT NULL DEFAULT False,
+// unload boolean NOT NULL DEFAULT False,
+
+// clean boolean NOT NULL DEFAULT False,
+
+// need_truck boolean,
+// number_workers integer DEFAULT 2,
+// dist_to_job integer NOT NULL DEFAULT 0,
+// dist_move integer NOT NULL DEFAULT 0,
+
+// estimated_man_hours interval NOT NULL DEFAULT '0 hours',
+// estimated_rate numeric(10,2),
+// estimated_cost numeric(10,2),
+
+func (pg *postgres) CreateEstimate(ctx context.Context, estimate models.Estimate) (string, error) {
+	rows := pg.db.QueryRow(ctx, createEstimateQuery, pgx.NamedArgs(utils.StructToMap(estimate, "db")))
 	var u string
 	err := rows.Scan(&u)
 	return u, err
