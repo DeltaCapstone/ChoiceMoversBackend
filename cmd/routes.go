@@ -11,6 +11,7 @@ func CreateRoutes(e *echo.Echo) {
 	e.POST("", createCustomer) //signup
 	e.POST("/login", customerLogin)
 	//e.POST("/getEstimate",createEstimate)
+	e.POST("/renewAccess", renewAccessToken)
 
 	customerGroup := e.Group("/customer")
 	customerGroup.Use(echojwt.WithConfig(token.Config), customerMiddleware)
@@ -36,9 +37,9 @@ func CreateRoutes(e *echo.Echo) {
 	managerGroup.Use(echojwt.WithConfig(token.Config), managerMiddleware) // Add a middleware for manager authentication
 	managerGroup.GET("/employee", listEmployees)                          // Manager view employees
 	managerGroup.POST("/employee", createEmployee)
-	managerGroup.GET("/employee/:username", viewSomeEmployee)  // Manager views employee info
-	managerGroup.DELETE("/employee/:username", deleteEmployee) // Manager adds new employee
-	//managerGroup.PUT("/employee/:username", editEmployee)		//manager makes changes  to employee
+	managerGroup.GET("/employee/:username", viewSomeEmployee)           // Manager views employee info
+	managerGroup.DELETE("/employee/:username", deleteEmployee)          // Manager adds new employee
+	managerGroup.PUT("/employee/:username", updateEmployeeTypePriority) //manager makes changes  to employee
 	//managerGroup.POST("/job", createJob)           // Manager creates a job, needed for cases where a customer call in or a job is recieved from Uhaul for example
 	//managerGroup.PUT("/job/:job_id", updateJob)        // Manager makes changes to a job or confirms a job
 }

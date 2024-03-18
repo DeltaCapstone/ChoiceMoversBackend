@@ -1,6 +1,9 @@
 package models
 
 import (
+	"time"
+
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
@@ -59,20 +62,124 @@ type Address struct {
 }
 
 type Job struct {
-	ID         int                    `db:"job_id" json:"id"`
-	Customer   string                 `db:"customer_username" json:"customerUsername"`
-	LoadAddr   int                    `db:"load_addr" json:"loadAddr"`
-	UnloadAddr int                    `db:"unload_addr" json:"unloadAddr"`
-	StartTime  pgtype.Timestamp       `db:"start_time" json:"startTime"`
-	HoursLabor pgtype.Interval        `db:"hours_labor" json:"hoursLabor"`
-	Finalized  bool                   `db:"finalized" json:"finalized"`
+	JobID      int `db:"job_id" json:"jobId"`
+	EstimateID int `db:"estimate_id" json:"estimateId"`
+
+	ManHours pgtype.Interval `db:"man_hours" json:"ManHours"`
+	Rate     float64         `db:"rate" json:"Rate"`
+	Cost     float64         `db:"cost" json:"Cost"`
+
+	Finalized      bool            `db:"finalized" json:"finalized"` //meaning customer agrees to all the job parameters
+	ActualManHours pgtype.Interval `db:"actual_man_hours" json:"actualManHours"`
+	FinalCost      float64         `db:"final_cost" json:"finalCost"`
+	AmountPaid     float64         `db:"amount_payed" json:"amountPaid"`
+
+	Notes pgtype.Text `db:"notes" json:"notes"`
+}
+
+// allows saving estimates with them beeing treated as jobs
+type Estimate struct {
+	EstimateID       int              `db:"estimate_id" json:"estimateId"`
+	CustomerUsername string           `db:"customer_username" json:"customerUsername"`
+	LoadAddrID       int              `db:"load_addr_id" json:"loadAddrID"`
+	UnloadAddrID     int              `db:"unload_addr_id" json:"unloadAddrID"`
+	StartTime        pgtype.Timestamp `db:"start_time" json:"startTime"`
+	EndTime          pgtype.Timestamp `db:"end_time" json:"endTime"`
+
 	Rooms      map[string]interface{} `db:"rooms" json:"rooms"`
-	Pack       bool                   `db:"pack" json:"pack"`
-	Unpack     bool                   `db:"unpack" json:"unpack"`
-	Load       bool                   `db:"load" json:"load"`
-	Unload     bool                   `db:"unload" json:"unload"`
-	Clean      bool                   `db:"clean" json:"clean"`
-	Milage     int                    `db:"milage" json:"milage"`
-	Notes      pgtype.Text            `db:"notes" json:"notes"`
-	Cost       string                 `db:"cost" json:"cost"`
+	Special    map[string]interface{} `db:"special" json:"special"`
+	Small      int                    `db:"small_items" json:"smallItems"`
+	Medium     int                    `db:"medium_items" json:"mediumItems"`
+	Large      int                    `db:"large_items" json:"largeItems"`
+	Boxes      int                    `db:"boxes" json:"boxes"`
+	ItemLoad   int                    `db:"item_load" json:"itemLoad"`
+	FlightMult float64                `db:"flight_mult" json:"flightMult"`
+
+	Pack   bool `db:"pack" json:"pack"`
+	Unpack bool `db:"unpack" json:"unpack"`
+	Load   bool `db:"load" json:"load"`
+	Unload bool `db:"unload" json:"unload"`
+
+	Clean bool `db:"clean" json:"clean"`
+
+	NeedTruck     bool `db:"need_truck" json:"needTruck"`
+	NumberWorkers int  `db:"number_workers" json:"numberWorkers"`
+	DistToJob     int  `db:"dist_to_job" json:"distToJob"`
+	DistMove      int  `db:"dist_move" json:"distMove"`
+
+	EstimateManHours pgtype.Interval `db:"estimated_man_hours" json:"estimatedManHours"`
+	EstimateRate     float64         `db:"estimated_rate" json:"estimatedRate"`
+	EstimateCost     float64         `db:"estimated_cost" json:"estimatedCost"`
+}
+
+type EstimateJobJoin struct {
+	EstimateID       int              `db:"estimate_id" json:"estimateId"`
+	CustomerUsername string           `db:"customer_username" json:"customerUsername"`
+	LoadAddrID       int              `db:"load_addr_id" json:"loadAddrID"`
+	UnloadAddrID     int              `db:"unload_addr_id" json:"unloadAddrID"`
+	StartTime        pgtype.Timestamp `db:"start_time" json:"startTime"`
+	EndTime          pgtype.Timestamp `db:"end_time" json:"endTime"`
+
+	Rooms      map[string]interface{} `db:"rooms" json:"rooms"`
+	Special    map[string]interface{} `db:"special" json:"special"`
+	Small      int                    `db:"small_items" json:"smallItems"`
+	Medium     int                    `db:"medium_items" json:"mediumItems"`
+	Large      int                    `db:"large_items" json:"largeItems"`
+	Boxes      int                    `db:"boxes" json:"boxes"`
+	ItemLoad   int                    `db:"item_load" json:"itemLoad"`
+	FlightMult float64                `db:"flight_mult" json:"flightMult"`
+
+	Pack   bool `db:"pack" json:"pack"`
+	Unpack bool `db:"unpack" json:"unpack"`
+	Load   bool `db:"load" json:"load"`
+	Unload bool `db:"unload" json:"unload"`
+
+	Clean bool `db:"clean" json:"clean"`
+
+	NeedTruck     bool `db:"need_truck" json:"needTruck"`
+	NumberWorkers int  `db:"number_workers" json:"numberWorkers"`
+	DistToJob     int  `db:"dist_to_job" json:"distToJob"`
+	DistMove      int  `db:"dist_move" json:"distMove"`
+
+	EstimateManHours pgtype.Interval `db:"estimated_man_hours" json:"estimatedManHours"`
+	EstimateRate     float64         `db:"estimated_rate" json:"estimatedRate"`
+	EstimateCost     float64         `db:"estimated_cost" json:"estimatedCost"`
+
+	JobID int `db:"job_id" json:"jobId"`
+
+	ManHours pgtype.Interval `db:"man_hours" json:"ManHours"`
+	Rate     float64         `db:"rate" json:"Rate"`
+	Cost     float64         `db:"cost" json:"Cost"`
+
+	Finalized      bool            `db:"finalized" json:"finalized"` //meaning customer agrees to all the job parameters
+	ActualManHours pgtype.Interval `db:"actual_man_hours" json:"actualManHours"`
+	FinalCost      float64         `db:"final_cost" json:"finalCost"`
+	AmountPaid     float64         `db:"amount_payed" json:"amountPaid"`
+
+	Notes pgtype.Text `db:"notes" json:"notes"`
+}
+
+// /////////////////////////////////////////////////////////////////
+// Session
+type Session struct {
+	ID           uuid.UUID `db:"id" json:"id"`
+	Username     string    `db:"username" json:"username"`
+	Role         string    `db:"role" json:"role"`
+	RefreshToken string    `db:"refresh_token" json:"refresh_token"`
+	UserAgent    string    `db:"user_agent" json:"user_agent"`
+	ClientIp     string    `db:"client_ip" json:"client_ip"`
+	IsBlocked    bool      `db:"is_blocked" json:"is_blocked"`
+	ExpiresAt    time.Time `db:"expires_at" json:"expires_at"`
+	CreatedAt    time.Time `db:"create_at" json:"created_at"`
+}
+
+type CreateSessionParams struct {
+	ID           uuid.UUID `db:"id" json:"id"`
+	Username     string    `db:"username" json:"username"`
+	Role         string    `db:"role" json:"role"`
+	RefreshToken string    `db:"refresh_token" json:"refresh_token"`
+	UserAgent    string    `db:"user_agent" json:"user_agent"`
+	ClientIp     string    `db:"client_ip" json:"client_ip"`
+	IsBlocked    bool      `db:"is_blocked" json:"is_blocked"`
+	ExpiresAt    time.Time `db:"expires_at" json:"expires_at"`
 }

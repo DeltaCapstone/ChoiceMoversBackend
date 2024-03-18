@@ -5,7 +5,7 @@ BEGIN;
 CREATE TABLE IF NOT EXISTS public.customers
 (
     username character varying(255) UNIQUE NOT NULL,
-    password_hash character varying(60) NOT NULL,  --bcrypt
+    password_hash character varying(60) NOT NULL,  
     first_name character varying(255) NOT NULL,
     last_name character varying(255) NOT NULL,
     email character varying(255) UNIQUE NOT NULL,
@@ -27,7 +27,7 @@ END$$;
 CREATE TABLE IF NOT EXISTS public.employees
 (
     username character varying(255) UNIQUE NOT NULL,
-    password_hash character varying(60) NOT NULL,  --bcrypt
+    password_hash character varying(60) NOT NULL,  
     first_name character varying(255) NOT NULL,
     last_name character varying(255) NOT NULL,
     email character varying(255) UNIQUE NOT NULL,
@@ -38,25 +38,61 @@ CREATE TABLE IF NOT EXISTS public.employees
     PRIMARY KEY (username)
 );
 
+
 CREATE TABLE IF NOT EXISTS public.jobs
 (
     job_id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
-    customer_username character varying,
-    load_addr integer,
-    unload_addr integer,
-    start_time timestamp with time zone,
-    hours_labor interval NOT NULL DEFAULT '0 hours',
+    estimate_id integer,
+
+    man_hours interval NOT NULL DEFAULT '0 hours',
+    rate numeric(10,2),
+    cost numeric(10,2),
+
     finalized boolean NOT NULL DEFAULT False,
-    rooms jsonb,
-    pack boolean NOT NULL DEFAULT False,
-    unpack boolean NOT NULL DEFAULT False,
-    load boolean NOT NULL DEFAULT False,
-    unload boolean NOT NULL DEFAULT False,
-    clean boolean NOT NULL DEFAULT False,
-    milage integer NOT NULL DEFAULT 0,
-    cost money NOT NULL DEFAULT 0,
+    actual_man_hours interval NOT NULL DEFAULT '0 hours',
+    final_cost numeric(10,2), 
+    amount_payed numeric(10,2),
+
     notes TEXT,
     PRIMARY KEY (job_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.estimates
+(
+    estimate_id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
+    customer_username character varying,
+
+    load_addr_id integer,
+    unload_addr_id integer,
+    start_time timestamp with time zone,
+    end_time timestamp with time zone,
+
+    rooms jsonb,    
+    special jsonb, 
+    small_items integer,
+    medium_items integer,
+    large_items integer,
+    boxes integer, 
+    item_load integer,
+    flight_mult numeric(3,1) DEFAULT 1,
+
+    pack boolean NOT NULL DEFAULT False, 
+    unpack boolean NOT NULL DEFAULT False, 
+    load boolean NOT NULL DEFAULT False, 
+    unload boolean NOT NULL DEFAULT False, 
+
+    clean boolean NOT NULL DEFAULT False, 
+
+    need_truck boolean,
+    number_workers integer DEFAULT 2, 
+    dist_to_job integer NOT NULL DEFAULT 0, 
+    dist_move integer NOT NULL DEFAULT 0, 
+
+    estimated_man_hours interval NOT NULL DEFAULT '0 hours', 
+    estimated_rate numeric(10,2),
+    estimated_cost numeric(10,2),
+
+    PRIMARY KEY (estimate_id)
 );
 
 CREATE TABLE IF NOT EXISTS public.addresses
@@ -81,29 +117,35 @@ CREATE TABLE IF NOT EXISTS public.employee_jobs
     PRIMARY KEY (employee_username, job_id)
 );
 
-ALTER TABLE IF EXISTS public.jobs
-    ADD FOREIGN KEY (load_addr)
+ALTER TABLE IF EXISTS public.estimates
+    ADD FOREIGN KEY (load_addr_id)
     REFERENCES public.addresses (address_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
 
-ALTER TABLE IF EXISTS public.jobs
-    ADD FOREIGN KEY (unload_addr)
+ALTER TABLE IF EXISTS public.estimates
+    ADD FOREIGN KEY (unload_addr_id)
     REFERENCES public.addresses (address_id) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
 
-ALTER TABLE IF EXISTS public.jobs
+ALTER TABLE IF EXISTS public.estimates
     ADD FOREIGN KEY (customer_username)
     REFERENCES public.customers (username) MATCH SIMPLE
     ON UPDATE NO ACTION
     ON DELETE NO ACTION
     NOT VALID;
 
+ALTER TABLE IF EXISTS public.jobs
+    ADD FOREIGN KEY (estimate_id)
+    REFERENCES public.estimates (estimate_id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION
+    NOT VALID;
 
 ALTER TABLE IF EXISTS public.employee_jobs
     ADD FOREIGN KEY (employee_username)

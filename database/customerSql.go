@@ -54,15 +54,12 @@ func (pg *postgres) CreateCustomer(ctx context.Context, newCustomer models.Creat
 
 const updateCustomerQuery = `
 UPDATE customers
-SET username = $1, password_hash = $2, first_name = $3, last_name = $4, email =$5, phone_primary = $6, phone_other = $7
-WHERE username = $1
+SET first_name = @first_name, last_name=@last_name , 
+email=@email, phone_primary=@primary_phone, phone_other = @phone_other
+WHERE username = @username
 `
 
-func (pg *postgres) UpdateCustomer(ctx context.Context, updatedCustomer models.Customer) error {
-	_, err := pg.db.Exec(ctx, updateCustomerQuery,
-		updatedCustomer.UserName, updatedCustomer.PasswordHash,
-		updatedCustomer.FirstName, updatedCustomer.LastName, updatedCustomer.Email,
-		updatedCustomer.PhonePrimary, updatedCustomer.PhoneOther)
-
+func (pg *postgres) UpdateCustomer(ctx context.Context, updatedCustomer models.UpdateCustomerParams) error {
+	_, err := pg.db.Exec(ctx, updateCustomerQuery, pgx.NamedArgs(utils.StructToMap(updatedCustomer, "db")))
 	return err
 }

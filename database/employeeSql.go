@@ -96,11 +96,11 @@ func (pg *postgres) CreateEmployee(ctx context.Context, newEmployee models.Creat
 
 const updateEmployeeQuery = `
 UPDATE employees
-SET username = @username, first_name = @first_name, last_name = @last_name, email = @email, 
-phone_primary = @phone_primary, phone_other = @phone_other, employee_type = @employee_type
+SET first_name = @first_name, last_name = @last_name, email = @email, 
+phone_primary = @phone_primary, phone_other = @phone_other
 WHERE username = @username`
 
-func (pg *postgres) UpdateEmployee(ctx context.Context, updatedEmployee models.GetEmployeeResponse) error {
+func (pg *postgres) UpdateEmployee(ctx context.Context, updatedEmployee models.UpdateEmployeeParams) error {
 	_, err := pg.db.Exec(ctx, updateEmployeeQuery, pgx.NamedArgs(utils.StructToMap(updatedEmployee, "db")))
 	return err
 }

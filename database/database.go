@@ -6,11 +6,14 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"reflect"
+	"strings"
 	"sync"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"go.uber.org/zap"
 )
 
 type postgres struct {
@@ -54,4 +57,55 @@ func (pg *postgres) Ping(ctx context.Context) error {
 
 func (pg *postgres) Close() {
 	pg.db.Close()
+}
+
+func scanStructfromRows(rows pgx.Rows, dest interface{}) error {
+	columns := make([]interface{}, 0)
+	columnsMap := make(map[string]interface{})
+	destValue := reflect.ValueOf(dest).Elem()
+	destType := destValue.Type()
+
+	for i := 0; i < destValue.NumField(); i++ {
+		field := destType.Field(i)
+		column := field.Tag.Get("db")
+		if column == "" {
+			column = strings.ToLower(field.Name)
+		}
+		value := destValue.Field(i).Addr().Interface()
+		columns = append(columns, value)
+		columnsMap[column] = value
+	}
+
+	if rows.Next() {
+		if err := rows.Scan(columns...); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	return fmt.Errorf("no rows found")
+}
+
+func scanStruct(row pgx.Row, dest interface{}) error {
+	columns := make([]interface{}, 0)
+	columnsMap := make(map[string]interface{})
+	destValue := reflect.ValueOf(dest).Elem()
+	destType := destValue.Type()
+
+	for i := 0; i < destValue.NumField(); i++ {
+		field := destType.Field(i)
+		column := field.Tag.Get("db")
+		if column == "" {
+			column = strings.ToLower(field.Name)
+		}
+		value := destValue.Field(i).Addr().Interface()
+		columns = append(columns, value)
+		columnsMap[column] = value
+	}
+
+	if err := row.Scan(columns...); err != nil {
+		zap.L().Sugar().Errorf(err.Error())
+		return err
+	}
+	return nil
 }

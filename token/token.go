@@ -17,81 +17,75 @@ var Config = echojwt.Config{
 	SigningKey:    []byte("secret"),
 }
 
+func GetKey(token *jwt.Token) (interface{}, error) {
+	if token.Method != jwt.SigningMethodHS256 {
+		return nil, echo.ErrForbidden
+	}
+	return []byte("secret"), nil
+}
+
 type JwtCustomClaims struct {
-	UserName             string `json:"username"`
-	Role                 string `json:"role"`
-	TokenID              uuid.UUID
+	Username             string    `json:"username"`
+	Role                 string    `json:"role"`
+	TokenID              uuid.UUID `json:"tokenId"`
 	jwt.RegisteredClaims `json:"claims"`
 }
 
 type JwtRefreshClaims struct {
-	UserName             string `json:"username"`
-	TokenID              uuid.UUID
+	Username             string    `json:"username"`
+	TokenID              uuid.UUID `json:"tokenId"`
 	jwt.RegisteredClaims `json:"claims"`
 }
 
-func MakeTokenPair(username string, role string) (map[string]string, error) {
-	t, err := MakeToken(username, role)
-	if err != nil {
-		return nil, err
-	}
-	rt, err := MakeRefreshToken(username)
-	if err != nil {
-		return nil, err
-	}
-	return map[string]string{
-		"accessToken":  t,
-		"refreshToken": rt,
-	}, nil
-}
-
-func MakeToken(username string, role string) (string, error) {
+func MakeAccessToken(username string, role string) (string, *JwtCustomClaims, error) {
 	// Set custom claims
 	newTokenID, err := uuid.NewRandom()
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 	claims := &JwtCustomClaims{
 		username,
 		role,
 		newTokenID,
 		jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 60)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 60)), //add this to a config file?
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	signedToken, err := token.SignedString([]byte("secret"))
+	key, _ := GetKey(token)
+	signedToken, err := token.SignedString(key)
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 
-	return signedToken, nil
+	return signedToken, claims, nil
 }
 
-func MakeRefreshToken(username string) (string, error) {
+func MakeRefreshToken(username string) (string, *JwtRefreshClaims, error) {
 	// Set custom claims
 	newTokenID, err := uuid.NewRandom()
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 	claims := &JwtRefreshClaims{
 		username,
 		newTokenID,
 		jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)), //add this to a config file?
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	signedToken, err := token.SignedString([]byte("secret"))
+	key, _ := GetKey(token)
+	signedToken, err := token.SignedString(key)
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 
-	return signedToken, nil
+	return signedToken, claims, nil
 }
 
 ///////////////////////////////////////////////////////////////
@@ -142,7 +136,7 @@ func MakeRefreshToken(username string) (string, error) {
 		// Use a JWT library to validate and parse the token
 		// Example:
 		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-			return []byte("secret"), nil
+			return GetKey, nil
 		})
 		if err != nil || !token.Valid || token.Method != jwt.SigningMethodHS256 {
 			return errors.New("invalid token")
