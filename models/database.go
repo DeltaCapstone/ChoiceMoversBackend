@@ -26,6 +26,15 @@ const (
 	Admin    EmployeeType = "Admin"
 )
 
+func IsValidEmployeeType(s string) (EmployeeType, bool) {
+	for _, et := range []EmployeeType{FullTime, PartTime, Manager, Admin} {
+		if string(et) == s {
+			return et, true
+		}
+	}
+	return "", false
+}
+
 type Employee struct {
 	UserName         string        `db:"username" json:"userName"`
 	PasswordHash     string        `db:"password_hash" json:"passwordHash"`

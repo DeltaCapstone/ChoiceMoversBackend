@@ -8,14 +8,42 @@ import (
 )
 
 // config
-const CMEmail = "choicemovers@gmail.com"
-const CMEmailPw = "secret"
+const CMEmail = ""
+const CMEmailPw = ""
 
 const (
 	smtpAuthAddress   = "smtp.gmail.com"
 	smtpServerAddress = "smtp.gmail.com:587"
 )
 
+func SendEmail(
+	subject string,
+	content string,
+	to []string,
+	cc []string,
+	bcc []string,
+	attachFiles []string,
+) error {
+	e := email.NewEmail()
+	e.From = fmt.Sprintf("ChoiceMovers <%s>", CMEmail)
+	e.Subject = subject
+	e.HTML = []byte(content)
+	e.To = to
+	e.Cc = cc
+	e.Bcc = bcc
+
+	for _, f := range attachFiles {
+		_, err := e.AttachFile(f)
+		if err != nil {
+			return fmt.Errorf("failed to attach file %s: %w", f, err)
+		}
+	}
+
+	smtpAuth := smtp.PlainAuth("", CMEmail, CMEmailPw, smtpAuthAddress)
+	return e.Send(smtpServerAddress, smtpAuth)
+}
+
+/*
 type EmailSender interface {
 	SendEmail(
 		subject string,
@@ -67,3 +95,4 @@ func (sender *GmailSender) SendEmail(
 	smtpAuth := smtp.PlainAuth("", sender.fromEmailAddress, sender.fromEmailPassword, smtpAuthAddress)
 	return e.Send(smtpServerAddress, smtpAuth)
 }
+*/

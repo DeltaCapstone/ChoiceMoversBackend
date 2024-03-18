@@ -10,10 +10,9 @@ func CreateRoutes(e *echo.Echo) {
 
 	e.POST("", createCustomer) //signup
 	e.POST("/login", customerLogin)
-	//e.POST("/getEstimate",createEstimate)
+	//e.POST("/createEstimate",createEstimate)
 	e.POST("/portal", createEmployee)      //signup
 	e.POST("/portal/login", employeeLogin) // Login
-
 	e.POST("/renewAccess", renewAccessToken)
 
 	customerGroup := e.Group("/customer")
@@ -37,7 +36,7 @@ func CreateRoutes(e *echo.Echo) {
 	managerGroup := e.Group("/manager")
 	managerGroup.Use(echojwt.WithConfig(token.Config), managerMiddleware) // Add a middleware for manager authentication
 	managerGroup.GET("/employee", listEmployees)                          // Manager view employees
-	//managerGroup.POST("/employee", addEmployee)
+	managerGroup.POST("/employee", addEmployee)
 	managerGroup.GET("/employee/:username", viewSomeEmployee)           // Manager views employee info
 	managerGroup.DELETE("/employee/:username", deleteEmployee)          // Manager adds new employee
 	managerGroup.PUT("/employee/:username", updateEmployeeTypePriority) //manager makes changes  to employee
