@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"net/smtp"
 
+	"github.com/DeltaCapstone/ChoiceMoversBackend/utils"
 	"github.com/jordan-wright/email"
 )
 
 // config
-const CMEmail = ""
-const CMEmailPw = ""
 
 const (
 	smtpAuthAddress   = "smtp.gmail.com"
@@ -25,7 +24,7 @@ func SendEmail(
 	attachFiles []string,
 ) error {
 	e := email.NewEmail()
-	e.From = fmt.Sprintf("ChoiceMovers <%s>", CMEmail)
+	e.From = fmt.Sprintf("ChoiceMovers <%s>", utils.ServerConfig.EmailSenderAddress)
 	e.Subject = subject
 	e.HTML = []byte(content)
 	e.To = to
@@ -39,60 +38,10 @@ func SendEmail(
 		}
 	}
 
-	smtpAuth := smtp.PlainAuth("", CMEmail, CMEmailPw, smtpAuthAddress)
+	smtpAuth := smtp.PlainAuth(
+		"",
+		utils.ServerConfig.EmailSenderAddress,
+		utils.ServerConfig.EmailSenderPassword,
+		smtpAuthAddress)
 	return e.Send(smtpServerAddress, smtpAuth)
 }
-
-/*
-type EmailSender interface {
-	SendEmail(
-		subject string,
-		content string,
-		to []string,
-		cc []string,
-		bcc []string,
-		attachFiles []string,
-	) error
-}
-
-type GmailSender struct {
-	name              string
-	fromEmailAddress  string
-	fromEmailPassword string
-}
-
-func NewGmailSender(name string, fromEmailAddress string, fromEmailPassword string) EmailSender {
-	return &GmailSender{
-		name:              name,
-		fromEmailAddress:  fromEmailAddress,
-		fromEmailPassword: fromEmailPassword,
-	}
-}
-
-func (sender *GmailSender) SendEmail(
-	subject string,
-	content string,
-	to []string,
-	cc []string,
-	bcc []string,
-	attachFiles []string,
-) error {
-	e := email.NewEmail()
-	e.From = fmt.Sprintf("%s <%s>", sender.name, sender.fromEmailAddress)
-	e.Subject = subject
-	e.HTML = []byte(content)
-	e.To = to
-	e.Cc = cc
-	e.Bcc = bcc
-
-	for _, f := range attachFiles {
-		_, err := e.AttachFile(f)
-		if err != nil {
-			return fmt.Errorf("failed to attach file %s: %w", f, err)
-		}
-	}
-
-	smtpAuth := smtp.PlainAuth("", sender.fromEmailAddress, sender.fromEmailPassword, smtpAuthAddress)
-	return e.Send(smtpServerAddress, smtpAuth)
-}
-*/
