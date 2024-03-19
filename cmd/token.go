@@ -22,10 +22,26 @@ type renewAccessTokenResponse struct {
 	AccessTokenExpiresAt time.Time `json:"accessTokenExpiresAt"`
 }
 
+func VerifyEmployeeSignupToken(s string) (*token.JwtEmployeeSignupClaims, error) {
+	st, err := jwt.ParseWithClaims(s, &token.JwtEmployeeSignupClaims{}, token.GetKey)
+	if err != nil {
+		zap.L().Sugar().Errorf("Could not parse signup token: ", err.Error())
+		switch err {
+		case jwt.ErrTokenExpired:
+			// Handle validation errors
+			return nil, echojwt.ErrJWTInvalid
+		default:
+			// Handle other errors
+			return nil, echojwt.ErrJWTMissing
+		}
+	}
+	return st.Claims.(*token.JwtEmployeeSignupClaims), nil
+}
+
 func VerifyRefreshToken(r string) (*token.JwtRefreshClaims, error) {
 	rt, err := jwt.ParseWithClaims(r, &token.JwtRefreshClaims{}, token.GetKey)
 	if err != nil {
-		zap.L().Sugar().Errorf("Could not verify refresh token: ", err.Error())
+		zap.L().Sugar().Errorf("Could not parse refresh token: ", err.Error())
 		switch err {
 		case jwt.ErrTokenExpired:
 			// Handle validation errors

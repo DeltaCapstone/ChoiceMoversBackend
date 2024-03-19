@@ -4,12 +4,15 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	DB "github.com/DeltaCapstone/ChoiceMoversBackend/database"
+	"github.com/DeltaCapstone/ChoiceMoversBackend/mailer"
 	models "github.com/DeltaCapstone/ChoiceMoversBackend/models"
 	"github.com/DeltaCapstone/ChoiceMoversBackend/token"
 	"github.com/DeltaCapstone/ChoiceMoversBackend/utils"
 	"github.com/golang-jwt/jwt/v5"
+
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/labstack/echo/v4"
@@ -79,15 +82,93 @@ func deleteEmployee(c echo.Context) error {
 		zap.L().Sugar().Errorf("Failed to delete employee: ", err.Error())
 		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error deleting data: %v", err))
 	}
-	return c.NoContent(http.StatusNoContent)
+	return c.NoContent(http.StatusOK)
+}
+
+// config
+const empSignupURL = "www.choicemovers.com/portal?token="
+const signupMessage = "<h3> use the link to create your Employee Account</h3>"
+
+func addEmployee(c echo.Context) error {
+	e := c.QueryParam("email")
+	et, ok := models.IsValidEmployeeType(c.QueryParam("type"))
+	if !ok {
+		return c.String(http.StatusBadRequest, "not a valid employee type")
+	}
+	p, err := strconv.Atoi(c.QueryParam("priority"))
+	if err != nil {
+		return c.String(http.StatusBadRequest, "could not parse priority")
+	}
+
+	//make a token for the link and to store
+	t, claims, err := token.MakeEmployeeSignupToken(e)
+	if err != nil {
+		return err
+	}
+	//store
+	newEmployee := models.EmployeeSignup{
+		Id:               claims.TokenID,
+		Email:            e,
+		EmployeeType:     et,
+		EmployeePriority: p,
+		SignupToken:      t,
+		ExpiresAt:        claims.ExpiresAt.Time,
+		Used:             false,
+	}
+	DB.PgInstance.AddEmployeeSignup(c.Request().Context(), newEmployee)
+	//make url
+
+	url := fmt.Sprintf("%v", empSignupURL+t)
+	link := fmt.Sprintf(`<p><a href="%s">Signup Link</a></p>`, url)
+	//email it
+	body := signupMessage + link
+	err = mailer.SendEmail("new employee link", body, []string{e}, nil, nil, nil)
+	if err != nil {
+		zap.L().Sugar().Errorf("Failed send email: ", err.Error())
+		return c.String(http.StatusInternalServerError, fmt.Sprintf("Failed to send email: %v", err))
+	}
+
+	return c.String(http.StatusOK, fmt.Sprintf("Email sent to: %v\n", e))
 }
 
 func createEmployee(c echo.Context) error {
+	//check token
+	token := c.QueryParam("token")
+	claims, err := VerifyEmployeeSignupToken(token)
+	if err != nil {
+		zap.L().Sugar().Errorf("Could not parse signup token in url or invalid token: ", err.Error())
+		return c.JSON(http.StatusBadRequest, fmt.Sprintf("could not parse url token or invalid token: %v", err.Error()))
+	}
+	//check db
+	su, err := DB.PgInstance.GetEmployeeSignup(c.Request().Context(), claims.TokenID)
+	if err != nil {
+		zap.L().Sugar().Errorf("Signup token does not exist: ", err.Error())
+		return c.JSON(http.StatusUnauthorized, "signup token does not exist")
+	}
+	//make sure everything matches and token/link hasn't alreayd been used
+	if su.Email != claims.Email ||
+		su.Id != claims.TokenID ||
+		su.SignupToken != token ||
+		su.Used {
+		zap.L().Sugar().Errorf("tokens do not match or this token is already used.")
+		return c.JSON(http.StatusBadRequest, "token does not match stored parameters or has already been used.")
+	}
+	// set the signup 'used' field in db to true
+	err = DB.PgInstance.UseEmployeeSignup(c.Request().Context(), claims.TokenID)
+	if err != nil {
+		zap.L().Sugar().Errorf("could not update employee signup entry: ", err.Error())
+		return c.JSON(http.StatusUnauthorized, "could not update employee signup entry.")
+	}
+
 	var newEmployee models.CreateEmployeeRequest
 	// attempt at binding incoming json to a newUser
 	if err := c.Bind(&newEmployee); err != nil {
 		zap.L().Sugar().Errorf("Incorrect data format for creating employee: ", err.Error())
 		return c.JSON(http.StatusBadRequest, echo.Map{"Bind error": "Invalid user data"})
+	}
+
+	if newEmployee.Email != claims.Email {
+		return c.JSON(http.StatusUnauthorized, "email entered does not match link recipiant")
 	}
 
 	zap.L().Debug("createEmployee", zap.Any("Employee", newEmployee))
@@ -111,7 +192,7 @@ func createEmployee(c echo.Context) error {
 
 	// validation stuff probably needed
 
-	err := DB.PgInstance.CreateEmployee(c.Request().Context(), args)
+	err = DB.PgInstance.CreateEmployee(c.Request().Context(), args)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {

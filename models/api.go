@@ -24,6 +24,16 @@ type CreateEmployeeParams struct {
 	EmployeePriority int           `db:"employee_priority" json:"employeePriority"`
 }
 
+type EmployeeSignup struct {
+	Id               uuid.UUID    `db:"id" json:"id"`
+	Email            string       `db:"email" json:"email"`
+	EmployeeType     EmployeeType `db:"employee_type" json:"employeeType"`
+	EmployeePriority int          `db:"employee_priority" json:"employeePriority"`
+	SignupToken      string       `db:"signup_token" json:"signupToken"`
+	ExpiresAt        time.Time    `db:"expires_at"`
+	Used             bool         `db:"used"`
+}
+
 type CreateEmployeeRequest struct {
 	UserName         string        `db:"username" json:"userName"`
 	PasswordPlain    string        `db:"password_plain" json:"passwordPlain"`

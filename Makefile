@@ -40,6 +40,6 @@ migratedown:
 migratedown1:
 	migrate -path database/migration -database "$(PGURL)" -verbose down 1
 
-new_migration:
+newmigration:
 	migrate create -ext sql -dir database/migration -seq $(name)
 

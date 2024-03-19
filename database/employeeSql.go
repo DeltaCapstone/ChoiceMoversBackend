@@ -5,6 +5,7 @@ import (
 
 	models "github.com/DeltaCapstone/ChoiceMoversBackend/models"
 	"github.com/DeltaCapstone/ChoiceMoversBackend/utils"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
 
@@ -83,6 +84,32 @@ func (pg *postgres) GetEmployeeList(ctx context.Context) ([]models.GetEmployeeRe
 		employees = append(employees, employee)
 	}
 	return employees, nil
+}
+
+const addSignupQuery = `INSERT INTO employee_signup (id,email,employee_type,employee_priority,signup_token, expires_at, used)
+VALUES
+(@id, @email, @employee_type, @employee_priority, @signup_token, @expires_at, @used)`
+
+func (pg *postgres) AddEmployeeSignup(ctx context.Context, newEmployeeSignUp models.EmployeeSignup) error {
+	_, err := pg.db.Exec(ctx, addSignupQuery, pgx.NamedArgs(utils.StructToMap(newEmployeeSignUp, "db")))
+	return err
+}
+
+const getSignupQuery = `SELECT id,email,employee_type,employee_priority,signup_token, expires_at, used 
+FROM employee_signup where id=$1`
+
+func (pg *postgres) GetEmployeeSignup(ctx context.Context, id uuid.UUID) (models.EmployeeSignup, error) {
+	row := pg.db.QueryRow(ctx, getSignupQuery, id)
+	var es models.EmployeeSignup
+	if err := scanStruct(row, &es); err != nil {
+		return es, err
+	}
+	return es, nil
+}
+
+func (pg *postgres) UseEmployeeSignup(ctx context.Context, id uuid.UUID) error {
+	_, err := pg.db.Exec(ctx, "UPDATE employee_signup SET used=true WHERE id=$1", id)
+	return err
 }
 
 const createEmployeeNameQuery = `INSERT INTO employees 
