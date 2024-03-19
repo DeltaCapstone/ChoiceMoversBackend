@@ -245,8 +245,10 @@ func createEstimate(c echo.Context) error {
 		NeedTruck: req.NeedTruck,
 	}, c)
 	if err != nil {
-
+		return c.JSON(http.StatusInternalServerError, echo.Map{"error": "Internal Server Error"})
 	}
+
+	args.CustomerUsername = req.Customer.UserName
 
 	est_id, err := DB.PgInstance.CreateEstimate(c.Request().Context(), args)
 	if err != nil {
@@ -263,4 +265,19 @@ func createEstimate(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusCreated, echo.Map{"estimate id": est_id})
+}
+
+func createUnownedEstimate(c echo.Context) error {
+	var req models.UnownedEstimateRequest
+	// attempt at binding incoming json to an Unowned Estimate
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid job request data"})
+	}
+
+	result, err := calculateEstimate(req, c)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{"error": "Internal Server Error"})
+	}
+
+	return c.JSON(http.StatusOK, echo.Map{"cost": result.EstimateCost})
 }
