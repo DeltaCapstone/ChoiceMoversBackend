@@ -60,7 +60,31 @@ func createAddress(address models.Address, c echo.Context) (int, error) {
 
 // Maps all items in the json to their corresponding sizes
 func itemsToSizes(estRequest models.UnownedEstimateRequest) ([]int, error) {
-	sizes := []int{0, 0, 0, 0}
+	itemMap := map[string]int{
+		"table": 1,
+		"sm":    1,
+		"md":    2,
+		"lg":    3,
+	}
+	sizes := []int{0, 0, 0}
+	var size int
+
+	for _, room := range estRequest.Rooms {
+		for item, quantity := range room {
+			size = itemMap[item]
+			sizes[size] += quantity
+		}
+	}
+
+	for item, quantity := range estRequest.Special {
+		size = itemMap[item]
+		sizes[size] += quantity
+	}
+
+	for item, quantity := range estRequest.Boxes {
+		size = itemMap[item]
+		sizes[size] += quantity
+	}
 
 	return sizes, nil
 }
@@ -116,14 +140,12 @@ func estimateHours(estRequest models.UnownedEstimateRequest, boxes int, itemLoad
 	return pack + load, nil
 }
 
-// Calculate the milage of a estimate
-func estimateMilage(estRequest models.UnownedEstimateRequest) (int, error) {
-
-	return 0, nil
+func estimateWorkers(estRequest models.UnownedEstimateRequest) (int, error) {
+	return 2, nil
 }
 
 // Calculate the total cost of a estimate
-func estimateCost(estRequest models.UnownedEstimateRequest, hours float64, milage int) (float64, error) {
+func estimateCost(estRequest models.UnownedEstimateRequest, hours float64, workers int) (float64, error) {
 
 	return 0, nil
 }
@@ -169,14 +191,13 @@ func calculateEstimate(req models.UnownedEstimateRequest, c echo.Context) (model
 
 	hours_interval := pgtype.Interval{}
 
-	// Calculate the milage
-	milage, err := estimateMilage(req)
+	workers, err := estimateWorkers(req)
 	if err != nil {
 		return estimate, err
 	}
 
 	// Calculate the cost of the job
-	cost, err := estimateCost(req, hours, milage)
+	cost, err := estimateCost(req, hours, workers)
 	if err != nil {
 		return estimate, err
 	}
@@ -192,7 +213,7 @@ func calculateEstimate(req models.UnownedEstimateRequest, c echo.Context) (model
 		Small:      sizes[0],
 		Medium:     sizes[1],
 		Large:      sizes[2],
-		Boxes:      sizes[3],
+		Boxes:      0,
 		ItemLoad:   itemLoad,
 		FlightMult: float64(req.Flights),
 
@@ -204,9 +225,9 @@ func calculateEstimate(req models.UnownedEstimateRequest, c echo.Context) (model
 		Clean: req.Clean,
 
 		NeedTruck:     req.NeedTruck,
-		NumberWorkers: 0,
-		DistToJob:     milage,
-		DistMove:      milage,
+		NumberWorkers: workers,
+		DistToJob:     req.DistToJob,
+		DistMove:      req.DistMove,
 
 		EstimateManHours: hours_interval,
 		EstimateRate:     0.0,
@@ -258,7 +279,7 @@ func createEstimate(c echo.Context) error {
 			case pgerrcode.UniqueViolation:
 				fallthrough
 			case pgerrcode.NotNullViolation:
-				return c.JSON(http.StatusConflict, fmt.Sprintf("Duplicate estimate: %v", err))
+				return c.JSON(http.StatusConflict, fmt.Sprintf("Not Null violation: %v", err))
 			}
 		}
 		return c.JSON(http.StatusInternalServerError, fmt.Sprintf("Failed to create estimate: %v", err))
@@ -267,6 +288,7 @@ func createEstimate(c echo.Context) error {
 	return c.JSON(http.StatusCreated, echo.Map{"estimate id": est_id})
 }
 
+// POST route for unauthenticated estimate requests
 func createUnownedEstimate(c echo.Context) error {
 	var req models.UnownedEstimateRequest
 	// attempt at binding incoming json to an Unowned Estimate
