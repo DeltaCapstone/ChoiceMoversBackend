@@ -1,10 +1,10 @@
 package utils
 
 import (
+	"fmt"
 	"os"
+	"reflect"
 	"time"
-
-	"go.uber.org/zap"
 	//"github.com/spf13/viper"
 )
 
@@ -41,10 +41,13 @@ func LoadConfig() error {
 		EmailSenderAddress:     os.Getenv("EMAIL_SENDER_ADDRESS"),
 		EmailSenderPassword:    os.Getenv("EMAIL_SENDER_PASSWORD"),
 	}
-	confMap := StructToMap(ServerConfig, "mapstructure")
+	st := reflect.TypeOf(ServerConfig)
 
-	for k, v := range confMap {
-		zap.L().Sugar().Infof("config set %s : %v", k, v)
+	// Iterate over the fields of the struct
+	for i := 0; i < st.NumField(); i++ {
+		field := st.Field(i)
+		value := reflect.ValueOf(ServerConfig).Field(i)
+		fmt.Printf("%s: %v\n", field.Name, value.Interface())
 	}
 	return nil
 }
