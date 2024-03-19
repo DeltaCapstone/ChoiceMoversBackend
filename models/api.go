@@ -255,13 +255,35 @@ func (er *EstimateResponse) MakeFromJoin(ej EstimateJobJoin) {
 type CreateEstimateRequest struct {
 	EstimateID int                 `db:"estimate_id" json:"estimateId"`
 	Customer   GetCustomerResponse `json:"customer"`
-	LoadAddr   Address             `json:"loadAddr"`
-	UnloadAddr Address             `json:"unloadAddr"`
+	LoadAddr   *Address            `json:"loadAddr"`
+	UnloadAddr *Address            `json:"unloadAddr"`
 	StartTime  pgtype.Timestamp    `db:"start_time" json:"startTime"`
 	EndTime    pgtype.Timestamp    `db:"end_time" json:"endTime"`
 
 	Rooms   map[string]interface{} `db:"rooms" json:"rooms"`
 	Special map[string]interface{} `db:"special" json:"special"`
+	Boxes   map[string]interface{} `json:"boxes"`
+	Flights int                    `json:"flights"`
+
+	Pack   bool `db:"pack" json:"pack"`
+	Unpack bool `db:"unpack" json:"unpack"`
+	Load   bool `db:"load" json:"load"`
+	Unload bool `db:"unload" json:"unload"`
+
+	Clean bool `db:"clean" json:"clean"`
+
+	NeedTruck bool `db:"need_truck" json:"needTruck"`
+}
+
+type UnownedEstimateRequest struct {
+	LoadAddr   *Address         `json:"loadAddr"`
+	UnloadAddr *Address         `json:"unloadAddr"`
+	StartTime  pgtype.Timestamp `db:"start_time" json:"startTime"`
+	EndTime    pgtype.Timestamp `db:"end_time" json:"endTime"`
+
+	Rooms   map[string]interface{} `db:"rooms" json:"rooms"`
+	Special map[string]interface{} `db:"special" json:"special"`
+	Boxes   map[string]interface{} `json:"boxes"`
 	Flights int                    `json:"flights"`
 
 	Pack   bool `db:"pack" json:"pack"`

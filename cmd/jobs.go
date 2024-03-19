@@ -59,13 +59,13 @@ func createAddress(address models.Address, c echo.Context) (int, error) {
 }
 
 // Maps all items in the json to their corresponding sizes
-func itemsToSizes(estRequest models.CreateEstimateRequest) ([]int, error) {
+func itemsToSizes(estRequest models.UnownedEstimateRequest) ([]int, error) {
 	sizes := []int{0, 0, 0, 0}
 
 	return sizes, nil
 }
 
-func calculateItemLoad(estRequest models.CreateEstimateRequest) (int, error) {
+func calculateItemLoad(estRequest models.UnownedEstimateRequest) (int, error) {
 	return 0, nil
 }
 
@@ -73,7 +73,7 @@ func calculateItemLoad(estRequest models.CreateEstimateRequest) (int, error) {
 // 0.25 = 4 boxes packed per hour
 var boxMultiplier float64 = 0.25
 
-func packHours(estRequest models.CreateEstimateRequest, boxes int) (float64, error) {
+func packHours(estRequest models.UnownedEstimateRequest, boxes int) (float64, error) {
 	// Converts Pack and Unpack bools into ints and uses them as the multiplier for the hours
 	// If neither are true, no hours will be added for packing
 	packMult := 0.0
@@ -87,7 +87,7 @@ func packHours(estRequest models.CreateEstimateRequest, boxes int) (float64, err
 	return (boxMultiplier * float64(boxes) * packMult), nil
 }
 
-func loadHours(estRequest models.CreateEstimateRequest, itemLoad int) (float64, error) {
+func loadHours(estRequest models.UnownedEstimateRequest, itemLoad int) (float64, error) {
 	// Converts Load and Unload bools into ints and uses them as the multiplier for the hours
 	// If neither are true, no hours will be added for loading
 	loadMult := 0.0
@@ -102,7 +102,7 @@ func loadHours(estRequest models.CreateEstimateRequest, itemLoad int) (float64, 
 }
 
 // Calculates how many hours a estimate should take
-func estimateHours(estRequest models.CreateEstimateRequest, boxes int, itemLoad int) (float64, error) {
+func estimateHours(estRequest models.UnownedEstimateRequest, boxes int, itemLoad int) (float64, error) {
 	pack, err := packHours(estRequest, boxes)
 	if err != nil {
 		return 0, err
@@ -117,49 +117,54 @@ func estimateHours(estRequest models.CreateEstimateRequest, boxes int, itemLoad 
 }
 
 // Calculate the milage of a estimate
-func estimateMilage(estRequest models.CreateEstimateRequest) (int, error) {
+func estimateMilage(estRequest models.UnownedEstimateRequest) (int, error) {
 
 	return 0, nil
 }
 
 // Calculate the total cost of a estimate
-func estimateCost(estRequest models.CreateEstimateRequest, hours float64, milage int) (float64, error) {
+func estimateCost(estRequest models.UnownedEstimateRequest, hours float64, milage int) (float64, error) {
 
 	return 0, nil
 }
 
-// POST Route to create an Estimate
-func createEstimate(c echo.Context) error {
-	var req models.CreateEstimateRequest
-	// attempt at binding incoming json to a jobRequest
-	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid job request data"})
-	}
-
+// Creates an estimate object from an Unowned Estimate. Used by both owned and unowned estimate creation.
+// Calculates labor hours, milage, cost, etc. for an estimate.
+func calculateEstimate(req models.UnownedEstimateRequest, c echo.Context) (models.Estimate, error) {
+	var estimate models.Estimate
 	itemLoad, err := calculateItemLoad(req)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid job request data: Item Load"})
+		return estimate, err
 	}
 
-	loadAddrID, err := createAddress(req.LoadAddr, c)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid job request data: Load Address"})
+	var loadAddrID, unloadAddrID int
+	if req.LoadAddr != nil {
+		loadAddrID, err = createAddress(*req.LoadAddr, c)
+		if err != nil {
+			return estimate, err
+		}
+	} else {
+		loadAddrID = -1
 	}
 
-	unloadAddrID, err := createAddress(req.UnloadAddr, c)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid job request data: Unload Address"})
+	if req.UnloadAddr != nil {
+		unloadAddrID, err = createAddress(*req.UnloadAddr, c)
+		if err != nil {
+			return estimate, err
+		}
+	} else {
+		loadAddrID = -1
 	}
 
 	sizes, err := itemsToSizes(req)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid job request data: Item Sizes"})
+		return estimate, err
 	}
 
 	// Calculate Labor Hours
 	hours, err := estimateHours(req, 0, itemLoad)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, echo.Map{"error": "Internal server error: Hours Calculation"})
+		return estimate, err
 	}
 
 	hours_interval := pgtype.Interval{}
@@ -167,21 +172,20 @@ func createEstimate(c echo.Context) error {
 	// Calculate the milage
 	milage, err := estimateMilage(req)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, echo.Map{"error": "Internal server error: Milage Calculation"})
+		return estimate, err
 	}
 
 	// Calculate the cost of the job
 	cost, err := estimateCost(req, hours, milage)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, echo.Map{"error": "Internal server error: Cost Calculation"})
+		return estimate, err
 	}
 
-	args := models.Estimate{
-		CustomerUsername: req.Customer.UserName,
-		LoadAddrID:       loadAddrID,
-		UnloadAddrID:     unloadAddrID,
-		StartTime:        req.StartTime,
-		EndTime:          req.EndTime,
+	estimate = models.Estimate{
+		LoadAddrID:   loadAddrID,
+		UnloadAddrID: unloadAddrID,
+		StartTime:    req.StartTime,
+		EndTime:      req.EndTime,
 
 		Rooms:      req.Rooms,
 		Special:    req.Special,
@@ -207,6 +211,41 @@ func createEstimate(c echo.Context) error {
 		EstimateManHours: hours_interval,
 		EstimateRate:     0.0,
 		EstimateCost:     cost,
+	}
+
+	return estimate, nil
+}
+
+// POST Route to create an Estimate with an account
+func createEstimate(c echo.Context) error {
+	var req models.CreateEstimateRequest
+	// attempt at binding incoming json to a jobRequest
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid job request data"})
+	}
+
+	args, err := calculateEstimate(models.UnownedEstimateRequest{
+		LoadAddr:   req.LoadAddr,
+		UnloadAddr: req.UnloadAddr,
+		StartTime:  req.StartTime,
+		EndTime:    req.EndTime,
+
+		Rooms:   req.Rooms,
+		Special: req.Special,
+		Boxes:   req.Boxes,
+		Flights: req.Flights,
+
+		Pack:   req.Pack,
+		Unpack: req.Unpack,
+		Load:   req.Load,
+		Unload: req.Unload,
+
+		Clean: req.Clean,
+
+		NeedTruck: req.NeedTruck,
+	}, c)
+	if err != nil {
+
 	}
 
 	est_id, err := DB.PgInstance.CreateEstimate(c.Request().Context(), args)
