@@ -86,8 +86,8 @@ func deleteEmployee(c echo.Context) error {
 }
 
 // config
-const empSignupURL = "www.choicemovers.com/portal?token="
-const signupMessage = "<h3> use the link to create your Employee Account</h3>"
+
+const signupMessage = "<h4> Use the link to create your Employee Account</h4> <p>This link is good for 15 minutes</p> "
 
 func addEmployee(c echo.Context) error {
 	e := c.QueryParam("email")
@@ -118,17 +118,19 @@ func addEmployee(c echo.Context) error {
 	DB.PgInstance.AddEmployeeSignup(c.Request().Context(), newEmployee)
 	//make url
 
-	url := fmt.Sprintf("%v", empSignupURL+t)
+	url := fmt.Sprintf("%v", utils.ServerConfig.EmpSignupURL+"?token="+t)
 	link := fmt.Sprintf(`<p><a href="%s">Signup Link</a></p>`, url)
 	//email it
 	body := signupMessage + link
-	err = mailer.SendEmail("new employee link", body, []string{e}, nil, nil, nil)
-	if err != nil {
-		zap.L().Sugar().Errorf("Failed send email: ", err.Error())
-		return c.String(http.StatusInternalServerError, fmt.Sprintf("Failed to send email: %v", err))
+	if utils.ServerConfig.Environment != "development" {
+		err = mailer.SendEmail("new employee link", body, []string{e}, nil, nil, nil)
+		if err != nil {
+			zap.L().Sugar().Errorf("Failed send email: ", err.Error())
+			return c.String(http.StatusInternalServerError, fmt.Sprintf("Failed to send email: %v", err))
+		}
+		return c.JSON(http.StatusCreated, echo.Map{"Email sent to": e})
 	}
-
-	return c.String(http.StatusOK, fmt.Sprintf("Email sent to: %v\n", e))
+	return c.JSON(http.StatusCreated, echo.Map{"Email sent to": e, "url": url})
 }
 
 func createEmployee(c echo.Context) error {

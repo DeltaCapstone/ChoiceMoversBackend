@@ -17,6 +17,7 @@ type Config struct {
 	AccessTokenDuration    time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
 	RefreshTokenDuration   time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
 	EmpSignupTokenDuration time.Duration `mapstructure:"EMP_SIGNUP_TOKEN_DURATION"`
+	EmpSignupURL           string        `mapstructure:"EMP_SIGNUP_URL"`
 	EmailSenderName        string        `mapstructure:"EMAIL_SENDER_NAME"`
 	EmailSenderAddress     string        `mapstructure:"EMAIL_SENDER_ADDRESS"`
 	EmailSenderPassword    string        `mapstructure:"EMAIL_SENDER_PASSWORD"`
@@ -37,6 +38,7 @@ func LoadConfig() error {
 		AccessTokenDuration:    ATD,
 		RefreshTokenDuration:   RTD,
 		EmpSignupTokenDuration: ESTD,
+		EmpSignupURL:           os.Getenv("EMP_SIGNUP_URL"),
 		EmailSenderName:        os.Getenv("EMAIL_SENDER_NAME"),
 		EmailSenderAddress:     os.Getenv("EMAIL_SENDER_ADDRESS"),
 		EmailSenderPassword:    os.Getenv("EMAIL_SENDER_PASSWORD"),
