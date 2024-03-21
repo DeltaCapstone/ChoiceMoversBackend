@@ -122,15 +122,19 @@ func addEmployee(c echo.Context) error {
 	link := fmt.Sprintf(`<p><a href="%s">Signup Link</a></p>`, url)
 	//email it
 	body := signupMessage + link
-	if utils.ServerConfig.Environment != "development" {
-		err = mailer.SendEmail("new employee link", body, []string{e}, nil, nil, nil)
-		if err != nil {
-			zap.L().Sugar().Errorf("Failed send email: ", err.Error())
-			return c.String(http.StatusInternalServerError, fmt.Sprintf("Failed to send email: %v", err))
-		}
-		return c.JSON(http.StatusCreated, echo.Map{"Email sent to": e})
+
+	//for dev, just send the url in the response
+	if utils.ServerConfig.Environment == "development" {
+		return c.JSON(http.StatusCreated, echo.Map{"url": url})
 	}
-	return c.JSON(http.StatusCreated, echo.Map{"Email sent to": e, "url": url})
+
+	err = mailer.SendEmail("new employee link", body, []string{e}, nil, nil, nil)
+	if err != nil {
+		zap.L().Sugar().Errorf("Failed send email: ", err.Error())
+		return c.String(http.StatusInternalServerError, fmt.Sprintf("Failed to send email: %v", err))
+	}
+	return c.JSON(http.StatusCreated, echo.Map{"Email sent to": e})
+
 }
 
 func createEmployee(c echo.Context) error {

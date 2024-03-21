@@ -11,8 +11,12 @@ func CreateRoutes(e *echo.Echo) {
 	e.POST("", createCustomer) //signup
 	e.POST("/login", customerLogin)
 	//e.POST("/createEstimate",createEstimate)
+	e.POST("/passwordReset", sendResetCodeCustomer)
+	e.PUT("/passwordReset", resetPasswordCustomer)
 	e.POST("/portal", createEmployee)      //signup
 	e.POST("/portal/login", employeeLogin) // Login
+	//e.POST("/portal/passwordReset", sendResetCodeEmployee)
+	//e.PUT("/portal/passwordReset", resetPasswordEmployee)
 	e.POST("/renewAccess", renewAccessToken)
 
 	customerGroup := e.Group("/customer")
@@ -23,6 +27,7 @@ func CreateRoutes(e *echo.Echo) {
 	//customerGroup.GET("/job", getCustomerJobs)
 	//customerGroup.POST("/job", createJobByCustomer)
 	//customerGroup.PUT("/job/:job_id", updateJobByCustomer)
+	//customerGroup.PUT("/password", changeCustomerPassword)
 
 	// Group for employee routes
 	employeeGroup := e.Group("/employee")
@@ -31,6 +36,7 @@ func CreateRoutes(e *echo.Echo) {
 	employeeGroup.PUT("/profile", updateEmployee)        // Update my account
 	employeeGroup.GET("/jobs", listJobs)                 // View list of jobs by status (?status= pending, confirmed, all)
 	//employeeGroup.POST("/jobs/requestJobAssign/:job_id", requstAssign)
+	//customerGroup.PUT("/password", changeEmployeePassword)
 
 	// Group for manager routes
 	managerGroup := e.Group("/manager")

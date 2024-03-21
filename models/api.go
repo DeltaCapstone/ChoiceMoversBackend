@@ -261,3 +261,8 @@ func (er *EstimateResponse) MakeFromJoin(ej EstimateJobJoin) {
 	er.EstimateRate = ej.EstimateRate
 	er.EstimateCost = ej.EstimateCost
 }
+
+type PasswordResetRequest struct {
+	Code  string `json:"code"`
+	NewPW string `json:"newPassword"`
+}
