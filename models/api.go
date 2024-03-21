@@ -115,7 +115,7 @@ type UpdateCustomerParams struct {
 	PhoneOther   []pgtype.Text `db:"phone_other" json:"phoneOther"`
 }
 
-type UpdateCustomerPassowrdRequest struct {
+type UpdateCustomerPasswordRequest struct {
 	UserName    string `json:"userName"`
 	PasswordOld string `json:"passwordOld"`
 	PasswordNew string `json:"passwordNew"`

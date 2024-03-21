@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	DB "github.com/DeltaCapstone/ChoiceMoversBackend/database"
 	"github.com/DeltaCapstone/ChoiceMoversBackend/mailer"
@@ -271,6 +272,41 @@ func updateEmployee(c echo.Context) error {
 	return c.JSON(http.StatusOK, "Employee updated")
 }
 
+func changeEmployeePassword(c echo.Context) error {
+	var updatedEmployee models.UpdateEmployeePasswordRequest
+	// binding request
+	if err := c.Bind(&updatedEmployee); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid input")
+	}
+	zap.L().Debug("updateEmployee: ", zap.Any("Employee password change request", updatedEmployee))
+
+	if c.Get("username") != updatedEmployee.UserName {
+		zap.L().Sugar().Errorf("Token username does not match updateEmployeePasswordRequest. ")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid input: username doesnt match")
+	}
+
+	storedHash, err := DB.PgInstance.GetEmployeeCredentials(c.Request().Context(), updatedEmployee.UserName)
+	if err != nil {
+		zap.L().Sugar().Errorf("Error retrieving old password: ", err.Error())
+		return c.String(http.StatusUnauthorized, "Something went wrong")
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(storedHash), []byte(updatedEmployee.PasswordOld))
+	if err != nil {
+		zap.L().Sugar().Errorf("Wrong password supplied: ", err.Error())
+		return c.String(http.StatusUnauthorized, fmt.Sprintf("Incorrect password for user with username: %v ", updatedEmployee.UserName))
+	}
+
+	hash, _ := utils.HashPassword(updatedEmployee.PasswordNew)
+
+	if err := DB.PgInstance.UpdateEmployeePassword(c.Request().Context(), updatedEmployee.UserName, hash); err != nil {
+		zap.L().Sugar().Errorf("Failed to update employee in db: ", err.Error())
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to update password")
+	}
+
+	return c.JSON(http.StatusOK, "Password updated")
+}
+
 func updateEmployeeTypePriority(c echo.Context) error {
 	var updatedEmployee models.UpdateEmployeeTypePriorityParams
 	if err := c.Bind(&updatedEmployee); err != nil {
@@ -285,13 +321,13 @@ func updateEmployeeTypePriority(c echo.Context) error {
 func employeeLogin(c echo.Context) error {
 	var employeeLogin models.EmployeeLoginRequest
 
-	// bind request data to the CustomerLoginRequest struct
+	// bind request data to the employeeLoginRequest struct
 	if err := c.Bind(&employeeLogin); err != nil {
 		zap.L().Sugar().Errorf("Invalid loggin request format: ", err.Error())
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid input")
 	}
 
-	// Get the customer with the username that was submitted
+	// Get the employee with the username that was submitted
 	hash, err := DB.PgInstance.GetEmployeeCredentials(c.Request().Context(), employeeLogin.UserName)
 	if err != nil {
 		zap.L().Sugar().Errorf("Could not retrieve credentials for comparison: ", err.Error())
@@ -351,4 +387,77 @@ func employeeLogin(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, rsp)
+}
+
+func sendResetCodeEmployee(c echo.Context) error {
+	//get username from request
+	username := c.QueryParam("username") //should do this differently
+	//verify user in db
+	employee, err := DB.PgInstance.GetEmployeeByUsername(c.Request().Context(), username)
+	if err != nil {
+		zap.L().Sugar().Errorf("No employee with that username: ", err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid input")
+	}
+	//create a password reset code, and write to db
+	code, _ := utils.GenerateRandomCode(6)
+	newReset := models.PasswordReset{
+		Code:      code,
+		Username:  employee.UserName,
+		Email:     employee.Email,
+		Role:      employee.EmployeeType,
+		ExpiresAt: time.Now().Add(utils.ServerConfig.PasswordResetDuration),
+	}
+	_, err = DB.PgInstance.CreatePasswordReset(c.Request().Context(), newReset)
+	if err != nil {
+		zap.L().Sugar().Errorf("Error creating password reset: ", err.Error())
+		return c.JSON(http.StatusInternalServerError, "Something went wrong.")
+	}
+
+	//for dev, just send the code in the response
+	if utils.ServerConfig.Environment == "development" {
+		return c.JSON(http.StatusCreated, echo.Map{"code": code})
+	}
+
+	//email it
+	body := fmt.Sprintf("<p> Use this code to reset your password on chioce movers employee portal: <b>%s</b></p>", code)
+	err = mailer.SendEmail("password reset code", body, []string{employee.Email}, nil, nil, nil)
+	if err != nil {
+		zap.L().Sugar().Errorf("Failed send email: ", err.Error())
+		return c.String(http.StatusInternalServerError, fmt.Sprintf("Failed to send email: %v", err))
+	}
+	return c.String(http.StatusCreated, "Code sent to your email")
+}
+
+func resetPasswordEmployee(c echo.Context) error {
+	var pwrr models.PasswordResetRequest
+	if err := c.Bind(&pwrr); err != nil {
+		zap.L().Sugar().Errorf("Invalid password reset request: ", err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid input")
+	}
+	pwr, err := DB.PgInstance.GetPasswordReset(c.Request().Context(), pwrr.Code)
+	if err != nil {
+		zap.L().Sugar().Errorf("Invalid password reset code, DNE: ", err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+	}
+	if time.Now().After(pwr.ExpiresAt) {
+		zap.L().Sugar().Errorf("Invalid password reset code, expired.")
+		return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+	}
+	if pwr.Role != "Full-time" && pwr.Role != "Part-time" && pwr.Role != "Manager" {
+		zap.L().Sugar().Errorf("Invalid password reset code, roles do not match. ")
+		return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+	}
+
+	if err := DB.PgInstance.DeletePasswordReset(c.Request().Context(), pwr.Code); err != nil {
+		zap.L().Sugar().Errorf("Couldn't delete the password reset from DB: ", err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+	}
+
+	newHash, _ := utils.HashPassword(pwrr.NewPW)
+	if err := DB.PgInstance.UpdateEmployeePassword(c.Request().Context(), pwr.Username, newHash); err != nil {
+		zap.L().Sugar().Errorf("Error updating password in database: ", err.Error())
+		return echo.NewHTTPError(http.StatusInternalServerError, "Something went wrong.")
+	}
+
+	return c.JSON(http.StatusOK, "Password updated")
 }

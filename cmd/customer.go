@@ -120,7 +120,41 @@ func updateCustomer(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, "Customer updated")
+}
 
+func changeCustomerPassword(c echo.Context) error {
+	var updatedCustomer models.UpdateCustomerPasswordRequest
+	// binding request
+	if err := c.Bind(&updatedCustomer); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid input")
+	}
+	zap.L().Debug("updateCustomer: ", zap.Any("Customer password change request", updatedCustomer))
+
+	if c.Get("username") != updatedCustomer.UserName {
+		zap.L().Sugar().Errorf("Token username does not match updateCustomerPasswordRequest. ")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid input: username doesnt match")
+	}
+
+	storedHash, err := DB.PgInstance.GetCustomerCredentials(c.Request().Context(), updatedCustomer.UserName)
+	if err != nil {
+		zap.L().Sugar().Errorf("Error retrieving old password: ", err.Error())
+		return c.String(http.StatusUnauthorized, "Something went wrong")
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(storedHash), []byte(updatedCustomer.PasswordOld))
+	if err != nil {
+		zap.L().Sugar().Errorf("Wrong password supplied: ", err.Error())
+		return c.String(http.StatusUnauthorized, fmt.Sprintf("Incorrect password for user with username: %v ", updatedCustomer.UserName))
+	}
+
+	hash, _ := utils.HashPassword(updatedCustomer.PasswordNew)
+
+	if err := DB.PgInstance.UpdateCustomerPassword(c.Request().Context(), updatedCustomer.UserName, hash); err != nil {
+		zap.L().Sugar().Errorf("Failed to update customer in db: ", err.Error())
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to update password")
+	}
+
+	return c.JSON(http.StatusOK, "Password updated")
 }
 
 func customerLogin(c echo.Context) error {
