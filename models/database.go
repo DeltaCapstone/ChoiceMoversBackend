@@ -192,3 +192,14 @@ type CreateSessionParams struct {
 	IsBlocked    bool      `db:"is_blocked" json:"is_blocked"`
 	ExpiresAt    time.Time `db:"expires_at" json:"expires_at"`
 }
+
+// /////////////////////////////////////////////////////////////////
+// Password Reset
+
+type PasswordReset struct {
+	Code      string    `db:"code"`
+	Username  string    `db:"username"`
+	Email     string    `db:"email"`
+	Role      string    `db:"role"`
+	ExpiresAt time.Time `db:"expires_at"`
+}

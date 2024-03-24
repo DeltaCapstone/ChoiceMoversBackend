@@ -115,7 +115,7 @@ type UpdateCustomerParams struct {
 	PhoneOther   []pgtype.Text `db:"phone_other" json:"phoneOther"`
 }
 
-type UpdateCustomerPassowrdRequest struct {
+type UpdateCustomerPasswordRequest struct {
 	UserName    string `json:"userName"`
 	PasswordOld string `json:"passwordOld"`
 	PasswordNew string `json:"passwordNew"`
@@ -260,4 +260,9 @@ func (er *EstimateResponse) MakeFromJoin(ej EstimateJobJoin) {
 	er.EstimateManHours = intervalToISO(ej.EstimateManHours)
 	er.EstimateRate = ej.EstimateRate
 	er.EstimateCost = ej.EstimateCost
+}
+
+type PasswordResetRequest struct {
+	Code  string `json:"code"`
+	NewPW string `json:"newPassword"`
 }

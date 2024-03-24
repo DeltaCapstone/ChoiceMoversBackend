@@ -4,8 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	DB "github.com/DeltaCapstone/ChoiceMoversBackend/database"
+	"github.com/DeltaCapstone/ChoiceMoversBackend/mailer"
 	models "github.com/DeltaCapstone/ChoiceMoversBackend/models"
 	"github.com/DeltaCapstone/ChoiceMoversBackend/token"
 	"github.com/DeltaCapstone/ChoiceMoversBackend/utils"
@@ -118,7 +120,41 @@ func updateCustomer(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, "Customer updated")
+}
 
+func changeCustomerPassword(c echo.Context) error {
+	var updatedCustomer models.UpdateCustomerPasswordRequest
+	// binding request
+	if err := c.Bind(&updatedCustomer); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid input")
+	}
+	zap.L().Debug("updateCustomer: ", zap.Any("Customer password change request", updatedCustomer))
+
+	if c.Get("username") != updatedCustomer.UserName {
+		zap.L().Sugar().Errorf("Token username does not match updateCustomerPasswordRequest. ")
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid input: username doesnt match")
+	}
+
+	storedHash, err := DB.PgInstance.GetCustomerCredentials(c.Request().Context(), updatedCustomer.UserName)
+	if err != nil {
+		zap.L().Sugar().Errorf("Error retrieving old password: ", err.Error())
+		return c.String(http.StatusUnauthorized, "Something went wrong")
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(storedHash), []byte(updatedCustomer.PasswordOld))
+	if err != nil {
+		zap.L().Sugar().Errorf("Wrong password supplied: ", err.Error())
+		return c.String(http.StatusUnauthorized, fmt.Sprintf("Incorrect password for user with username: %v ", updatedCustomer.UserName))
+	}
+
+	hash, _ := utils.HashPassword(updatedCustomer.PasswordNew)
+
+	if err := DB.PgInstance.UpdateCustomerPassword(c.Request().Context(), updatedCustomer.UserName, hash); err != nil {
+		zap.L().Sugar().Errorf("Failed to update customer in db: ", err.Error())
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to update password")
+	}
+
+	return c.JSON(http.StatusOK, "Password updated")
 }
 
 func customerLogin(c echo.Context) error {
@@ -185,5 +221,78 @@ func customerLogin(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, rsp)
+}
 
+func sendResetCodeCustomer(c echo.Context) error {
+	role := "customer"
+	//get username from request
+	username := c.QueryParam("username") //should do this differently
+	//verify user in db
+	customer, err := DB.PgInstance.GetCustomerByUserName(c.Request().Context(), username)
+	if err != nil {
+		zap.L().Sugar().Errorf("No customer with that username: ", err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid input")
+	}
+	//create a password reset code, and write to db
+	code, _ := utils.GenerateRandomCode(6)
+	newReset := models.PasswordReset{
+		Code:      code,
+		Username:  customer.UserName,
+		Email:     customer.Email,
+		Role:      role,
+		ExpiresAt: time.Now().Add(utils.ServerConfig.PasswordResetDuration),
+	}
+	_, err = DB.PgInstance.CreatePasswordReset(c.Request().Context(), newReset)
+	if err != nil {
+		zap.L().Sugar().Errorf("Error creating password reset: ", err.Error())
+		return c.JSON(http.StatusInternalServerError, "Something went wrong.")
+	}
+
+	//for dev, just send the code in the response
+	if utils.ServerConfig.Environment == "development" {
+		return c.JSON(http.StatusCreated, echo.Map{"code": code})
+	}
+
+	//email it
+	body := fmt.Sprintf("<p> Use this code to reset your password on chioce movers: <b>%s</b></p>", code)
+	err = mailer.SendEmail("password reset code", body, []string{customer.Email}, nil, nil, nil)
+	if err != nil {
+		zap.L().Sugar().Errorf("Failed send email: ", err.Error())
+		return c.String(http.StatusInternalServerError, fmt.Sprintf("Failed to send email: %v", err))
+	}
+	return c.String(http.StatusCreated, "Code sent to your email")
+}
+
+func resetPasswordCustomer(c echo.Context) error {
+	var pwrr models.PasswordResetRequest
+	if err := c.Bind(&pwrr); err != nil {
+		zap.L().Sugar().Errorf("Invalid password reset request: ", err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid input")
+	}
+	pwr, err := DB.PgInstance.GetPasswordReset(c.Request().Context(), pwrr.Code)
+	if err != nil {
+		zap.L().Sugar().Errorf("Invalid password reset code, DNE: ", err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+	}
+	if time.Now().After(pwr.ExpiresAt) {
+		zap.L().Sugar().Errorf("Invalid password reset code, expired.")
+		return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+	}
+	if pwr.Role != "customer" {
+		zap.L().Sugar().Errorf("Invalid password reset code, roles do not match. ")
+		return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+	}
+
+	if err := DB.PgInstance.DeletePasswordReset(c.Request().Context(), pwr.Code); err != nil {
+		zap.L().Sugar().Errorf("Couldn't delete the password reset from DB: ", err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+	}
+
+	newHash, _ := utils.HashPassword(pwrr.NewPW)
+	if err := DB.PgInstance.UpdateCustomerPassword(c.Request().Context(), pwr.Username, newHash); err != nil {
+		zap.L().Sugar().Errorf("Error updating password in database: ", err.Error())
+		return echo.NewHTTPError(http.StatusInternalServerError, "Something went wrong.")
+	}
+
+	return c.JSON(http.StatusOK, "Password updated")
 }

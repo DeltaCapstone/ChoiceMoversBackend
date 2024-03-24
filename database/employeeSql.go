@@ -131,3 +131,14 @@ func (pg *postgres) UpdateEmployee(ctx context.Context, updatedEmployee models.U
 	_, err := pg.db.Exec(ctx, updateEmployeeQuery, pgx.NamedArgs(utils.StructToMap(updatedEmployee, "db")))
 	return err
 }
+
+const updateEmployeePasswordQuery = `
+UPDATE employees
+SET password_hash = @password_hash
+WHERE username = @username
+`
+
+func (pg *postgres) UpdateEmployeePassword(ctx context.Context, username string, password_hash string) error {
+	_, err := pg.db.Exec(ctx, updateEmployeePasswordQuery, pgx.NamedArgs{"username": username, "password_hash": password_hash})
+	return err
+}
