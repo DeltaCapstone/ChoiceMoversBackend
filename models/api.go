@@ -83,6 +83,11 @@ type GetEmployeeResponse struct {
 	EmployeePriority int           `db:"employee_priority" json:"employeePriority"`
 }
 
+type AssignedEmployee struct {
+	GetEmployeeResponse
+	ManagerAssigned bool `json:"managerAssigned"`
+}
+
 type EmployeeLoginResponse struct {
 	SessionId             uuid.UUID `json:"sessionId"`
 	AccessToken           string    `json:"accessToken"`
@@ -177,8 +182,8 @@ type JobResponse struct {
 	FinalCost      float64 `db:"final_cost" json:"finalCost"`
 	AmountPaid     float64 `db:"ammount_payed" json:"ammountPaid"`
 
-	Notes       pgtype.Text           `db:"notes" json:"notes"`
-	AssignedEmp []GetEmployeeResponse `json:"assignedEmployees"`
+	Notes       pgtype.Text        `db:"notes" json:"notes"`
+	AssignedEmp []AssignedEmployee `json:"assignedEmployees"`
 }
 
 type EstimateResponse struct {
