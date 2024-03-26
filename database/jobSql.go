@@ -164,3 +164,17 @@ func (pg *postgres) RemoveEmployeeFromJob(ctx context.Context, username string, 
 			"job_id":   jobId})
 	return err
 }
+
+const getIsManagerAssignedQuery = `
+SELECT manager_override FROM employee_jobs
+WHERE username=@username AND job_id=@job_id`
+
+func (pg *postgres) GetIsManagerAssigned(ctx context.Context, username string, jobId int) (bool, error) {
+	row := pg.db.QueryRow(ctx, getIsManagerAssignedQuery,
+		pgx.NamedArgs{
+			"username": username,
+			"job_id":   jobId})
+	var managerAssigned bool
+	err := row.Scan(&managerAssigned)
+	return managerAssigned, err
+}

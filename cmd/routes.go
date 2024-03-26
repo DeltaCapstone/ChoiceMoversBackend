@@ -32,10 +32,11 @@ func CreateRoutes(e *echo.Echo) {
 	// Group for employee routes
 	employeeGroup := e.Group("/employee")
 	employeeGroup.Use(echojwt.WithConfig(token.Config), employeeMiddleware)
-	employeeGroup.GET("/profile", viewMyEmployeeProfile)    // Employee views their own
-	employeeGroup.PUT("/profile", updateEmployee)           // Update my account, data in json
-	employeeGroup.GET("/jobs", listJobs)                    // View list of jobs by status
-	employeeGroup.POST("/jobs/selfAssign", selfAssignToJob) // Query param "jobID"
+	employeeGroup.GET("/profile", viewMyEmployeeProfile)      // Employee views their own
+	employeeGroup.PUT("/profile", updateEmployee)             // Update my account, data in json
+	employeeGroup.GET("/jobs", listJobs)                      // View list of jobs by status
+	employeeGroup.POST("/jobs/selfAssign", selfAssignToJob)   // Query param "jobID"
+	employeeGroup.POST("/jobs/selfRemove", selfRemoveFromJob) // Query param "jobID"
 	employeeGroup.PUT("/password", changeEmployeePassword)
 
 	// Group for manager routes
@@ -46,7 +47,7 @@ func CreateRoutes(e *echo.Echo) {
 	managerGroup.GET("/employee/:username", viewSomeEmployee)           // Manager views employee info
 	managerGroup.DELETE("/employee/:username", deleteEmployee)          // Manager adds new employee
 	managerGroup.PUT("/employee/:username", updateEmployeeTypePriority) //manager makes changes  to employee
-	managerGroup.POST("/job/assign", managerAssignEmployeeToJob)        // Query Params "jobID", "toAdd", "toRemove", front end checks for full job, if "toRemove" not included then no employee removed
+	managerGroup.POST("/job/assign", managerAssignEmployeeToJob)        // Query Params "jobID", "toAdd", "toRemove", front end checks for full job, if "toRemove" not included then no employee removed, if "toAdd" not included not employee added
 	//managerGroup.POST("/job", createJob)           // Manager creates a job, needed for cases where a customer call in or a job is recieved from Uhaul for example
 	//managerGroup.PUT("/job/:jobID", updateJob)        // Manager makes changes to a job or confirms a job
 

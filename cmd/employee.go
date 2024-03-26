@@ -545,3 +545,28 @@ func selfAssignToJob(c echo.Context) error {
 	}
 	return c.JSON(http.StatusCreated, assignedEmps)
 }
+
+func selfRemoveFromJob(c echo.Context) error {
+	me := c.Get("username").(string)
+	jobId, _ := strconv.Atoi(c.QueryParam("jobID"))
+
+	managerAssign, err := DB.PgInstance.GetIsManagerAssigned(c.Request().Context(), me, jobId)
+	if err != nil {
+		zap.L().Sugar().Errorf("Error removing employee from this job in DB: ", err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+	}
+	if managerAssign {
+		return c.String(http.StatusAccepted, "You were assigned by a manager. You can't remove yourself.")
+	}
+
+	if err := DB.PgInstance.RemoveEmployeeFromJob(c.Request().Context(), me, jobId); err != nil {
+		zap.L().Sugar().Errorf("Error removing employee from this job in DB: ", err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+	}
+	assignedEmps, err := DB.GetAssignedEmployees(c.Request().Context(), jobId)
+	if err != nil {
+		zap.L().Sugar().Errorf("Error retriving list of assigned employees: ", err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+	}
+	return c.JSON(http.StatusCreated, assignedEmps)
+}
