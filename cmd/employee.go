@@ -485,32 +485,39 @@ func selfAssignToJob(c echo.Context) error {
 		zap.L().Sugar().Errorf("Error retriving list of assigned employees: ", err.Error())
 		return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
 	}
-	var bootable []models.AssignedEmployee
+
 	if n > len(assignedEmps) {
 		DB.PgInstance.AddEmployeeToJob(c.Request().Context(), me, jobId, false)
 	} else {
-		for _, e := range assignedEmps {
-			if !e.ManagerAssigned {
-				bootable = append(bootable, e)
-			}
-		}
-		min_priority_i := 0
-		for i, e := range bootable[1:] {
-			if bootable[min_priority_i].EmployeePriority < e.EmployeePriority {
+		min_priority_i := -1
+		min_priority := myPriority
+		for i, e := range assignedEmps {
+			//priority is golf rules, smaller number = higher priority, ie min priority is actually max priority value
+			//aslo start with own priority as the min
+			if !e.ManagerAssigned && min_priority < e.EmployeePriority {
+				min_priority = e.EmployeePriority
 				min_priority_i = i
 			}
 		}
-		if myPriority < bootable[min_priority_i].EmployeePriority {
-			if err := DB.PgInstance.RemoveEmployeeFromJob(c.Request().Context(), bootable[min_priority_i].UserName, jobId); err != nil {
+		//replace
+		if min_priority_i != -1 {
+			toBoot := assignedEmps[min_priority_i].UserName
+			if err := DB.PgInstance.RemoveEmployeeFromJob(c.Request().Context(), toBoot, jobId); err != nil {
 				zap.L().Sugar().Errorf("Error removing employee from this job in DB: ", err.Error())
 				return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
 			} else if err := DB.PgInstance.AddEmployeeToJob(c.Request().Context(), me, jobId, false); err != nil {
 				zap.L().Sugar().Errorf("Error add user to job in DB: ", err.Error())
 				return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
 			}
+
 		} else {
 			return c.String(http.StatusAccepted, "Job is Full, and there is no one you are allowed to boot.")
 		}
 	}
-	return c.NoContent(http.StatusCreated)
+	assignedEmps, err = DB.GetAssignedEmployees(c.Request().Context(), jobId)
+	if err != nil {
+		zap.L().Sugar().Errorf("Error retriving list of assigned employees: ", err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+	}
+	return c.JSON(http.StatusCreated, assignedEmps)
 }
