@@ -103,39 +103,6 @@ const createEstimateQuery = `INSERT INTO jobs
 	@boxes, @item_load, @flight_mult, @pack, @unpack, @load, @unload, @clean, @need_truck, @number_workers, @dist_to_job, @dist_move,
 	@estimated_man_hours, @estimated_rate, @estimated_cost) `
 
-// estimate_id integer NOT NULL GENERATED ALWAYS AS IDENTITY,
-// customer_username character varying,
-
-// load_addr_id integer,
-// unload_addr_id integer,
-// start_time timestamp with time zone,
-// end_time timestamp with time zone,
-
-// rooms jsonb,
-// special jsonb,
-// small_items integer,
-// medium_items integer,
-// large_items integer,
-// boxes integer,
-// item_load integer,
-// flight_mult numeric(3,1) DEFAULT 1,
-
-// pack boolean NOT NULL DEFAULT False,
-// unpack boolean NOT NULL DEFAULT False,
-// load boolean NOT NULL DEFAULT False,
-// unload boolean NOT NULL DEFAULT False,
-
-// clean boolean NOT NULL DEFAULT False,
-
-// need_truck boolean,
-// number_workers integer DEFAULT 2,
-// dist_to_job integer NOT NULL DEFAULT 0,
-// dist_move integer NOT NULL DEFAULT 0,
-
-// estimated_man_hours interval NOT NULL DEFAULT '0 hours',
-// estimated_rate numeric(10,2),
-// estimated_cost numeric(10,2),
-
 func (pg *postgres) CreateEstimate(ctx context.Context, estimate models.Estimate) (string, error) {
 	rows := pg.db.QueryRow(ctx, createEstimateQuery, pgx.NamedArgs(utils.StructToMap(estimate, "db")))
 	var u string
@@ -177,8 +144,8 @@ func getAssignedEmployees(ctx context.Context, jobID int) ([]models.GetEmployeeR
 }
 
 const createAddress = `INSERT INTO addresses 
-(street, city, state, ip, res_type, square_feet, flights, apt_num) VALUES 
-(@street, @city, @state, @ip, @res_type, @square_feet, @flights, @apt_num) RETURNING address_id`
+(street, city, state, zip, res_type, square_feet, flights, apt_num) VALUES 
+(@street, @city, @state, @zip, @res_type, @square_feet, @flights, @apt_num) RETURNING address_id`
 
 func (pg *postgres) CreateAddress(ctx context.Context, newJob models.Address) (int, error) {
 	rows := pg.db.QueryRow(ctx, createAddress, pgx.NamedArgs(utils.StructToMap(newJob, "db")))

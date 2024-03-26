@@ -171,6 +171,11 @@ type JobResponse struct {
 	AssignedEmp []GetEmployeeResponse `json:"assignedEmployees"`
 }
 
+type Room struct {
+	RoomName string         `json:"roomName"`
+	Items    map[string]int `json:"items"`
+}
+
 type EstimateResponse struct {
 	EstimateID int                 `db:"estimate_id" json:"estimateId"`
 	Customer   GetCustomerResponse `json:"customer"`
@@ -253,28 +258,8 @@ func (er *EstimateResponse) MakeFromJoin(ej EstimateJobJoin) {
 }
 
 type CreateEstimateRequest struct {
-	EstimateID int                 `db:"estimate_id" json:"estimateId"`
-	Customer   GetCustomerResponse `json:"customer"`
-	LoadAddr   *Address            `json:"loadAddr"`
-	UnloadAddr *Address            `json:"unloadAddr"`
-	StartTime  pgtype.Timestamp    `db:"start_time" json:"startTime"`
-	EndTime    pgtype.Timestamp    `db:"end_time" json:"endTime"`
-
-	Rooms   map[string]map[string]int `db:"rooms" json:"rooms"`
-	Special map[string]int            `db:"special" json:"special"`
-	Boxes   map[string]int            `json:"boxes"`
-	Flights int                       `json:"flights"`
-
-	Pack   bool `db:"pack" json:"pack"`
-	Unpack bool `db:"unpack" json:"unpack"`
-	Load   bool `db:"load" json:"load"`
-	Unload bool `db:"unload" json:"unload"`
-
-	Clean bool `db:"clean" json:"clean"`
-
-	NeedTruck bool `db:"need_truck" json:"needTruck"`
-	DistToJob int  `db:"dist_to_job" json:"distToJob"`
-	DistMove  int  `db:"dist_move" json:"distMove"`
+	Customer GetCustomerResponse `json:"customer"`
+	UnownedEstimateRequest
 }
 
 type UnownedEstimateRequest struct {
@@ -283,10 +268,10 @@ type UnownedEstimateRequest struct {
 	StartTime  pgtype.Timestamp `db:"start_time" json:"startTime"`
 	EndTime    pgtype.Timestamp `db:"end_time" json:"endTime"`
 
-	Rooms   map[string]map[string]int `db:"rooms" json:"rooms"`
-	Special map[string]int            `db:"special" json:"special"`
-	Boxes   map[string]int            `json:"boxes"`
-	Flights int                       `json:"flights"`
+	Rooms   []Room         `db:"rooms" json:"rooms"`
+	Special map[string]int `db:"special" json:"special"`
+	Boxes   map[string]int `json:"boxes"`
+	Flights int            `json:"flights"`
 
 	Pack   bool `db:"pack" json:"pack"`
 	Unpack bool `db:"unpack" json:"unpack"`

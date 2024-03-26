@@ -86,14 +86,14 @@ type Estimate struct {
 	StartTime        pgtype.Timestamp `db:"start_time" json:"startTime"`
 	EndTime          pgtype.Timestamp `db:"end_time" json:"endTime"`
 
-	Rooms      map[string]map[string]int `db:"rooms" json:"rooms"`
-	Special    map[string]int            `db:"special" json:"special"`
-	Small      int                       `db:"small_items" json:"smallItems"`
-	Medium     int                       `db:"medium_items" json:"mediumItems"`
-	Large      int                       `db:"large_items" json:"largeItems"`
-	Boxes      int                       `db:"boxes" json:"boxes"`
-	ItemLoad   int                       `db:"item_load" json:"itemLoad"`
-	FlightMult float64                   `db:"flight_mult" json:"flightMult"`
+	Rooms      []Room         `db:"rooms" json:"rooms"`
+	Special    map[string]int `db:"special" json:"special"`
+	Small      int            `db:"small_items" json:"smallItems"`
+	Medium     int            `db:"medium_items" json:"mediumItems"`
+	Large      int            `db:"large_items" json:"largeItems"`
+	Boxes      int            `db:"boxes" json:"boxes"`
+	ItemLoad   int            `db:"item_load" json:"itemLoad"`
+	FlightMult float64        `db:"flight_mult" json:"flightMult"`
 
 	Pack   bool `db:"pack" json:"pack"`
 	Unpack bool `db:"unpack" json:"unpack"`
