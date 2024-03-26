@@ -94,7 +94,7 @@ func getAddr(ctx context.Context, addrID int) (models.Address, error) {
 }
 
 const assignedEmpsQuery = `SELECT username, first_name,last_name,email,phone_primary,phone_other,employee_type, employee_priority, manager_override
-	FROM employee_jobs JOIN employee ON employee_jobs.employee_username = employees.username WHERE job_id = $1`
+	FROM employee_jobs JOIN employees ON employee_jobs.employee_username = employees.username WHERE job_id = $1`
 
 func GetAssignedEmployees(ctx context.Context, jobID int) ([]models.AssignedEmployee, error) {
 	var employees []models.AssignedEmployee
@@ -140,7 +140,7 @@ func (pg *postgres) GetNumWorksForJob(ctx context.Context, jobID int) (int, erro
 
 const addEmployeeToJobQuery = `
 INSERT INTO employee_jobs
-(username, job_id,manager_override)
+(employee_username, job_id,manager_override)
 VALUES
 (@username,@job_id,@manager_override)`
 
@@ -155,7 +155,7 @@ func (pg *postgres) AddEmployeeToJob(ctx context.Context, username string, jobId
 
 const removeEmployeeFromJobQuery = `
 DELETE FROM employee_jobs
-WHERE username=@username AND job_id=@job_id`
+WHERE employee_username=@username AND job_id=@job_id`
 
 func (pg *postgres) RemoveEmployeeFromJob(ctx context.Context, username string, jobId int) error {
 	_, err := pg.db.Exec(ctx, removeEmployeeFromJobQuery,
@@ -167,7 +167,7 @@ func (pg *postgres) RemoveEmployeeFromJob(ctx context.Context, username string, 
 
 const getIsManagerAssignedQuery = `
 SELECT manager_override FROM employee_jobs
-WHERE username=@username AND job_id=@job_id`
+WHERE employee_username=@username AND job_id=@job_id`
 
 func (pg *postgres) GetIsManagerAssigned(ctx context.Context, username string, jobId int) (bool, error) {
 	row := pg.db.QueryRow(ctx, getIsManagerAssignedQuery,
