@@ -258,7 +258,7 @@ func (er *EstimateResponse) MakeFromJoin(ej EstimateJobJoin) {
 }
 
 type CreateEstimateRequest struct {
-	Customer GetCustomerResponse `json:"customer"`
+	UserName string `json:"customerUserName"`
 	UnownedEstimateRequest
 }
 

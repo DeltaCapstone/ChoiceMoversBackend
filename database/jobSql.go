@@ -95,18 +95,18 @@ func getAddr(ctx context.Context, addrID int) (models.Address, error) {
 	return a, nil
 }
 
-const createEstimateQuery = `INSERT INTO jobs 
+const createEstimateQuery = `INSERT INTO estimates 
 (customer_username, load_addr_id, unload_addr_id, start_time, end_time, rooms, special, small_items, medium_items, large_items, 
 	boxes, item_load, flight_mult, pack, unpack, load, unload, clean, need_truck, number_workers, dist_to_job, dist_move,
 	estimated_man_hours, estimated_rate, estimated_cost) VALUES 
 (@customer_username, @load_addr_id, @unload_addr_id, @start_time, @end_time, @rooms, @special, @small_items, @medium_items, @large_items,
 	@boxes, @item_load, @flight_mult, @pack, @unpack, @load, @unload, @clean, @need_truck, @number_workers, @dist_to_job, @dist_move,
-	@estimated_man_hours, @estimated_rate, @estimated_cost) `
+	@estimated_man_hours, @estimated_rate, @estimated_cost) RETURNING estimate_id`
 
 func (pg *postgres) CreateEstimate(ctx context.Context, estimate models.Estimate) (string, error) {
-	rows := pg.db.QueryRow(ctx, createEstimateQuery, pgx.NamedArgs(utils.StructToMap(estimate, "db")))
+	row := pg.db.QueryRow(ctx, createEstimateQuery, pgx.NamedArgs(utils.StructToMap(estimate, "db")))
 	var u string
-	err := rows.Scan(&u)
+	err := row.Scan(&u)
 	return u, err
 }
 

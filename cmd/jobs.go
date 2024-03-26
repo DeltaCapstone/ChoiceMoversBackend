@@ -224,7 +224,10 @@ func calculateEstimate(req models.UnownedEstimateRequest, c echo.Context) (model
 		return estimate, err
 	}
 
-	hours_interval := pgtype.Interval{}
+	hours_interval := pgtype.Interval{
+		Microseconds: int64(hours * 3600000000),
+		Valid:        true,
+	}
 
 	workers, err := estimateWorkers(req)
 	if err != nil {
@@ -304,7 +307,7 @@ func createEstimate(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"error": err})
 	}
 
-	args.CustomerUsername = req.Customer.UserName
+	args.CustomerUsername = req.UserName
 
 	_, err = DB.PgInstance.CreateEstimate(c.Request().Context(), args)
 	if err != nil {
@@ -314,7 +317,7 @@ func createEstimate(c echo.Context) error {
 			case pgerrcode.UniqueViolation:
 				fallthrough
 			case pgerrcode.NotNullViolation:
-				return c.JSON(http.StatusConflict, fmt.Sprintf("Not Null violation: %v", err))
+				return c.JSON(http.StatusConflict, fmt.Sprintf("Not Null violation: %v ----- Data: %v", err, args))
 			}
 		}
 		return c.JSON(http.StatusInternalServerError, fmt.Sprintf("Failed to create estimate: %v", err))
