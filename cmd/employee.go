@@ -246,9 +246,11 @@ func managerAssignEmployeeToJob(c echo.Context) error {
 			return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
 		}
 	}
-	if err := DB.PgInstance.AddEmployeeToJob(c.Request().Context(), toAdd, jobId, true); err != nil {
-		zap.L().Sugar().Errorf("Error add user to job in DB: ", err.Error())
-		return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+	if toAdd != "" {
+		if err := DB.PgInstance.AddEmployeeToJob(c.Request().Context(), toAdd, jobId, true); err != nil {
+			zap.L().Sugar().Errorf("Error add user to job in DB: ", err.Error())
+			return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+		}
 	}
 	assignedEmps, err := DB.GetAssignedEmployees(c.Request().Context(), jobId)
 	if err != nil {
