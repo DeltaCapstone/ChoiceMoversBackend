@@ -236,6 +236,28 @@ func viewSomeEmployee(c echo.Context) error {
 	return getEmployee(c, c.Param("username"))
 }
 
+func managerAssignEmployeeToJob(c echo.Context) error {
+	toAdd := c.QueryParam("toAdd")
+	toRemove := c.QueryParam("toRemove")
+	jobId, _ := strconv.Atoi(c.QueryParam("jobID"))
+	if toRemove != "" {
+		if err := DB.PgInstance.RemoveEmployeeFromJob(c.Request().Context(), toRemove, jobId); err != nil {
+			zap.L().Sugar().Errorf("Error removing employee from this job in DB: ", err.Error())
+			return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+		}
+	}
+	if err := DB.PgInstance.AddEmployeeToJob(c.Request().Context(), toAdd, jobId, true); err != nil {
+		zap.L().Sugar().Errorf("Error add user to job in DB: ", err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+	}
+	assignedEmps, err := DB.GetAssignedEmployees(c.Request().Context(), jobId)
+	if err != nil {
+		zap.L().Sugar().Errorf("Error retriving list of assigned employees: ", err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+	}
+	return c.JSON(http.StatusCreated, assignedEmps)
+}
+
 // /////////////////////////////////////////
 // Self routes
 // /////////////////////////////////////////
