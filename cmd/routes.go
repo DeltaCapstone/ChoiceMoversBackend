@@ -32,11 +32,12 @@ func CreateRoutes(e *echo.Echo) {
 	// Group for employee routes
 	employeeGroup := e.Group("/employee")
 	employeeGroup.Use(echojwt.WithConfig(token.Config), employeeMiddleware)
-	employeeGroup.GET("/profile", viewMyEmployeeProfile)      // Employee views their own
-	employeeGroup.PUT("/profile", updateEmployee)             // Update my account, data in json
-	employeeGroup.GET("/jobs", listJobs)                      // View list of jobs by status
-	employeeGroup.POST("/jobs/selfAssign", selfAssignToJob)   // Query param "jobID"
-	employeeGroup.POST("/jobs/selfRemove", selfRemoveFromJob) // Query param "jobID"
+	employeeGroup.GET("/profile", viewMyEmployeeProfile)                // Employee views their own
+	employeeGroup.PUT("/profile", updateEmployee)                       // Update my account, data in json
+	employeeGroup.GET("/jobs", listJobs)                                // View list of jobs by status
+	employeeGroup.GET("/jobs/checkAssign", checkAssignmentAvailability) // Query param "jobID"
+	employeeGroup.POST("/jobs/selfAssign", selfAssignToJob)             // Query param "jobID"
+	employeeGroup.POST("/jobs/selfRemove", selfRemoveFromJob)           // Query param "jobID"
 	employeeGroup.PUT("/password", changeEmployeePassword)
 
 	// Group for manager routes

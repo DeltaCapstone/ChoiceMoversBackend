@@ -495,6 +495,68 @@ func resetPasswordEmployee(c echo.Context) error {
 	return c.JSON(http.StatusOK, "Password updated")
 }
 
+// HELPER FUNCTION
+func findEmployeeIndexToBoot(assignedEmps []models.AssignedEmployee, myPriority int) int {
+	min_priority_i := -1
+	min_priority := myPriority
+	for i, e := range assignedEmps {
+		//priority is golf rules, smaller number = higher priority, ie min priority is actually max priority value
+		//aslo start with own priority as the min
+		if !e.ManagerAssigned && min_priority < e.EmployeePriority {
+			min_priority = e.EmployeePriority
+			min_priority_i = i
+		}
+	}
+	return min_priority_i
+}
+
+func checkAssignmentAvailability(c echo.Context) error {
+	me := c.Get("username").(string)
+	myPriority, err := DB.PgInstance.GetEmployeePriority(c.Request().Context(), me)
+	if err != nil {
+		zap.L().Sugar().Errorf("Error retriving user's employee priority from DB: ", err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+	}
+
+	jobId, _ := strconv.Atoi(c.QueryParam("jobID"))
+	n, err := DB.PgInstance.GetNumWorksForJob(c.Request().Context(), jobId)
+	if err != nil {
+		zap.L().Sugar().Errorf("Error retriving Number of Worker for Job: ", err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+	}
+
+	// obtain values needed to check availability
+	assignedEmps, err := DB.GetAssignedEmployees(c.Request().Context(), jobId)
+	if err != nil {
+		zap.L().Sugar().Errorf("Error retriving list of assigned employees: ", err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+	}
+
+	isAlreadyAssigned := false
+	for _, e := range assignedEmps {
+		if e.UserName == me {
+			isAlreadyAssigned = true
+			break
+		}
+	}
+
+	toBootIndex := findEmployeeIndexToBoot(assignedEmps, myPriority)
+	isFull := (n <= len(assignedEmps) && toBootIndex == -1)
+
+	if isFull || isAlreadyAssigned {
+		var conflictType models.AssignmentConflictType
+		if isFull {
+			conflictType = models.JOB_FULL
+		}
+		if isAlreadyAssigned {
+			conflictType = models.ALREADY_ASSIGNED
+		}
+		return c.String(http.StatusConflict, string(conflictType))
+	} else {
+		return c.JSON(http.StatusOK, assignedEmps[toBootIndex])
+	}
+}
+
 func selfAssignToJob(c echo.Context) error {
 	me := c.Get("username").(string)
 	myPriority, err := DB.PgInstance.GetEmployeePriority(c.Request().Context(), me)
@@ -521,26 +583,17 @@ func selfAssignToJob(c echo.Context) error {
 			var pgErr *pgconn.PgError
 			if errors.As(err, &pgErr) {
 				if pgErr.Code == pgerrcode.UniqueViolation {
-					return c.JSON(http.StatusConflict, fmt.Sprintf("Already Assigned to that job: %v", err))
+					return c.String(http.StatusConflict, string(models.ALREADY_ASSIGNED))
 				}
 			}
 			zap.L().Sugar().Errorf("Error add user to job in DB: ", err.Error())
 			return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
 		}
 	} else {
-		min_priority_i := -1
-		min_priority := myPriority
-		for i, e := range assignedEmps {
-			//priority is golf rules, smaller number = higher priority, ie min priority is actually max priority value
-			//aslo start with own priority as the min
-			if !e.ManagerAssigned && min_priority < e.EmployeePriority {
-				min_priority = e.EmployeePriority
-				min_priority_i = i
-			}
-		}
 		//replace
-		if min_priority_i != -1 {
-			toBoot := assignedEmps[min_priority_i].UserName
+		toBootIndex := findEmployeeIndexToBoot(assignedEmps, myPriority)
+		if toBootIndex != -1 {
+			toBoot := assignedEmps[toBootIndex].UserName
 			if err := DB.PgInstance.RemoveEmployeeFromJob(c.Request().Context(), toBoot, jobId); err != nil {
 				zap.L().Sugar().Errorf("Error removing employee from this job in DB: ", err.Error())
 				return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
@@ -548,7 +601,7 @@ func selfAssignToJob(c echo.Context) error {
 				var pgErr *pgconn.PgError
 				if errors.As(err, &pgErr) {
 					if pgErr.Code == pgerrcode.UniqueViolation {
-						return c.JSON(http.StatusConflict, fmt.Sprintf("Already Assigned to that job: %v", err))
+						return c.String(http.StatusConflict, string(models.ALREADY_ASSIGNED))
 					}
 				}
 				zap.L().Sugar().Errorf("Error add user to job in DB: ", err.Error())
@@ -556,7 +609,7 @@ func selfAssignToJob(c echo.Context) error {
 			}
 
 		} else {
-			return c.String(http.StatusAccepted, "Job is Full, and there is no one you are allowed to boot.")
+			return c.String(http.StatusConflict, string(models.JOB_FULL))
 		}
 	}
 	assignedEmps, err = DB.GetAssignedEmployees(c.Request().Context(), jobId)

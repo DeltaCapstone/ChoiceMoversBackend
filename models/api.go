@@ -163,6 +163,13 @@ type CustomerLoginResponse struct {
 // JOBS
 // ---------------------------
 
+type AssignmentConflictType string
+
+const (
+	JOB_FULL         AssignmentConflictType = "JOB_FULL"
+	ALREADY_ASSIGNED AssignmentConflictType = "ALREADY_ASSIGNED"
+)
+
 type JobsDisplayRequest struct {
 	Status    string `json:"status"`
 	StartDate string `json:"startDate"`
