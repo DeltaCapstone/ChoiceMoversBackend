@@ -248,6 +248,12 @@ func managerAssignEmployeeToJob(c echo.Context) error {
 	}
 	if toAdd != "" {
 		if err := DB.PgInstance.AddEmployeeToJob(c.Request().Context(), toAdd, jobId, true); err != nil {
+			var pgErr *pgconn.PgError
+			if errors.As(err, &pgErr) {
+				if pgErr.Code == pgerrcode.UniqueViolation {
+					return c.JSON(http.StatusConflict, fmt.Sprintf("Already Assigned to that job: %v", err))
+				}
+			}
 			zap.L().Sugar().Errorf("Error add user to job in DB: ", err.Error())
 			return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
 		}
@@ -511,7 +517,16 @@ func selfAssignToJob(c echo.Context) error {
 	}
 
 	if n > len(assignedEmps) {
-		DB.PgInstance.AddEmployeeToJob(c.Request().Context(), me, jobId, false)
+		if err := DB.PgInstance.AddEmployeeToJob(c.Request().Context(), me, jobId, false); err != nil {
+			var pgErr *pgconn.PgError
+			if errors.As(err, &pgErr) {
+				if pgErr.Code == pgerrcode.UniqueViolation {
+					return c.JSON(http.StatusConflict, fmt.Sprintf("Already Assigned to that job: %v", err))
+				}
+			}
+			zap.L().Sugar().Errorf("Error add user to job in DB: ", err.Error())
+			return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+		}
 	} else {
 		min_priority_i := -1
 		min_priority := myPriority
@@ -530,6 +545,12 @@ func selfAssignToJob(c echo.Context) error {
 				zap.L().Sugar().Errorf("Error removing employee from this job in DB: ", err.Error())
 				return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
 			} else if err := DB.PgInstance.AddEmployeeToJob(c.Request().Context(), me, jobId, false); err != nil {
+				var pgErr *pgconn.PgError
+				if errors.As(err, &pgErr) {
+					if pgErr.Code == pgerrcode.UniqueViolation {
+						return c.JSON(http.StatusConflict, fmt.Sprintf("Already Assigned to that job: %v", err))
+					}
+				}
 				zap.L().Sugar().Errorf("Error add user to job in DB: ", err.Error())
 				return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
 			}
