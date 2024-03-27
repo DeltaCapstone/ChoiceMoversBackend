@@ -553,7 +553,11 @@ func checkAssignmentAvailability(c echo.Context) error {
 		}
 		return c.String(http.StatusConflict, string(conflictType))
 	} else {
-		return c.JSON(http.StatusOK, assignedEmps[toBootIndex])
+		if toBootIndex == -1 {
+			return c.NoContent(http.StatusOK)
+		} else {
+			return c.JSON(http.StatusOK, assignedEmps[toBootIndex])
+		}
 	}
 }
 
