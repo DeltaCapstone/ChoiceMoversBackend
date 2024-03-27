@@ -57,7 +57,7 @@ func employeeMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 //TODO: Redo error handling to get rid of of al lthe sprintf's
 
 // //////////////////////////////////////
-// Manager routes
+// Employee Management routes
 // /////////////////////////////////////
 func listEmployees(c echo.Context) error {
 	//id := c.QueryParam("id")
@@ -217,6 +217,55 @@ func createEmployee(c echo.Context) error {
 	return c.JSON(http.StatusCreated, echo.Map{"username": newEmployee.UserName})
 }
 
+func updateEmployeeTypePriority(c echo.Context) error {
+	var updatedEmployee models.UpdateEmployeeTypePriorityParams
+	if err := c.Bind(&updatedEmployee); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid input")
+	}
+	zap.L().Debug("updateEmployee: ", zap.Any("Updated employee", updatedEmployee))
+
+	if err := DB.PgInstance.UpdateEmployeeTypePriority(c.Request().Context(), updatedEmployee); err != nil {
+		zap.L().Sugar().Errorf("Failed to update employee in db: ", err.Error())
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to update employee")
+	}
+	return c.JSON(http.StatusOK, "Employee updated")
+}
+
+// wrapper for getEmployee when used with manager/employee/:username
+func viewSomeEmployee(c echo.Context) error {
+	return getEmployee(c, c.Param("username"))
+}
+
+func managerAssignEmployeeToJob(c echo.Context) error {
+	toAdd := c.QueryParam("toAdd")
+	toRemove := c.QueryParam("toRemove")
+	jobId, _ := strconv.Atoi(c.QueryParam("jobID"))
+	if toRemove != "" {
+		if err := DB.PgInstance.RemoveEmployeeFromJob(c.Request().Context(), toRemove, jobId); err != nil {
+			zap.L().Sugar().Errorf("Error removing employee from this job in DB: ", err.Error())
+			return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+		}
+	}
+	if toAdd != "" {
+		if err := DB.PgInstance.AddEmployeeToJob(c.Request().Context(), toAdd, jobId, true); err != nil {
+			var pgErr *pgconn.PgError
+			if errors.As(err, &pgErr) {
+				if pgErr.Code == pgerrcode.UniqueViolation {
+					return c.JSON(http.StatusConflict, fmt.Sprintf("Already Assigned to that job: %v", err))
+				}
+			}
+			zap.L().Sugar().Errorf("Error add user to job in DB: ", err.Error())
+			return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+		}
+	}
+	assignedEmps, err := DB.GetAssignedEmployees(c.Request().Context(), jobId)
+	if err != nil {
+		zap.L().Sugar().Errorf("Error retriving list of assigned employees: ", err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+	}
+	return c.JSON(http.StatusCreated, assignedEmps)
+}
+
 // /////////////////////////////////////////
 // Self routes
 // /////////////////////////////////////////
@@ -224,11 +273,6 @@ func createEmployee(c echo.Context) error {
 // wrapper for getEmployee when used with employee/profile
 func viewMyEmployeeProfile(c echo.Context) error {
 	return getEmployee(c, c.Get("username").(string))
-}
-
-// wrapper for getEmployee when used with manager/employee/:username
-func viewSomeEmployee(c echo.Context) error {
-	return getEmployee(c, c.Param("username"))
 }
 
 func getEmployee(c echo.Context, username string) error {
@@ -305,17 +349,6 @@ func changeEmployeePassword(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, "Password updated")
-}
-
-func updateEmployeeTypePriority(c echo.Context) error {
-	var updatedEmployee models.UpdateEmployeeTypePriorityParams
-	if err := c.Bind(&updatedEmployee); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid input")
-	}
-	zap.L().Debug("updateEmployee: ", zap.Any("Updated employee", updatedEmployee))
-
-	//db querry
-	return c.JSON(http.StatusOK, "Employee updated")
 }
 
 func employeeLogin(c echo.Context) error {
@@ -460,4 +493,154 @@ func resetPasswordEmployee(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, "Password updated")
+}
+
+// HELPER FUNCTION
+func findEmployeeIndexToBoot(assignedEmps []models.AssignedEmployee, myPriority int) int {
+	min_priority_i := -1
+	min_priority := myPriority
+	for i, e := range assignedEmps {
+		//priority is golf rules, smaller number = higher priority, ie min priority is actually max priority value
+		//aslo start with own priority as the min
+		if !e.ManagerAssigned && min_priority < e.EmployeePriority {
+			min_priority = e.EmployeePriority
+			min_priority_i = i
+		}
+	}
+	return min_priority_i
+}
+
+func checkAssignmentAvailability(c echo.Context) error {
+	me := c.Get("username").(string)
+	myPriority, err := DB.PgInstance.GetEmployeePriority(c.Request().Context(), me)
+	if err != nil {
+		zap.L().Sugar().Errorf("Error retriving user's employee priority from DB: ", err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+	}
+
+	jobId, _ := strconv.Atoi(c.QueryParam("jobID"))
+	n, err := DB.PgInstance.GetNumWorksForJob(c.Request().Context(), jobId)
+	if err != nil {
+		zap.L().Sugar().Errorf("Error retriving Number of Worker for Job: ", err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+	}
+
+	// obtain values needed to check availability
+	assignedEmps, err := DB.GetAssignedEmployees(c.Request().Context(), jobId)
+	if err != nil {
+		zap.L().Sugar().Errorf("Error retriving list of assigned employees: ", err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+	}
+
+	isAlreadyAssigned := false
+	for _, e := range assignedEmps {
+		if e.UserName == me {
+			isAlreadyAssigned = true
+			break
+		}
+	}
+
+	toBootIndex := findEmployeeIndexToBoot(assignedEmps, myPriority)
+	isFull := (n <= len(assignedEmps) && toBootIndex == -1)
+
+	if isFull || isAlreadyAssigned {
+		var conflictType models.AssignmentConflictType
+		if isFull {
+			conflictType = models.JOB_FULL
+		}
+		if isAlreadyAssigned {
+			conflictType = models.ALREADY_ASSIGNED
+		}
+		return c.String(http.StatusConflict, string(conflictType))
+	} else {
+		return c.JSON(http.StatusOK, assignedEmps[toBootIndex])
+	}
+}
+
+func selfAssignToJob(c echo.Context) error {
+	me := c.Get("username").(string)
+	myPriority, err := DB.PgInstance.GetEmployeePriority(c.Request().Context(), me)
+	if err != nil {
+		zap.L().Sugar().Errorf("Error retriving user's employee priority from DB: ", err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+	}
+
+	jobId, _ := strconv.Atoi(c.QueryParam("jobID"))
+	n, err := DB.PgInstance.GetNumWorksForJob(c.Request().Context(), jobId)
+	if err != nil {
+		zap.L().Sugar().Errorf("Error retriving Number of Worker for Job: ", err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+	}
+
+	assignedEmps, err := DB.GetAssignedEmployees(c.Request().Context(), jobId)
+	if err != nil {
+		zap.L().Sugar().Errorf("Error retriving list of assigned employees: ", err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+	}
+
+	if n > len(assignedEmps) {
+		if err := DB.PgInstance.AddEmployeeToJob(c.Request().Context(), me, jobId, false); err != nil {
+			var pgErr *pgconn.PgError
+			if errors.As(err, &pgErr) {
+				if pgErr.Code == pgerrcode.UniqueViolation {
+					return c.String(http.StatusConflict, string(models.ALREADY_ASSIGNED))
+				}
+			}
+			zap.L().Sugar().Errorf("Error add user to job in DB: ", err.Error())
+			return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+		}
+	} else {
+		//replace
+		toBootIndex := findEmployeeIndexToBoot(assignedEmps, myPriority)
+		if toBootIndex != -1 {
+			toBoot := assignedEmps[toBootIndex].UserName
+			if err := DB.PgInstance.RemoveEmployeeFromJob(c.Request().Context(), toBoot, jobId); err != nil {
+				zap.L().Sugar().Errorf("Error removing employee from this job in DB: ", err.Error())
+				return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+			} else if err := DB.PgInstance.AddEmployeeToJob(c.Request().Context(), me, jobId, false); err != nil {
+				var pgErr *pgconn.PgError
+				if errors.As(err, &pgErr) {
+					if pgErr.Code == pgerrcode.UniqueViolation {
+						return c.String(http.StatusConflict, string(models.ALREADY_ASSIGNED))
+					}
+				}
+				zap.L().Sugar().Errorf("Error add user to job in DB: ", err.Error())
+				return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+			}
+
+		} else {
+			return c.String(http.StatusConflict, string(models.JOB_FULL))
+		}
+	}
+	assignedEmps, err = DB.GetAssignedEmployees(c.Request().Context(), jobId)
+	if err != nil {
+		zap.L().Sugar().Errorf("Error retriving list of assigned employees: ", err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+	}
+	return c.JSON(http.StatusCreated, assignedEmps)
+}
+
+func selfRemoveFromJob(c echo.Context) error {
+	me := c.Get("username").(string)
+	jobId, _ := strconv.Atoi(c.QueryParam("jobID"))
+
+	managerAssign, err := DB.PgInstance.GetIsManagerAssigned(c.Request().Context(), me, jobId)
+	if err != nil {
+		zap.L().Sugar().Errorf("Error removing employee from this job in DB: ", err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+	}
+	if managerAssign {
+		return c.String(http.StatusAccepted, "You were assigned by a manager. You can't remove yourself.")
+	}
+
+	if err := DB.PgInstance.RemoveEmployeeFromJob(c.Request().Context(), me, jobId); err != nil {
+		zap.L().Sugar().Errorf("Error removing employee from this job in DB: ", err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+	}
+	assignedEmps, err := DB.GetAssignedEmployees(c.Request().Context(), jobId)
+	if err != nil {
+		zap.L().Sugar().Errorf("Error retriving list of assigned employees: ", err.Error())
+		return echo.NewHTTPError(http.StatusBadRequest, "Something went wrong.")
+	}
+	return c.JSON(http.StatusCreated, assignedEmps)
 }

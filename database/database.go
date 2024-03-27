@@ -59,6 +59,12 @@ func (pg *postgres) Close() {
 	pg.db.Close()
 }
 
+func BeginTx(ctx context.Context) (pgx.Tx, error) {
+	t, e := PgInstance.db.Begin(ctx)
+	defer t.Rollback(ctx)
+	return t, e
+}
+
 func scanStructfromRows(rows pgx.Rows, dest interface{}) error {
 	columns := make([]interface{}, 0)
 	columnsMap := make(map[string]interface{})

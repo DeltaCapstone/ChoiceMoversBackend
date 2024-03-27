@@ -113,8 +113,11 @@ func (pg *postgres) UseEmployeeSignup(ctx context.Context, id uuid.UUID) error {
 }
 
 const createEmployeeNameQuery = `INSERT INTO employees 
-(username, password_hash, first_name, last_name, email, phone_primary, phone_other, employee_type) VALUES 
-(@username,@password_hash,@first_name,@last_name,@email,@phone_primary,@phone_other,@employee_type) `
+(username, password_hash, first_name, last_name, email,
+	phone_primary, phone_other, employee_type,employee_priority) 
+VALUES 
+(@username,@password_hash,@first_name,@last_name,@email,
+	@phone_primary,@phone_other,@employee_type,@employee_priority) `
 
 func (pg *postgres) CreateEmployee(ctx context.Context, newEmployee models.CreateEmployeeParams) error {
 	_, err := pg.db.Exec(ctx, createEmployeeNameQuery, pgx.NamedArgs(utils.StructToMap(newEmployee, "db")))
@@ -141,4 +144,30 @@ WHERE username = @username
 func (pg *postgres) UpdateEmployeePassword(ctx context.Context, username string, password_hash string) error {
 	_, err := pg.db.Exec(ctx, updateEmployeePasswordQuery, pgx.NamedArgs{"username": username, "password_hash": password_hash})
 	return err
+}
+
+const updateEmployeeTypePriorityQuery = `
+UPDATE employees
+SET employee_type = @employee_type
+employee_priority = @employee_priority\
+where username = @username`
+
+func (pg *postgres) UpdateEmployeeTypePriority(ctx context.Context, update models.UpdateEmployeeTypePriorityParams) error {
+	_, err := pg.db.Exec(ctx, updateEmployeeTypePriorityQuery,
+		pgx.NamedArgs{
+			"username":          update.UserName,
+			"employee_type":     update.EmployeeType,
+			"employee_priority": update.EmployeePriority})
+	return err
+}
+
+const getEmployeePriorityQuery = "SELECT employee_priority FROM employees WHERE username = $1"
+
+func (pg *postgres) GetEmployeePriority(ctx context.Context, username string) (int, error) {
+	row := pg.db.QueryRow(ctx, getEmployeePriorityQuery, username)
+	var p int
+	if err := row.Scan(&p); err != nil {
+		return -1, err
+	}
+	return p, nil
 }
