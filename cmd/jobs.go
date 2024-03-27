@@ -61,13 +61,13 @@ func createAddress(address models.Address, c echo.Context) (int, error) {
 // Maps all items in the json to their corresponding sizes
 func itemsToSizes(estRequest models.UnownedEstimateRequest) ([]int, error) {
 	itemMap := map[string]int{
-		"table":      0,
-		"pool_table": 2,
-		"couch":      2,
-		"lamp":       0,
-		"sm":         0,
-		"md":         1,
-		"lg":         2,
+		"table":     0,
+		"poolTable": 2,
+		"couch":     2,
+		"lamp":      0,
+		"sm":        0,
+		"md":        1,
+		"lg":        2,
 	}
 
 	// sm, md, lg
@@ -94,14 +94,14 @@ func itemsToSizes(estRequest models.UnownedEstimateRequest) ([]int, error) {
 	return sizes, nil
 }
 
-func calculateItemLoad(sizes []int) (int, error) {
-	sm_mult := 1
-	md_mult := 2
-	lg_mult := 3
+func calculateItemLoad(sizes []int) (float64, error) {
+	sm_mult := 0.02
+	md_mult := 0.05
+	lg_mult := 0.1
 
-	load := (sm_mult*sizes[0] +
-		md_mult*sizes[1] +
-		lg_mult*sizes[2])
+	load := (sm_mult*float64(sizes[0]) +
+		md_mult*float64(sizes[1]) +
+		lg_mult*float64(sizes[2]))
 
 	return load, nil
 }
@@ -124,7 +124,7 @@ func packHours(estRequest models.UnownedEstimateRequest, boxes int) (float64, er
 	return (boxMultiplier * float64(boxes) * packMult), nil
 }
 
-func loadHours(estRequest models.UnownedEstimateRequest, itemLoad int) (float64, error) {
+func loadHours(estRequest models.UnownedEstimateRequest, itemLoad float64) (float64, error) {
 	// Converts Load and Unload bools into ints and uses them as the multiplier for the hours
 	// If neither are true, no hours will be added for loading
 	loadMult := 0.0
@@ -139,7 +139,7 @@ func loadHours(estRequest models.UnownedEstimateRequest, itemLoad int) (float64,
 }
 
 // Calculates how many hours a estimate should take
-func estimateHours(estRequest models.UnownedEstimateRequest, boxes int, itemLoad int) (float64, error) {
+func estimateHours(estRequest models.UnownedEstimateRequest, boxes int, itemLoad float64) (float64, error) {
 	pack, err := packHours(estRequest, boxes)
 	if err != nil {
 		return 0, err
@@ -156,8 +156,8 @@ func estimateHours(estRequest models.UnownedEstimateRequest, boxes int, itemLoad
 func estimateWorkers(estRequest models.UnownedEstimateRequest) (int, error) {
 	// Maps special item names to their number of needed workers
 	specials := map[string]int{
-		"pool_table": 3,
-		"piano":      4,
+		"poolTable": 3,
+		"piano":     4,
 	}
 
 	numWorkers := 2
@@ -174,14 +174,20 @@ func estimateWorkers(estRequest models.UnownedEstimateRequest) (int, error) {
 	return numWorkers, nil
 }
 
-func estimateRate(estRequest models.UnownedEstimateRequest, workers int) {
-
+// Calculates the cost of an hour
+func estimateRate(estRequest models.UnownedEstimateRequest, workers int) (float64, error) {
+	distRate := 10 * (float64(estRequest.DistToJob-15) / 15)
+	manRate := workers * 40
+	rate := distRate + float64(manRate)
+	return rate, nil
 }
 
 // Calculate the total cost of a estimate
-func estimateCost(estRequest models.UnownedEstimateRequest, hours float64, workers int) (float64, error) {
-
-	return 0, nil
+func estimateCost(estRequest models.UnownedEstimateRequest, hours float64, workers int, rate float64) (float64, error) {
+	jobHours := hours / float64(workers)
+	// Assumes that DistMove is in minutes or miles (60 mph)
+	totalHours := jobHours + (float64(estRequest.DistMove) / 60)
+	return totalHours * rate, nil
 }
 
 // Creates an estimate object from an Unowned Estimate. Used by both owned and unowned estimate creation.
@@ -234,8 +240,13 @@ func calculateEstimate(req models.UnownedEstimateRequest, c echo.Context) (model
 		return estimate, err
 	}
 
+	rate, err := estimateRate(req, workers)
+	if err != nil {
+		return estimate, err
+	}
+
 	// Calculate the cost of the job
-	cost, err := estimateCost(req, hours, workers)
+	cost, err := estimateCost(req, hours, workers, rate)
 	if err != nil {
 		return estimate, err
 	}
@@ -268,7 +279,7 @@ func calculateEstimate(req models.UnownedEstimateRequest, c echo.Context) (model
 		DistMove:      req.DistMove,
 
 		EstimateManHours: hours_interval,
-		EstimateRate:     0.0,
+		EstimateRate:     rate,
 		EstimateCost:     cost,
 	}
 

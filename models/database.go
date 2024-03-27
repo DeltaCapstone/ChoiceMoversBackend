@@ -92,7 +92,7 @@ type Estimate struct {
 	Medium     int            `db:"medium_items" json:"mediumItems"`
 	Large      int            `db:"large_items" json:"largeItems"`
 	Boxes      int            `db:"boxes" json:"boxes"`
-	ItemLoad   int            `db:"item_load" json:"itemLoad"`
+	ItemLoad   float64        `db:"item_load" json:"itemLoad"`
 	FlightMult float64        `db:"flight_mult" json:"flightMult"`
 
 	Pack   bool `db:"pack" json:"pack"`
