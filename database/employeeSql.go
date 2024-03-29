@@ -150,8 +150,8 @@ func (pg *postgres) UpdateEmployeePassword(ctx context.Context, username string,
 
 const updateEmployeeTypePriorityQuery = `
 UPDATE employees
-SET employee_type = @employee_type
-employee_priority = @employee_priority\
+SET employee_type = @employee_type,
+employee_priority = @employee_priority
 where username = @username`
 
 func (pg *postgres) UpdateEmployeeTypePriority(ctx context.Context, update models.UpdateEmployeeTypePriorityParams) error {
