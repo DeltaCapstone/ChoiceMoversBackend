@@ -26,7 +26,7 @@ func (pg *postgres) GetEmployeeByUsername(ctx context.Context, username string) 
 	var employee models.GetEmployeeResponse
 	row := pg.db.QueryRow(ctx,
 		`SELECT username, first_name, last_name, 
-		email, phone_primary, employee_type FROM employees WHERE username = $1`, username)
+		email, phone_primary, employee_type, employee_priority FROM employees WHERE username = $1`, username)
 
 	if err := row.Scan(
 		&employee.UserName,
@@ -34,7 +34,8 @@ func (pg *postgres) GetEmployeeByUsername(ctx context.Context, username string) 
 		&employee.LastName,
 		&employee.Email,
 		&employee.PhonePrimary,
-		&employee.EmployeeType); err != nil {
+		&employee.EmployeeType,
+		&employee.EmployeePriority); err != nil {
 		return employee, err
 	}
 	return employee, nil
@@ -62,7 +63,7 @@ func (pg *postgres) GetEmployeeList(ctx context.Context) ([]models.GetEmployeeRe
 	var err error
 
 	rows, err = pg.db.Query(ctx,
-		"SELECT username,first_name, last_name, email, phone_primary,phone_other, employee_type FROM employees")
+		"SELECT username,first_name, last_name, email, phone_primary,phone_other, employee_type, employee_priority FROM employees")
 
 	if err != nil {
 		return nil, err
@@ -78,7 +79,8 @@ func (pg *postgres) GetEmployeeList(ctx context.Context) ([]models.GetEmployeeRe
 			&employee.Email,
 			&employee.PhonePrimary,
 			&employee.PhoneOther,
-			&employee.EmployeeType); err != nil {
+			&employee.EmployeeType,
+			&employee.EmployeePriority); err != nil {
 			return nil, err
 		}
 		employees = append(employees, employee)
