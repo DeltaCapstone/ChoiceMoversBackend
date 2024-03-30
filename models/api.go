@@ -94,7 +94,7 @@ type EmployeeLoginResponse struct {
 	AccessTokenExpiresAt  time.Time `json:"accessTokenExpiresAt"`
 	RefreshToken          string    `json:"refreshToken"`
 	RefreshTokenExpiresAt time.Time `json:"refreshTokenExpiresAt"`
-	Username              string    `json:"username"`
+	Username              string    `json:"userName"`
 }
 
 // ---------------------------
@@ -156,7 +156,7 @@ type CustomerLoginResponse struct {
 	AccessTokenExpiresAt  time.Time `json:"accessTokenExpiresAt"`
 	RefreshToken          string    `json:"refreshToken"`
 	RefreshTokenExpiresAt time.Time `json:"refreshTokenExpiresAt"`
-	Username              string    `json:"username"`
+	Username              string    `json:"userName"`
 }
 
 // ---------------------------
