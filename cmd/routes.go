@@ -32,6 +32,7 @@ func CreateRoutes(e *echo.Echo) {
 	// Group for employee routes
 	employeeGroup := e.Group("/employee")
 	employeeGroup.Use(echojwt.WithConfig(token.Config), employeeMiddleware)
+	employeeGroup.GET("/employee", listEmployees)                       // view employees
 	employeeGroup.GET("/profile", viewMyEmployeeProfile)                // Employee views their own
 	employeeGroup.PUT("/profile", updateEmployee)                       // Update my account, data in json
 	employeeGroup.GET("/jobs", listJobs)                                // View list of jobs by status
@@ -43,7 +44,6 @@ func CreateRoutes(e *echo.Echo) {
 	// Group for manager routes
 	managerGroup := e.Group("/manager")
 	managerGroup.Use(echojwt.WithConfig(token.Config), managerMiddleware)
-	managerGroup.GET("/employee", listEmployees)                        // Manager view employees
 	managerGroup.POST("/employee", addEmployee)                         // Query param "email"
 	managerGroup.GET("/employee/:username", viewSomeEmployee)           // Manager views employee info
 	managerGroup.DELETE("/employee/:username", deleteEmployee)          // Manager adds new employee
