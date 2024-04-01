@@ -257,12 +257,8 @@ func (er *EstimateResponse) MakeFromJoin(ej EstimateJobJoin) {
 	er.EstimateCost = ej.EstimateCost
 }
 
-type CreateEstimateRequest struct {
-	UserName string `json:"customerUserName"`
-	UnownedEstimateRequest
-}
-
-type UnownedEstimateRequest struct {
+type EstimateRequest struct {
+	UserName   string           `json:"customerUserName"`
 	LoadAddr   *Address         `json:"loadAddr"`
 	UnloadAddr *Address         `json:"unloadAddr"`
 	StartTime  pgtype.Timestamp `db:"start_time" json:"startTime"`

@@ -59,7 +59,7 @@ func createAddress(address models.Address, c echo.Context) (int, error) {
 }
 
 // Maps all items in the json to their corresponding sizes
-func itemsToSizes(estRequest models.UnownedEstimateRequest) ([]int, error) {
+func itemsToSizes(estRequest models.EstimateRequest) ([]int, error) {
 	itemMap := map[string]int{
 		"table":     0,
 		"poolTable": 2,
@@ -110,7 +110,7 @@ func calculateItemLoad(sizes []int) (float64, error) {
 // 0.25 = 4 boxes packed per hour
 var boxMultiplier float64 = 0.25
 
-func packHours(estRequest models.UnownedEstimateRequest, boxes int) (float64, error) {
+func packHours(estRequest models.EstimateRequest, boxes int) (float64, error) {
 	// Converts Pack and Unpack bools into ints and uses them as the multiplier for the hours
 	// If neither are true, no hours will be added for packing
 	packMult := 0.0
@@ -124,7 +124,7 @@ func packHours(estRequest models.UnownedEstimateRequest, boxes int) (float64, er
 	return (boxMultiplier * float64(boxes) * packMult), nil
 }
 
-func loadHours(estRequest models.UnownedEstimateRequest, itemLoad float64) (float64, error) {
+func loadHours(estRequest models.EstimateRequest, itemLoad float64) (float64, error) {
 	// Converts Load and Unload bools into ints and uses them as the multiplier for the hours
 	// If neither are true, no hours will be added for loading
 	loadMult := 0.0
@@ -139,7 +139,7 @@ func loadHours(estRequest models.UnownedEstimateRequest, itemLoad float64) (floa
 }
 
 // Calculates how many hours a estimate should take
-func estimateHours(estRequest models.UnownedEstimateRequest, boxes int, itemLoad float64) (float64, error) {
+func estimateHours(estRequest models.EstimateRequest, boxes int, itemLoad float64) (float64, error) {
 	pack, err := packHours(estRequest, boxes)
 	if err != nil {
 		return 0, err
@@ -153,7 +153,7 @@ func estimateHours(estRequest models.UnownedEstimateRequest, boxes int, itemLoad
 	return pack + load, nil
 }
 
-func estimateWorkers(estRequest models.UnownedEstimateRequest) (int, error) {
+func estimateWorkers(estRequest models.EstimateRequest) (int, error) {
 	// Maps special item names to their number of needed workers
 	specials := map[string]int{
 		"poolTable": 3,
@@ -175,7 +175,7 @@ func estimateWorkers(estRequest models.UnownedEstimateRequest) (int, error) {
 }
 
 // Calculates the cost of an hour
-func estimateRate(estRequest models.UnownedEstimateRequest, workers int) (float64, error) {
+func estimateRate(estRequest models.EstimateRequest, workers int) (float64, error) {
 	distRate := 10 * (float64(estRequest.DistToJob-15) / 15)
 	manRate := workers * 40
 	rate := distRate + float64(manRate)
@@ -183,7 +183,7 @@ func estimateRate(estRequest models.UnownedEstimateRequest, workers int) (float6
 }
 
 // Calculate the total cost of a estimate
-func estimateCost(estRequest models.UnownedEstimateRequest, hours float64, workers int, rate float64) (float64, error) {
+func estimateCost(estRequest models.EstimateRequest, hours float64, workers int, rate float64) (float64, error) {
 	jobHours := hours / float64(workers)
 	// Assumes that DistMove is in minutes or miles (60 mph)
 	totalHours := jobHours + (float64(estRequest.DistMove) / 60)
@@ -192,7 +192,7 @@ func estimateCost(estRequest models.UnownedEstimateRequest, hours float64, worke
 
 // Creates an estimate object from an Unowned Estimate. Used by both owned and unowned estimate creation.
 // Calculates labor hours, milage, cost, etc. for an estimate.
-func calculateEstimate(req models.UnownedEstimateRequest, c echo.Context) (models.Estimate, error) {
+func calculateEstimate(req models.EstimateRequest, c echo.Context) (models.Estimate, error) {
 	var estimate models.Estimate
 
 	sizes, err := itemsToSizes(req)
@@ -288,32 +288,13 @@ func calculateEstimate(req models.UnownedEstimateRequest, c echo.Context) (model
 
 // POST Route to create an Estimate with an account
 func createEstimate(c echo.Context) error {
-	var req models.CreateEstimateRequest
+	var req models.EstimateRequest
 	// attempt at binding incoming json to a jobRequest
 	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": err})
 	}
 
-	args, err := calculateEstimate(models.UnownedEstimateRequest{
-		LoadAddr:   req.LoadAddr,
-		UnloadAddr: req.UnloadAddr,
-		StartTime:  req.StartTime,
-		EndTime:    req.EndTime,
-
-		Rooms:   req.Rooms,
-		Special: req.Special,
-		Boxes:   req.Boxes,
-		Flights: req.Flights,
-
-		Pack:   req.Pack,
-		Unpack: req.Unpack,
-		Load:   req.Load,
-		Unload: req.Unload,
-
-		Clean: req.Clean,
-
-		NeedTruck: req.NeedTruck,
-	}, c)
+	args, err := calculateEstimate(req, c)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"error": err})
 	}
@@ -339,7 +320,7 @@ func createEstimate(c echo.Context) error {
 
 // POST route for unauthenticated estimate requests
 func createUnownedEstimate(c echo.Context) error {
-	var req models.UnownedEstimateRequest
+	var req models.EstimateRequest
 	// attempt at binding incoming json to an Unowned Estimate
 	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": err})
