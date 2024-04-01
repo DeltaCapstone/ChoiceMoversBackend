@@ -26,7 +26,7 @@ func (pg *postgres) GetCustomerByUserName(ctx context.Context, userName string) 
 	var customer models.GetCustomerResponse
 	row := pg.db.QueryRow(ctx,
 		`SELECT username,first_name, last_name, 
-		email, phone_primary, phone_other FROM customers WHERE username = $1`, userName)
+		email, phone_primary, phone_other1, phone_other2 FROM customers WHERE username = $1`, userName)
 
 	if err := row.Scan(
 		&customer.UserName,
@@ -34,15 +34,16 @@ func (pg *postgres) GetCustomerByUserName(ctx context.Context, userName string) 
 		&customer.LastName,
 		&customer.Email,
 		&customer.PhonePrimary,
-		&customer.PhoneOther); err != nil {
+		&customer.PhoneOther1,
+		&customer.PhoneOther2); err != nil {
 		return models.GetCustomerResponse{}, err
 	}
 	return customer, nil
 }
 
 const createCustomerNameQuery = `INSERT INTO customers 
-(username, password_hash, first_name, last_name, email, phone_primary, phone_other) VALUES 
-(@username,@password_hash,@first_name,@last_name,@email,@phone_primary,@phone_other) 
+(username, password_hash, first_name, last_name, email, phone_primary, phone_other1,phone_other2) VALUES 
+(@username,@password_hash,@first_name,@last_name,@email,@phone_primary,@phone_other1,@phone_other2) 
 RETURNING username`
 
 func (pg *postgres) CreateCustomer(ctx context.Context, newCustomer models.CreateCustomerParams) (string, error) {
@@ -55,7 +56,7 @@ func (pg *postgres) CreateCustomer(ctx context.Context, newCustomer models.Creat
 const updateCustomerQuery = `
 UPDATE customers
 SET first_name = @first_name, last_name=@last_name , 
-email=@email, phone_primary=@primary_phone, phone_other = @phone_other
+email=@email, phone_primary=@primary_phone, phone_other1 = @phone_other1, phone_other2 = @phone_other2
 WHERE username = @username
 `
 

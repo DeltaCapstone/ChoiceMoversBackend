@@ -93,7 +93,7 @@ func getAddr(ctx context.Context, addrID int) (models.Address, error) {
 	return a, nil
 }
 
-const assignedEmpsQuery = `SELECT username, first_name,last_name,email,phone_primary,phone_other,employee_type, employee_priority, manager_override
+const assignedEmpsQuery = `SELECT username, first_name,last_name,email,phone_primary,phone_other1,phone_other2,employee_type, employee_priority, manager_override
 	FROM employee_jobs JOIN employees ON employee_jobs.employee_username = employees.username WHERE job_id = $1`
 
 func GetAssignedEmployees(ctx context.Context, jobID int) ([]models.AssignedEmployee, error) {
@@ -116,7 +116,8 @@ func GetAssignedEmployees(ctx context.Context, jobID int) ([]models.AssignedEmpl
 			&employee.LastName,
 			&employee.Email,
 			&employee.PhonePrimary,
-			&employee.PhoneOther,
+			&employee.PhoneOther1,
+			&employee.PhoneOther2,
 			&employee.EmployeeType,
 			&employee.EmployeePriority,
 			&employee.ManagerAssigned); err != nil {

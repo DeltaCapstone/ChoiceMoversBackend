@@ -8,13 +8,13 @@ import (
 )
 
 type Customer struct {
-	UserName     string        `db:"username" json:"userName"`
-	PasswordHash string        `db:"password_hash" json:"passwordHash"`
-	FirstName    string        `db:"first_name" json:"firstName"`
-	LastName     string        `db:"last_name" json:"lastName"`
-	Email        string        `db:"email" json:"email"`
-	PhonePrimary pgtype.Text   `db:"phone_primary" json:"phonePrimary"`
-	PhoneOther   []pgtype.Text `db:"phone_other" json:"phoneOther"`
+	UserName     string `db:"username" json:"userName"`
+	PasswordHash string `db:"password_hash" json:"passwordHash"`
+	FirstName    string `db:"first_name" json:"firstName"`
+	LastName     string `db:"last_name" json:"lastName"`
+	Email        string `db:"email" json:"email"`
+	PhonePrimary string `db:"phone_primary" json:"phonePrimary"`
+	PhoneOther1  string `db:"phone_other1" json:"phoneOther1"`
 }
 
 type EmployeeType string
@@ -36,15 +36,15 @@ func IsValidEmployeeType(s string) (EmployeeType, bool) {
 }
 
 type Employee struct {
-	UserName         string        `db:"username" json:"userName"`
-	PasswordHash     string        `db:"password_hash" json:"passwordHash"`
-	FirstName        string        `db:"first_name" json:"firstName"`
-	LastName         string        `db:"last_name" json:"lastName"`
-	Email            string        `db:"email" json:"email"`
-	PhonePrimary     pgtype.Text   `db:"phone_primary" json:"phonePrimary"`
-	PhoneOther       []pgtype.Text `db:"phone_other" json:"phoneOther"`
-	EmployeeType     EmployeeType  `db:"employee_type" json:"employeeType"`
-	EmployeePriority int           `db:"employee_priority" json:"employeePriority"`
+	UserName         string       `db:"username" json:"userName"`
+	PasswordHash     string       `db:"password_hash" json:"passwordHash"`
+	FirstName        string       `db:"first_name" json:"firstName"`
+	LastName         string       `db:"last_name" json:"lastName"`
+	Email            string       `db:"email" json:"email"`
+	PhonePrimary     string       `db:"phone_primary" json:"phonePrimary"`
+	PhoneOther1      string       `db:"phone_other1" json:"phoneOther1"`
+	EmployeeType     EmployeeType `db:"employee_type" json:"employeeType"`
+	EmployeePriority int          `db:"employee_priority" json:"employeePriority"`
 }
 
 type ResidenceType string
@@ -83,7 +83,7 @@ type Job struct {
 	FinalCost      float64         `db:"final_cost" json:"finalCost"`
 	AmountPaid     float64         `db:"amount_payed" json:"amountPaid"`
 
-	Notes pgtype.Text `db:"notes" json:"notes"`
+	Notes string `db:"notes" json:"notes"`
 }
 
 // allows saving estimates with them beeing treated as jobs
@@ -165,7 +165,7 @@ type EstimateJobJoin struct {
 	FinalCost      float64         `db:"final_cost" json:"finalCost"`
 	AmountPaid     float64         `db:"amount_payed" json:"amountPaid"`
 
-	Notes pgtype.Text `db:"notes" json:"notes"`
+	Notes string `db:"notes" json:"notes"`
 }
 
 // /////////////////////////////////////////////////////////////////

@@ -75,7 +75,8 @@ func createCustomer(c echo.Context) error {
 		LastName:     newCustomer.LastName,
 		Email:        newCustomer.Email,
 		PhonePrimary: newCustomer.PhonePrimary,
-		PhoneOther:   newCustomer.PhoneOther,
+		PhoneOther1:  newCustomer.PhoneOther1,
+		PhoneOther2:  newCustomer.PhoneOther2,
 	}
 
 	// validation stuff probably needed

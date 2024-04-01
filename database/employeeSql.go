@@ -26,7 +26,7 @@ func (pg *postgres) GetEmployeeByUsername(ctx context.Context, username string) 
 	var employee models.GetEmployeeResponse
 	row := pg.db.QueryRow(ctx,
 		`SELECT username, first_name, last_name, 
-		email, phone_primary, employee_type, employee_priority FROM employees WHERE username = $1`, username)
+		email, phone_primary,phone_other1,phone_other2, employee_type, employee_priority FROM employees WHERE username = $1`, username)
 
 	if err := row.Scan(
 		&employee.UserName,
@@ -34,6 +34,8 @@ func (pg *postgres) GetEmployeeByUsername(ctx context.Context, username string) 
 		&employee.LastName,
 		&employee.Email,
 		&employee.PhonePrimary,
+		&employee.PhoneOther1,
+		&employee.PhoneOther2,
 		&employee.EmployeeType,
 		&employee.EmployeePriority); err != nil {
 		return employee, err
@@ -63,7 +65,7 @@ func (pg *postgres) GetEmployeeList(ctx context.Context) ([]models.GetEmployeeRe
 	var err error
 
 	rows, err = pg.db.Query(ctx,
-		"SELECT username,first_name, last_name, email, phone_primary,phone_other, employee_type, employee_priority FROM employees")
+		"SELECT username,first_name, last_name, email, phone_primary,phone_other1,phone_other2, employee_type, employee_priority FROM employees")
 
 	if err != nil {
 		return nil, err
@@ -78,7 +80,8 @@ func (pg *postgres) GetEmployeeList(ctx context.Context) ([]models.GetEmployeeRe
 			&employee.LastName,
 			&employee.Email,
 			&employee.PhonePrimary,
-			&employee.PhoneOther,
+			&employee.PhoneOther1,
+			&employee.PhoneOther2,
 			&employee.EmployeeType,
 			&employee.EmployeePriority); err != nil {
 			return nil, err
@@ -116,10 +119,10 @@ func (pg *postgres) UseEmployeeSignup(ctx context.Context, id uuid.UUID) error {
 
 const createEmployeeNameQuery = `INSERT INTO employees 
 (username, password_hash, first_name, last_name, email,
-	phone_primary, phone_other, employee_type,employee_priority) 
+	phone_primary, phone_other1,phone_other2, employee_type,employee_priority) 
 VALUES 
 (@username,@password_hash,@first_name,@last_name,@email,
-	@phone_primary,@phone_other,@employee_type,@employee_priority) `
+	@phone_primary,@phone_other1,phone_other2,@employee_type,@employee_priority) `
 
 func (pg *postgres) CreateEmployee(ctx context.Context, newEmployee models.CreateEmployeeParams) error {
 	_, err := pg.db.Exec(ctx, createEmployeeNameQuery, pgx.NamedArgs(utils.StructToMap(newEmployee, "db")))
@@ -129,7 +132,7 @@ func (pg *postgres) CreateEmployee(ctx context.Context, newEmployee models.Creat
 const updateEmployeeQuery = `
 UPDATE employees
 SET first_name = @first_name, last_name = @last_name, email = @email, 
-phone_primary = @phone_primary, phone_other = @phone_other
+phone_primary = @phone_primary, phone_other1 = @phone_other1, phone_other2=@phone_other2
 WHERE username = @username`
 
 func (pg *postgres) UpdateEmployee(ctx context.Context, updatedEmployee models.UpdateEmployeeParams) error {

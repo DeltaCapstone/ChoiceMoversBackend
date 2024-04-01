@@ -1,21 +1,21 @@
 
 -- Inserting test customers with random names
 INSERT INTO customers 
-    (username, first_name, last_name, email, phone_primary, password_hash) 
+    (username, first_name, last_name, email, phone_primary,phone_other1,phone_other2, password_hash) 
 VALUES 
-    ('user_john_d', 'John', 'Doe', 'john.doe@test.com', '330-111-1111', '$2a$10$rpcIFTYGPDVrS4GpQJzWpOuDay540ZWrsWjvzm13YY9/OqTxjkvcS'), --pw: abcde
-    ('user_jane_s', 'Jane', 'Smith', 'jane.smith@test.com', '330-111-1112', '$2a$10$4QHNTDYIvHPJPa/uV7rnxe1gGuSg9P4sBYiIctHn6Y79BsmkPaKvq'), --pw: fghij
-    ('user_emily_b', 'Emily', 'Brown', 'emily.brown@test.com', '330-111-1113', '$2a$10$ncOlS1qa5ZNWa9OC4k5h7.NujWD1wTcWS5mV.gjy8gSt2EzWP1lGi'), --pw: klmno
-    ('user_mike_w', 'Mike', 'Wilson', 'mike.wilson@test.com', '330-111-1114', '$2a$10$KT6/ddMC3o3wMvPYuAUQSu1kBUeKMUGIOwsUKfOMszHlW4Y5e3Vwu'); --pw: pqrst
+    ('user_john_d', 'John', 'Doe', 'john.doe@test.com', '330-111-1111','','', '$2a$10$rpcIFTYGPDVrS4GpQJzWpOuDay540ZWrsWjvzm13YY9/OqTxjkvcS'), --pw: abcde
+    ('user_jane_s', 'Jane', 'Smith', 'jane.smith@test.com', '330-111-1112','','', '$2a$10$4QHNTDYIvHPJPa/uV7rnxe1gGuSg9P4sBYiIctHn6Y79BsmkPaKvq'), --pw: fghij
+    ('user_emily_b', 'Emily', 'Brown', 'emily.brown@test.com', '330-111-1113','','', '$2a$10$ncOlS1qa5ZNWa9OC4k5h7.NujWD1wTcWS5mV.gjy8gSt2EzWP1lGi'), --pw: klmno
+    ('user_mike_w', 'Mike', 'Wilson', 'mike.wilson@test.com', '330-111-1114','','', '$2a$10$KT6/ddMC3o3wMvPYuAUQSu1kBUeKMUGIOwsUKfOMszHlW4Y5e3Vwu'); --pw: pqrst
 
 -- Inserting test employees with random names
 INSERT INTO employees 
-    (username, first_name, last_name, employee_type, employee_priority, email, phone_primary, password_hash)
+    (username, first_name, last_name, employee_type, employee_priority, email, phone_primary,phone_other1,phone_other2, password_hash)
 VALUES 
-    ('alex.j', 'Alex', 'Johnson', 'Part-time',3 ,'alex.johnson@test.com', '330-111-2222', '$2y$10$eACI6jHv5kopEk92l6KVqO63LvyVYxCvWjXta5Cq9AGCeoy2a1Vvq'), --pw: password
-    ('linda.k', 'Linda', 'King', 'Full-time', 2,'linda.king@test.com', '330-111-2223', '$2y$10$eACI6jHv5kopEk92l6KVqO63LvyVYxCvWjXta5Cq9AGCeoy2a1Vvq'), --pw: password
-    ('david.l', 'David', 'Lee', 'Full-time', 1,'david.lee@test.com', '330-111-2224', '$2y$10$eACI6jHv5kopEk92l6KVqO63LvyVYxCvWjXta5Cq9AGCeoy2a1Vvq'), --pw: password
-    ('sarah.m', 'Sarah', 'Miller', 'Manager', 1,'sarah.miller@test.com', '330-111-3333', '$2y$10$eACI6jHv5kopEk92l6KVqO63LvyVYxCvWjXta5Cq9AGCeoy2a1Vvq'); --pw: password
+    ('alex.j', 'Alex', 'Johnson', 'Part-time',3 ,'alex.johnson@test.com', '330-111-2222','','', '$2y$10$eACI6jHv5kopEk92l6KVqO63LvyVYxCvWjXta5Cq9AGCeoy2a1Vvq'), --pw: password
+    ('linda.k', 'Linda', 'King', 'Full-time', 2,'linda.king@test.com', '330-111-2223','','', '$2y$10$eACI6jHv5kopEk92l6KVqO63LvyVYxCvWjXta5Cq9AGCeoy2a1Vvq'), --pw: password
+    ('david.l', 'David', 'Lee', 'Full-time', 1,'david.lee@test.com', '330-111-2224','','', '$2y$10$eACI6jHv5kopEk92l6KVqO63LvyVYxCvWjXta5Cq9AGCeoy2a1Vvq'), --pw: password
+    ('sarah.m', 'Sarah', 'Miller', 'Manager', 1,'sarah.miller@test.com', '330-111-3333','','', '$2y$10$eACI6jHv5kopEk92l6KVqO63LvyVYxCvWjXta5Cq9AGCeoy2a1Vvq'); --pw: password
 
 
 INSERT INTO public.addresses 

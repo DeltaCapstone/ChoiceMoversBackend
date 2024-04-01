@@ -192,7 +192,8 @@ func createEmployee(c echo.Context) error {
 		LastName:         newEmployee.LastName,
 		Email:            newEmployee.Email,
 		PhonePrimary:     newEmployee.PhonePrimary,
-		PhoneOther:       newEmployee.PhoneOther,
+		PhoneOther1:      newEmployee.PhoneOther1,
+		PhoneOther2:      newEmployee.PhoneOther2,
 		EmployeeType:     newEmployee.EmployeeType,
 		EmployeePriority: newEmployee.EmployeePriority,
 	}
