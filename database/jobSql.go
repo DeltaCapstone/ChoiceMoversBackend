@@ -110,21 +110,6 @@ func (pg *postgres) CreateEstimate(ctx context.Context, estimate models.Estimate
 	return u, err
 }
 
-const createEstimateQuery = `INSERT INTO estimates 
-(customer_username, load_addr_id, unload_addr_id, start_time, end_time, rooms, special, small_items, medium_items, large_items, 
-	boxes, item_load, flight_mult, pack, unpack, load, unload, clean, need_truck, number_workers, dist_to_job, dist_move,
-	estimated_man_hours, estimated_rate, estimated_cost) VALUES 
-(@customer_username, @load_addr_id, @unload_addr_id, @start_time, @end_time, @rooms, @special, @small_items, @medium_items, @large_items,
-	@boxes, @item_load, @flight_mult, @pack, @unpack, @load, @unload, @clean, @need_truck, @number_workers, @dist_to_job, @dist_move,
-	@estimated_man_hours, @estimated_rate, @estimated_cost) RETURNING estimate_id`
-
-func (pg *postgres) CreateEstimate(ctx context.Context, estimate models.Estimate) (string, error) {
-	row := pg.db.QueryRow(ctx, createEstimateQuery, pgx.NamedArgs(utils.StructToMap(estimate, "db")))
-	var u string
-	err := row.Scan(&u)
-	return u, err
-}
-
 const assignedEmpsQuery = `SELECT username, first_name,last_name,email,phone_primary,phone_other1,phone_other2,employee_type, employee_priority, manager_override
 	FROM employee_jobs JOIN employees ON employee_jobs.employee_username = employees.username WHERE job_id = $1`
 
