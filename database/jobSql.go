@@ -67,7 +67,7 @@ func (pg *postgres) GetJobsByStatusAndRange(ctx context.Context, status string, 
 		var jr models.JobResponse
 		jr.MakeFromJoin(ej)
 		jr.EstimateResponse = er
-		jr.AssignedEmp, _ = getAssignedEmployees(ctx, jr.JobID)
+		jr.AssignedEmp, _ = GetAssignedEmployees(ctx, jr.JobID)
 		jobs = append(jobs, jr)
 	}
 	return jobs, nil
@@ -110,11 +110,26 @@ func (pg *postgres) CreateEstimate(ctx context.Context, estimate models.Estimate
 	return u, err
 }
 
-const assignedEmpsQuery = `SELECT username, first_name,last_name,email,phone_primary,phone_other,employee_type, employee_priority
-	FROM employee_jobs JOIN employee ON employee_jobs.employee_username = employees.username WHERE job_id = $1`
+const createEstimateQuery = `INSERT INTO estimates 
+(customer_username, load_addr_id, unload_addr_id, start_time, end_time, rooms, special, small_items, medium_items, large_items, 
+	boxes, item_load, flight_mult, pack, unpack, load, unload, clean, need_truck, number_workers, dist_to_job, dist_move,
+	estimated_man_hours, estimated_rate, estimated_cost) VALUES 
+(@customer_username, @load_addr_id, @unload_addr_id, @start_time, @end_time, @rooms, @special, @small_items, @medium_items, @large_items,
+	@boxes, @item_load, @flight_mult, @pack, @unpack, @load, @unload, @clean, @need_truck, @number_workers, @dist_to_job, @dist_move,
+	@estimated_man_hours, @estimated_rate, @estimated_cost) RETURNING estimate_id`
 
-func getAssignedEmployees(ctx context.Context, jobID int) ([]models.GetEmployeeResponse, error) {
-	var employees []models.GetEmployeeResponse
+func (pg *postgres) CreateEstimate(ctx context.Context, estimate models.Estimate) (string, error) {
+	row := pg.db.QueryRow(ctx, createEstimateQuery, pgx.NamedArgs(utils.StructToMap(estimate, "db")))
+	var u string
+	err := row.Scan(&u)
+	return u, err
+}
+
+const assignedEmpsQuery = `SELECT username, first_name,last_name,email,phone_primary,phone_other1,phone_other2,employee_type, employee_priority, manager_override
+	FROM employee_jobs JOIN employees ON employee_jobs.employee_username = employees.username WHERE job_id = $1`
+
+func GetAssignedEmployees(ctx context.Context, jobID int) ([]models.AssignedEmployee, error) {
+	var employees []models.AssignedEmployee
 	var rows pgx.Rows
 	var err error
 
@@ -126,16 +141,18 @@ func getAssignedEmployees(ctx context.Context, jobID int) ([]models.GetEmployeeR
 	defer rows.Close()
 
 	for rows.Next() {
-		var employee models.GetEmployeeResponse
+		var employee models.AssignedEmployee
 		if err := rows.Scan(
 			&employee.UserName,
 			&employee.FirstName,
 			&employee.LastName,
 			&employee.Email,
 			&employee.PhonePrimary,
-			&employee.PhoneOther,
+			&employee.PhoneOther1,
+			&employee.PhoneOther2,
 			&employee.EmployeeType,
-			&employee.EmployeePriority); err != nil {
+			&employee.EmployeePriority,
+			&employee.ManagerAssigned); err != nil {
 			return nil, err
 		}
 		employees = append(employees, employee)
@@ -153,4 +170,56 @@ func (pg *postgres) CreateAddress(ctx context.Context, newJob models.Address) (i
 	err := rows.Scan(&u)
 	id, _ := strconv.Atoi(u)
 	return id, err
+}
+
+const numWorkersQuery = "SELECT number_workers FROM estimates NATURAL JOIN jobs WHERE job_id = $1"
+
+func (pg *postgres) GetNumWorksForJob(ctx context.Context, jobID int) (int, error) {
+	row := pg.db.QueryRow(ctx, numWorkersQuery, jobID)
+	var n int
+	if err := row.Scan(&n); err != nil {
+		return 0, err
+	}
+	return n, nil
+}
+
+const addEmployeeToJobQuery = `
+INSERT INTO employee_jobs
+(employee_username, job_id,manager_override)
+VALUES
+(@username,@job_id,@manager_override)`
+
+func (pg *postgres) AddEmployeeToJob(ctx context.Context, username string, jobId int, managerAssigned bool) error {
+	_, err := pg.db.Exec(ctx, addEmployeeToJobQuery,
+		pgx.NamedArgs{
+			"username":         username,
+			"job_id":           jobId,
+			"manager_override": managerAssigned})
+	return err
+}
+
+const removeEmployeeFromJobQuery = `
+DELETE FROM employee_jobs
+WHERE employee_username=@username AND job_id=@job_id`
+
+func (pg *postgres) RemoveEmployeeFromJob(ctx context.Context, username string, jobId int) error {
+	_, err := pg.db.Exec(ctx, removeEmployeeFromJobQuery,
+		pgx.NamedArgs{
+			"username": username,
+			"job_id":   jobId})
+	return err
+}
+
+const getIsManagerAssignedQuery = `
+SELECT manager_override FROM employee_jobs
+WHERE employee_username=@username AND job_id=@job_id`
+
+func (pg *postgres) GetIsManagerAssigned(ctx context.Context, username string, jobId int) (bool, error) {
+	row := pg.db.QueryRow(ctx, getIsManagerAssignedQuery,
+		pgx.NamedArgs{
+			"username": username,
+			"job_id":   jobId})
+	var managerAssigned bool
+	err := row.Scan(&managerAssigned)
+	return managerAssigned, err
 }

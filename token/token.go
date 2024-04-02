@@ -3,6 +3,7 @@ package token
 import (
 	"time"
 
+	"github.com/DeltaCapstone/ChoiceMoversBackend/utils"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	echojwt "github.com/labstack/echo-jwt/v4"
@@ -37,6 +38,12 @@ type JwtRefreshClaims struct {
 	jwt.RegisteredClaims `json:"claims"`
 }
 
+type JwtEmployeeSignupClaims struct {
+	Email                string    `json:"email"`
+	TokenID              uuid.UUID `json:"tokenId"`
+	jwt.RegisteredClaims `json:"claims"`
+}
+
 func MakeAccessToken(username string, role string) (string, *JwtCustomClaims, error) {
 	// Set custom claims
 	newTokenID, err := uuid.NewRandom()
@@ -48,7 +55,7 @@ func MakeAccessToken(username string, role string) (string, *JwtCustomClaims, er
 		role,
 		newTokenID,
 		jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 60)), //add this to a config file?
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(utils.ServerConfig.AccessTokenDuration)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
@@ -73,7 +80,7 @@ func MakeRefreshToken(username string) (string, *JwtRefreshClaims, error) {
 		username,
 		newTokenID,
 		jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)), //add this to a config file?
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(utils.ServerConfig.RefreshTokenDuration)), //add this to a config file?
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 		},
 	}
@@ -88,60 +95,27 @@ func MakeRefreshToken(username string) (string, *JwtRefreshClaims, error) {
 	return signedToken, claims, nil
 }
 
-///////////////////////////////////////////////////////////////
-//Pretty sure this just does what echojwt does so not neccessary
+func MakeEmployeeSignupToken(email string) (string, *JwtEmployeeSignupClaims, error) {
+	newTokenID, err := uuid.NewRandom()
+	if err != nil {
+		return "", nil, err
+	}
+	claims := &JwtEmployeeSignupClaims{
+		email,
+		newTokenID,
+		jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(utils.ServerConfig.EmpSignupTokenDuration)), //add this to a config file?
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-/*
-// JWTMiddleware validates the JWT token and sets the user role in the context.
-
-	func JWTMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			token := extractJWTToken(c.Request())
-			if token == "" {
-				return echo.NewHTTPError(http.StatusUnauthorized, "Unauthorized")
-			}
-
-			claims := &JwtCustomClaims{}
-			// Validate and parse the token into claims
-
-			if err := parseAndValidateToken(token, claims); err != nil {
-				return echo.NewHTTPError(http.StatusUnauthorized, "Unauthorized")
-			}
-
-			// Set the user role in the context
-			c.Set("role", claims.Role)
-
-			return next(c)
-		}
+	key, _ := GetKey(token)
+	signedToken, err := token.SignedString(key)
+	if err != nil {
+		return "", nil, err
 	}
 
-// extractJWTToken extracts the JWT token from the request header.
+	return signedToken, claims, nil
 
-	func extractJWTToken(req *http.Request) string {
-		authHeader := req.Header.Get("Authorization")
-		if authHeader == "" {
-			return ""
-		}
-
-		parts := strings.Split(authHeader, " ")
-		if len(parts) != 2 || parts[0] != "Bearer" {
-			return ""
-		}
-
-		return parts[1]
-	}
-
-	func parseAndValidateToken(tokenString string, claims *JwtCustomClaims) error {
-		// Implement your JWT validation logic here
-		// Use a JWT library to validate and parse the token
-		// Example:
-		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-			return GetKey, nil
-		})
-		if err != nil || !token.Valid || token.Method != jwt.SigningMethodHS256 {
-			return errors.New("invalid token")
-		}
-
-		return nil
-	}
-*/
+}

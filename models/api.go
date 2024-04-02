@@ -13,36 +13,49 @@ import (
 // ---------------------------
 
 type CreateEmployeeParams struct {
-	UserName         string        `db:"username" json:"userName"`
-	PasswordHash     string        `db:"password_hash" json:"passwordHash"`
-	FirstName        string        `db:"first_name" json:"firstName"`
-	LastName         string        `db:"last_name" json:"lastName"`
-	Email            string        `db:"email" json:"email"`
-	PhonePrimary     pgtype.Text   `db:"phone_primary" json:"phonePrimary"`
-	PhoneOther       []pgtype.Text `db:"phone_other" json:"phoneOther"`
-	EmployeeType     string        `db:"employee_type" json:"employeeType"`
-	EmployeePriority int           `db:"employee_priority" json:"employeePriority"`
+	UserName         string `db:"username" json:"userName"`
+	PasswordHash     string `db:"password_hash" json:"passwordHash"`
+	FirstName        string `db:"first_name" json:"firstName"`
+	LastName         string `db:"last_name" json:"lastName"`
+	Email            string `db:"email" json:"email"`
+	PhonePrimary     string `db:"phone_primary" json:"phonePrimary"`
+	PhoneOther1      string `db:"phone_other1" json:"phoneOther1"`
+	PhoneOther2      string `db:"phone_other2" json:"phoneOther2"`
+	EmployeeType     string `db:"employee_type" json:"employeeType"`
+	EmployeePriority int    `db:"employee_priority" json:"employeePriority"`
+}
+
+type EmployeeSignup struct {
+	Id               uuid.UUID    `db:"id" json:"id"`
+	Email            string       `db:"email" json:"email"`
+	EmployeeType     EmployeeType `db:"employee_type" json:"employeeType"`
+	EmployeePriority int          `db:"employee_priority" json:"employeePriority"`
+	SignupToken      string       `db:"signup_token" json:"signupToken"`
+	ExpiresAt        time.Time    `db:"expires_at"`
+	Used             bool         `db:"used"`
 }
 
 type CreateEmployeeRequest struct {
-	UserName         string        `db:"username" json:"userName"`
-	PasswordPlain    string        `db:"password_plain" json:"passwordPlain"`
-	FirstName        string        `db:"first_name" json:"firstName"`
-	LastName         string        `db:"last_name" json:"lastName"`
-	Email            string        `db:"email" json:"email"`
-	PhonePrimary     pgtype.Text   `db:"phone_primary" json:"phonePrimary"`
-	PhoneOther       []pgtype.Text `db:"phone_other" json:"phoneOther"`
-	EmployeeType     string        `db:"employee_type" json:"employeeType"`
-	EmployeePriority int           `db:"employee_priority" json:"employeePriority"`
+	UserName         string `db:"username" json:"userName"`
+	PasswordPlain    string `db:"password_plain" json:"passwordPlain"`
+	FirstName        string `db:"first_name" json:"firstName"`
+	LastName         string `db:"last_name" json:"lastName"`
+	Email            string `db:"email" json:"email"`
+	PhonePrimary     string `db:"phone_primary" json:"phonePrimary"`
+	PhoneOther1      string `db:"phone_other1" json:"phoneOther1"`
+	PhoneOther2      string `db:"phone_other2" json:"phoneOther2"`
+	EmployeeType     string `db:"employee_type" json:"employeeType"`
+	EmployeePriority int    `db:"employee_priority" json:"employeePriority"`
 }
 
 type UpdateEmployeeParams struct {
-	UserName     string        `db:"username" json:"userName"`
-	FirstName    string        `db:"first_name" json:"firstName"`
-	LastName     string        `db:"last_name" json:"lastName"`
-	Email        string        `db:"email" json:"email"`
-	PhonePrimary pgtype.Text   `db:"phone_primary" json:"phonePrimary"`
-	PhoneOther   []pgtype.Text `db:"phone_other" json:"phoneOther"`
+	UserName     string `db:"username" json:"userName"`
+	FirstName    string `db:"first_name" json:"firstName"`
+	LastName     string `db:"last_name" json:"lastName"`
+	Email        string `db:"email" json:"email"`
+	PhonePrimary string `db:"phone_primary" json:"phonePrimary"`
+	PhoneOther1  string `db:"phone_other1" json:"phoneOther1"`
+	PhoneOther2  string `db:"phone_other2" json:"phoneOther2"`
 }
 
 type UpdateEmployeeTypePriorityParams struct {
@@ -63,14 +76,20 @@ type EmployeeLoginRequest struct {
 }
 
 type GetEmployeeResponse struct {
-	UserName         string        `db:"username" json:"userName"`
-	FirstName        string        `db:"first_name" json:"firstName"`
-	LastName         string        `db:"last_name" json:"lastName"`
-	Email            string        `db:"email" json:"email"`
-	PhonePrimary     pgtype.Text   `db:"phone_primary" json:"phonePrimary"`
-	PhoneOther       []pgtype.Text `db:"phone_other" json:"phoneOther"`
-	EmployeeType     string        `db:"employee_type" json:"employeeType"`
-	EmployeePriority int           `db:"employee_priority" json:"employeePriority"`
+	UserName         string `db:"username" json:"userName"`
+	FirstName        string `db:"first_name" json:"firstName"`
+	LastName         string `db:"last_name" json:"lastName"`
+	Email            string `db:"email" json:"email"`
+	PhonePrimary     string `db:"phone_primary" json:"phonePrimary"`
+	PhoneOther1      string `db:"phone_other1" json:"phoneOther1"`
+	PhoneOther2      string `db:"phone_other2" json:"phoneOther2"`
+	EmployeeType     string `db:"employee_type" json:"employeeType"`
+	EmployeePriority int    `db:"employee_priority" json:"employeePriority"`
+}
+
+type AssignedEmployee struct {
+	GetEmployeeResponse
+	ManagerAssigned bool `json:"managerAssigned"`
 }
 
 type EmployeeLoginResponse struct {
@@ -79,7 +98,7 @@ type EmployeeLoginResponse struct {
 	AccessTokenExpiresAt  time.Time `json:"accessTokenExpiresAt"`
 	RefreshToken          string    `json:"refreshToken"`
 	RefreshTokenExpiresAt time.Time `json:"refreshTokenExpiresAt"`
-	Username              string    `json:"username"`
+	Username              string    `json:"userName"`
 }
 
 // ---------------------------
@@ -87,47 +106,51 @@ type EmployeeLoginResponse struct {
 // ---------------------------
 
 type CreateCustomerParams struct {
-	UserName     string        `db:"username" json:"userName"`
-	PasswordHash string        `db:"password_hash" json:"passwordHash"`
-	FirstName    string        `db:"first_name" json:"firstName"`
-	LastName     string        `db:"last_name" json:"lastName"`
-	Email        string        `db:"email" json:"email"`
-	PhonePrimary pgtype.Text   `db:"phone_primary" json:"phonePrimary"`
-	PhoneOther   []pgtype.Text `db:"phone_other" json:"phoneOther"`
+	UserName     string `db:"username" json:"userName"`
+	PasswordHash string `db:"password_hash" json:"passwordHash"`
+	FirstName    string `db:"first_name" json:"firstName"`
+	LastName     string `db:"last_name" json:"lastName"`
+	Email        string `db:"email" json:"email"`
+	PhonePrimary string `db:"phone_primary" json:"phonePrimary"`
+	PhoneOther1  string `db:"phone_other1" json:"phoneOther1"`
+	PhoneOther2  string `db:"phone_other2" json:"phoneOther2"`
 }
 
 type UpdateCustomerParams struct {
-	UserName     string        `db:"username" json:"userName"`
-	FirstName    string        `db:"first_name" json:"firstName"`
-	LastName     string        `db:"last_name" json:"lastName"`
-	Email        string        `db:"email" json:"email"`
-	PhonePrimary pgtype.Text   `db:"phone_primary" json:"phonePrimary"`
-	PhoneOther   []pgtype.Text `db:"phone_other" json:"phoneOther"`
+	UserName     string `db:"username" json:"userName"`
+	FirstName    string `db:"first_name" json:"firstName"`
+	LastName     string `db:"last_name" json:"lastName"`
+	Email        string `db:"email" json:"email"`
+	PhonePrimary string `db:"phone_primary" json:"phonePrimary"`
+	PhoneOther1  string `db:"phone_other1" json:"phoneOther1"`
+	PhoneOther2  string `db:"phone_other2" json:"phoneOther2"`
 }
 
-type UpdateCustomerPassowrdRequest struct {
+type UpdateCustomerPasswordRequest struct {
 	UserName    string `json:"userName"`
 	PasswordOld string `json:"passwordOld"`
 	PasswordNew string `json:"passwordNew"`
 }
 
 type CreateCustomerRequest struct {
-	UserName      string        `db:"username" json:"userName"`
-	PasswordPlain string        `db:"password_plain" json:"passwordPlain"`
-	FirstName     string        `db:"first_name" json:"firstName"`
-	LastName      string        `db:"last_name" json:"lastName"`
-	Email         string        `db:"email" json:"email"`
-	PhonePrimary  pgtype.Text   `db:"phone_primary" json:"phonePrimary"`
-	PhoneOther    []pgtype.Text `db:"phone_other" json:"phoneOther"`
+	UserName      string `db:"username" json:"userName"`
+	PasswordPlain string `db:"password_plain" json:"passwordPlain"`
+	FirstName     string `db:"first_name" json:"firstName"`
+	LastName      string `db:"last_name" json:"lastName"`
+	Email         string `db:"email" json:"email"`
+	PhonePrimary  string `db:"phone_primary" json:"phonePrimary"`
+	PhoneOther1   string `db:"phone_other1" json:"phoneOther1"`
+	PhoneOther2   string `db:"phone_other2" json:"phoneOther2"`
 }
 
 type GetCustomerResponse struct {
-	UserName     string        `db:"username" json:"userName"`
-	FirstName    string        `db:"first_name" json:"firstName"`
-	LastName     string        `db:"last_name" json:"lastName"`
-	Email        string        `db:"email" json:"email"`
-	PhonePrimary pgtype.Text   `db:"phone_primary" json:"phonePrimary"`
-	PhoneOther   []pgtype.Text `db:"phone_other" json:"phoneOther"`
+	UserName     string `db:"username" json:"userName"`
+	FirstName    string `db:"first_name" json:"firstName"`
+	LastName     string `db:"last_name" json:"lastName"`
+	Email        string `db:"email" json:"email"`
+	PhonePrimary string `db:"phone_primary" json:"phonePrimary"`
+	PhoneOther1  string `db:"phone_other1" json:"phoneOther1"`
+	PhoneOther2  string `db:"phone_other2" json:"phoneOther2"`
 }
 
 type CustomerLoginRequest struct {
@@ -141,12 +164,19 @@ type CustomerLoginResponse struct {
 	AccessTokenExpiresAt  time.Time `json:"accessTokenExpiresAt"`
 	RefreshToken          string    `json:"refreshToken"`
 	RefreshTokenExpiresAt time.Time `json:"refreshTokenExpiresAt"`
-	Username              string    `json:"username"`
+	Username              string    `json:"userName"`
 }
 
 // ---------------------------
 // JOBS
 // ---------------------------
+
+type AssignmentConflictType string
+
+const (
+	JOB_FULL         AssignmentConflictType = "JOB_FULL"
+	ALREADY_ASSIGNED AssignmentConflictType = "ALREADY_ASSIGNED"
+)
 
 type JobsDisplayRequest struct {
 	Status    string `json:"status"`
@@ -167,8 +197,8 @@ type JobResponse struct {
 	FinalCost      float64 `db:"final_cost" json:"finalCost"`
 	AmountPaid     float64 `db:"ammount_payed" json:"ammountPaid"`
 
-	Notes       pgtype.Text           `db:"notes" json:"notes"`
-	AssignedEmp []GetEmployeeResponse `json:"assignedEmployees"`
+	Notes       string             `db:"notes" json:"notes"`
+	AssignedEmp []AssignedEmployee `json:"assignedEmployees"`
 }
 
 type Room struct {
@@ -279,4 +309,9 @@ type EstimateRequest struct {
 	NeedTruck bool `db:"need_truck" json:"needTruck"`
 	DistToJob int  `db:"dist_to_job" json:"distToJob"`
 	DistMove  int  `db:"dist_move" json:"distMove"`
+}
+
+type PasswordResetRequest struct {
+	Code  string `json:"code"`
+	NewPW string `json:"newPassword"`
 }

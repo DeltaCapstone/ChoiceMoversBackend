@@ -10,7 +10,9 @@ CREATE TABLE IF NOT EXISTS public.customers
     last_name character varying(255) NOT NULL,
     email character varying(255) UNIQUE NOT NULL,
     phone_primary text NOT NULL,
-    phone_other text[],
+    phone_other1 text,
+    phone_other2 text,
+    phone_other3 text,
     PRIMARY KEY (username)
 );
 
@@ -32,7 +34,8 @@ CREATE TABLE IF NOT EXISTS public.employees
     last_name character varying(255) NOT NULL,
     email character varying(255) UNIQUE NOT NULL,
     phone_primary text NOT NULL,
-    phone_other text[],
+    phone_other1 text,
+    phone_other2 text,
     employee_type Employee_type NOT NULL,
     employee_priority integer NOT NULL,
     PRIMARY KEY (username)

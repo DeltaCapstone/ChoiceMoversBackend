@@ -7,12 +7,17 @@ import (
 	"time"
 
 	DB "github.com/DeltaCapstone/ChoiceMoversBackend/database"
+	"github.com/DeltaCapstone/ChoiceMoversBackend/utils"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"go.uber.org/zap"
 )
 
 func main() {
+	err := utils.LoadConfig()
+	if err != nil {
+		zap.L().Sugar().Fatalf(err.Error())
+	}
 	// Echo instance
 	e := echo.New()
 
