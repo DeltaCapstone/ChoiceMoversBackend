@@ -288,16 +288,14 @@ func (er *EstimateResponse) MakeFromJoin(ej EstimateJobJoin) {
 }
 
 type EstimateRequest struct {
-	UserName   string           `json:"customerUserName"`
-	LoadAddr   *Address         `json:"loadAddr"`
-	UnloadAddr *Address         `json:"unloadAddr"`
-	StartTime  pgtype.Timestamp `db:"start_time" json:"startTime"`
-	EndTime    pgtype.Timestamp `db:"end_time" json:"endTime"`
+	UserName   string   `json:"customerUserName"`
+	LoadAddr   *Address `json:"loadAddr"`
+	UnloadAddr *Address `json:"unloadAddr"`
+	StartTime  string   `db:"start_time" json:"startTime"`
 
 	Rooms   []Room         `db:"rooms" json:"rooms"`
 	Special map[string]int `db:"special" json:"special"`
 	Boxes   map[string]int `json:"boxes"`
-	Flights int            `json:"flights"`
 
 	Pack   bool `db:"pack" json:"pack"`
 	Unpack bool `db:"unpack" json:"unpack"`
@@ -309,6 +307,8 @@ type EstimateRequest struct {
 	NeedTruck bool `db:"need_truck" json:"needTruck"`
 	DistToJob int  `db:"dist_to_job" json:"distToJob"`
 	DistMove  int  `db:"dist_move" json:"distMove"`
+
+	SpecialRequests []string `json:"specialRequests"`
 }
 
 type PasswordResetRequest struct {

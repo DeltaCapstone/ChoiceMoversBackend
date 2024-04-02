@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	DB "github.com/DeltaCapstone/ChoiceMoversBackend/database"
 	models "github.com/DeltaCapstone/ChoiceMoversBackend/models"
@@ -251,11 +252,20 @@ func calculateEstimate(req models.EstimateRequest, c echo.Context) (models.Estim
 		return estimate, err
 	}
 
+	startTime, err := time.Parse("02.01.2006 03:04 PM", req.StartTime)
+	if err != nil {
+		return estimate, err
+	}
+
+	timeStamp := pgtype.Timestamp{
+		Time:  startTime,
+		Valid: true,
+	}
+
 	estimate = models.Estimate{
 		LoadAddrID:   loadAddrID,
 		UnloadAddrID: unloadAddrID,
-		StartTime:    req.StartTime,
-		EndTime:      req.EndTime,
+		StartTime:    timeStamp,
 
 		Rooms:      req.Rooms,
 		Special:    req.Special,
@@ -264,7 +274,7 @@ func calculateEstimate(req models.EstimateRequest, c echo.Context) (models.Estim
 		Large:      sizes[2],
 		Boxes:      0,
 		ItemLoad:   itemLoad,
-		FlightMult: float64(req.Flights),
+		FlightMult: float64((*req.UnloadAddr).Flights),
 
 		Pack:   req.Pack,
 		Unpack: req.Unpack,
