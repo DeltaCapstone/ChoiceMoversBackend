@@ -65,6 +65,7 @@ func itemsToSizes(estRequest models.EstimateRequest) ([]int, error) {
 		"table":     0,
 		"poolTable": 2,
 		"couch":     2,
+		"loofa":     1,
 		"lamp":      0,
 		"sm":        0,
 		"md":        1,
@@ -309,7 +310,7 @@ func createEstimate(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"error": err})
 	}
 
-	args.CustomerUsername = req.UserName
+	args.CustomerUsername = c.Get("username").(string)
 
 	_, err = DB.PgInstance.CreateEstimate(c.Request().Context(), args)
 	if err != nil {

@@ -288,7 +288,6 @@ func (er *EstimateResponse) MakeFromJoin(ej EstimateJobJoin) {
 }
 
 type EstimateRequest struct {
-	UserName   string   `json:"customerUserName"`
 	LoadAddr   *Address `json:"loadAddr"`
 	UnloadAddr *Address `json:"unloadAddr"`
 	StartTime  string   `db:"start_time" json:"startTime"`
