@@ -304,8 +304,8 @@ type EstimateRequest struct {
 	Clean bool `db:"clean" json:"clean"`
 
 	NeedTruck bool `db:"need_truck" json:"needTruck"`
-	DistToJob int  `db:"dist_to_job" json:"distToJob"`
-	DistMove  int  `db:"dist_move" json:"distMove"`
+	DistToJob int  `db:"dist_to_job" json:"distanceToJob"`
+	DistMove  int  `db:"dist_move" json:"distanceMove"`
 
 	SpecialRequests []string `json:"specialRequests"`
 }

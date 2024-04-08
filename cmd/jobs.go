@@ -67,9 +67,9 @@ func itemsToSizes(estRequest models.EstimateRequest) ([]int, error) {
 		"couch":     2,
 		"loofa":     1,
 		"lamp":      0,
-		"sm":        0,
-		"md":        1,
-		"lg":        2,
+		"smBox":     0,
+		"mdBox":     1,
+		"lgBox":     2,
 	}
 
 	// sm, md, lg
@@ -164,7 +164,11 @@ func estimateWorkers(estRequest models.EstimateRequest) (int, error) {
 
 	numWorkers := 2
 
-	for item, _ := range estRequest.Special {
+	for item, quantity := range estRequest.Special {
+		if quantity < 1 {
+			continue
+		}
+
 		val, ok := specials[item]
 		if ok {
 			if val > numWorkers {
@@ -226,8 +230,11 @@ func calculateEstimate(req models.EstimateRequest, c echo.Context) (models.Estim
 		loadAddrID = -1
 	}
 
+	boxes := req.Boxes["smBox"] + 2*req.Boxes["mdBox"] + 4*req.Boxes["lgBox"]
+	fmt.Println(req.Boxes)
+
 	// Calculate Labor Hours
-	hours, err := estimateHours(req, 0, itemLoad)
+	hours, err := estimateHours(req, boxes, itemLoad)
 	if err != nil {
 		return estimate, err
 	}
@@ -273,7 +280,7 @@ func calculateEstimate(req models.EstimateRequest, c echo.Context) (models.Estim
 		Small:      sizes[0],
 		Medium:     sizes[1],
 		Large:      sizes[2],
-		Boxes:      0,
+		Boxes:      boxes,
 		ItemLoad:   itemLoad,
 		FlightMult: float64((*req.UnloadAddr).Flights),
 
