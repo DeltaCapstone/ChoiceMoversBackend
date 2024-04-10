@@ -333,9 +333,10 @@ func createEstimate(c echo.Context) error {
 
 	// Find the customers username; parsed from the JWT in middleware
 	args.CustomerUsername = c.Get("username").(string)
+	// args.CustomerUsername = req.Username
 
 	// Insert the estimate into the database
-	_, err = DB.PgInstance.CreateEstimate(c.Request().Context(), args)
+	id, err := DB.PgInstance.CreateEstimate(c.Request().Context(), args)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
@@ -348,6 +349,8 @@ func createEstimate(c echo.Context) error {
 		}
 		return c.JSON(http.StatusInternalServerError, fmt.Sprintf("Failed to create estimate: %v", err))
 	}
+
+	args.EstimateID = id
 
 	return c.JSON(http.StatusCreated, echo.Map{"result": args})
 }

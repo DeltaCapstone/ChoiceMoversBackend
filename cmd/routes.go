@@ -29,6 +29,7 @@ func CreateRoutes(e *echo.Echo) {
 	customerGroup.POST("/estimate", createEstimate)
 	//customerGroup.PUT("/job/:jobID", updateJobByCustomer)
 	customerGroup.PUT("/password", changeCustomerPassword)
+	customerGroup.POST("/estimate/convert", convertEstimateToJob)
 
 	// Group for employee routes
 	employeeGroup := e.Group("/employee")

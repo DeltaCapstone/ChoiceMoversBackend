@@ -103,9 +103,9 @@ const createEstimateQuery = `INSERT INTO estimates
 	@boxes, @item_load, @flight_mult, @pack, @unpack, @load, @unload, @clean, @need_truck, @number_workers, @dist_to_job, @dist_move,
 	@estimated_man_hours, @estimated_rate, @estimated_cost) RETURNING estimate_id`
 
-func (pg *postgres) CreateEstimate(ctx context.Context, estimate models.Estimate) (string, error) {
+func (pg *postgres) CreateEstimate(ctx context.Context, estimate models.Estimate) (int, error) {
 	row := pg.db.QueryRow(ctx, createEstimateQuery, pgx.NamedArgs(utils.StructToMap(estimate, "db")))
-	var u string
+	var u int
 	err := row.Scan(&u)
 	return u, err
 }
@@ -207,4 +207,31 @@ func (pg *postgres) GetIsManagerAssigned(ctx context.Context, username string, j
 	var managerAssigned bool
 	err := row.Scan(&managerAssigned)
 	return managerAssigned, err
+}
+
+const getEstimateByIDQuery = `
+SELECT customer_username, load_addr_id, unload_addr_id, start_time, end_time, rooms, special, small_items, medium_items, large_items, 
+boxes, item_load, flight_mult, pack, unpack, load, unload, clean, need_truck, number_workers, dist_to_job, dist_move,
+estimated_man_hours, estimated_rate, estimated_cost FROM estimates
+WHERE estimate_id=$1`
+
+func (pg *postgres) GetEstimateByID(ctx context.Context, estimateID int) (models.Estimate, error) {
+	row := pg.db.QueryRow(ctx, getEstimateByIDQuery, estimateID)
+
+	var res models.Estimate
+	err := row.Scan(&res.CustomerUsername, &res.LoadAddrID, &res.UnloadAddrID, &res.StartTime, &res.EndTime, &res.Rooms, &res.Special, &res.Small, &res.Medium,
+		&res.Large, &res.Boxes, &res.ItemLoad, &res.FlightMult, &res.Pack, &res.Unpack, &res.Load, &res.Unload, &res.Clean, &res.NeedTruck, &res.NumberWorkers,
+		&res.DistToJob, &res.DistMove, &res.EstimateManHours, &res.EstimateRate, &res.EstimateCost)
+	return res, err
+}
+
+const createJobQuery = `INSERT INTO jobs 
+(estimate_id, man_hours, rate, cost, finalized, final_cost, amount_payed, notes) VALUES 
+(@estimate_id, @man_hours, @rate, @cost, @finalized, @final_cost, @amount_payed, @notes) RETURNING job_id`
+
+func (pg *postgres) CreateJob(ctx context.Context, job models.Job) (int, error) {
+	row := pg.db.QueryRow(ctx, createJobQuery, pgx.NamedArgs(utils.StructToMap(job, "db")))
+	var u int
+	err := row.Scan(&u)
+	return u, err
 }

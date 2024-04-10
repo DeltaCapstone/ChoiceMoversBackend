@@ -288,6 +288,7 @@ func (er *EstimateResponse) MakeFromJoin(ej EstimateJobJoin) {
 }
 
 type EstimateRequest struct {
+	// Username   string   `json:"username"`
 	LoadAddr   *Address `json:"loadAddr"`
 	UnloadAddr *Address `json:"unloadAddr"`
 	StartTime  string   `db:"start_time" json:"startTime"`
@@ -313,4 +314,9 @@ type EstimateRequest struct {
 type PasswordResetRequest struct {
 	Code  string `json:"code"`
 	NewPW string `json:"newPassword"`
+}
+
+type ConvertEstimateToJob struct {
+	// Username   string `json:"username"`
+	EstimateID int `json:"estimateId"`
 }
