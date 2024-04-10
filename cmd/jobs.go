@@ -59,19 +59,21 @@ func createAddress(address models.Address, c echo.Context) (int, error) {
 	return addr_id, nil
 }
 
+// Maps items to size, where 0 = sm, 1 = md, 2 = lg
+var itemMap = map[string]int{
+	"table":     0,
+	"poolTable": 2,
+	"couch":     2,
+	"loofa":     1,
+	"lamp":      0,
+
+	"smBox": 0,
+	"mdBox": 1,
+	"lgBox": 2,
+}
+
 // Maps all items in the json to their corresponding sizes
 func itemsToSizes(estRequest models.EstimateRequest) ([]int, error) {
-	itemMap := map[string]int{
-		"table":     0,
-		"poolTable": 2,
-		"couch":     2,
-		"loofa":     1,
-		"lamp":      0,
-		"smBox":     0,
-		"mdBox":     1,
-		"lgBox":     2,
-	}
-
 	// sm, md, lg
 	sizes := []int{0, 0, 0}
 	var size int
@@ -96,6 +98,8 @@ func itemsToSizes(estRequest models.EstimateRequest) ([]int, error) {
 	return sizes, nil
 }
 
+// Calculate how many labor hours it would take to load all items
+// i.e. Item Load
 func calculateItemLoad(sizes []int) (float64, error) {
 	sm_mult := 0.02
 	md_mult := 0.05
@@ -112,6 +116,7 @@ func calculateItemLoad(sizes []int) (float64, error) {
 // 0.25 = 4 boxes packed per hour
 var boxMultiplier float64 = 0.25
 
+// Calculates the total number of labor hours for packing and unpacking combined
 func packHours(estRequest models.EstimateRequest, boxes int) (float64, error) {
 	// Converts Pack and Unpack bools into ints and uses them as the multiplier for the hours
 	// If neither are true, no hours will be added for packing
@@ -126,7 +131,8 @@ func packHours(estRequest models.EstimateRequest, boxes int) (float64, error) {
 	return (boxMultiplier * float64(boxes) * packMult), nil
 }
 
-func loadHours(estRequest models.EstimateRequest, itemLoad float64) (float64, error) {
+// Calculates the total labor hours to load and unload combined
+func loadHours(estRequest models.EstimateRequest, itemLoad float64, flightMult float64) (float64, error) {
 	// Converts Load and Unload bools into ints and uses them as the multiplier for the hours
 	// If neither are true, no hours will be added for loading
 	loadMult := 0.0
@@ -137,17 +143,17 @@ func loadHours(estRequest models.EstimateRequest, itemLoad float64) (float64, er
 		loadMult += 1
 	}
 
-	return float64(itemLoad) * loadMult, nil
+	return (float64(itemLoad) * loadMult) * flightMult, nil
 }
 
 // Calculates how many hours a estimate should take
-func estimateHours(estRequest models.EstimateRequest, boxes int, itemLoad float64) (float64, error) {
+func estimateHours(estRequest models.EstimateRequest, boxes int, itemLoad float64, flightMult float64) (float64, error) {
 	pack, err := packHours(estRequest, boxes)
 	if err != nil {
 		return 0, err
 	}
 
-	load, err := loadHours(estRequest, itemLoad)
+	load, err := loadHours(estRequest, itemLoad, flightMult)
 	if err != nil {
 		return 0, err
 	}
@@ -155,13 +161,24 @@ func estimateHours(estRequest models.EstimateRequest, boxes int, itemLoad float6
 	return pack + load, nil
 }
 
+// Maps special items to the minimum number of workers to move them
+var specials = map[string]int{
+	"keyboard":        2,
+	"spinetPiano":     2,
+	"consolePiano":    2,
+	"studioPiano":     3,
+	"organ":           4,
+	"safe300lb":       3,
+	"safe400lb":       4,
+	"poolTable":       3,
+	"arcadeGames":     2,
+	"weightEquipment": 3,
+	"machinery":       4,
+}
+
+// Determine the minimum number of workers for a job
 func estimateWorkers(estRequest models.EstimateRequest) (int, error) {
 	// Maps special item names to their number of needed workers
-	specials := map[string]int{
-		"poolTable": 3,
-		"piano":     4,
-	}
-
 	numWorkers := 2
 
 	for item, quantity := range estRequest.Special {
@@ -180,7 +197,7 @@ func estimateWorkers(estRequest models.EstimateRequest) (int, error) {
 	return numWorkers, nil
 }
 
-// Calculates the cost of an hour
+// Calculates the cost of an hour, considering distances and number of workers
 func estimateRate(estRequest models.EstimateRequest, workers int) (float64, error) {
 	distRate := 10 * (float64(estRequest.DistToJob-15) / 15)
 	manRate := workers * 40
@@ -201,16 +218,19 @@ func estimateCost(estRequest models.EstimateRequest, hours float64, workers int,
 func calculateEstimate(req models.EstimateRequest, c echo.Context, store bool) (models.Estimate, error) {
 	var estimate models.Estimate
 
+	// Map all items to sizes (sm, md, lg)
 	sizes, err := itemsToSizes(req)
 	if err != nil {
 		return estimate, err
 	}
 
+	// Calculate the Item Load (how many hours it will take to load all items in perfect conditions)
 	itemLoad, err := calculateItemLoad(sizes)
 	if err != nil {
 		return estimate, err
 	}
 
+	// If the estimate is going to be stored in the database, then store the addresses
 	var loadAddrID, unloadAddrID int
 	if store {
 		if req.LoadAddr != nil {
@@ -231,29 +251,36 @@ func calculateEstimate(req models.EstimateRequest, c echo.Context, store bool) (
 			loadAddrID = -1
 		}
 	} else {
+		// No need to worry about address ids if they aren't in the database
 		loadAddrID = 0
 		unloadAddrID = 0
 	}
 
+	// Calculate the equivalent number of small boxes
 	boxes := req.Boxes["smBox"] + 2*req.Boxes["mdBox"] + 4*req.Boxes["lgBox"]
-	fmt.Println(req.Boxes)
 
-	// Calculate Labor Hours
-	hours, err := estimateHours(req, boxes, itemLoad)
+	// Calculate a time multiplier for load/unload based on number of flights of stairs in a house
+	flightMult := 1 + ((float64(req.LoadAddr.Flights) - 1) / 2)
+
+	// Calculate Total Labor Hours
+	hours, err := estimateHours(req, boxes, itemLoad, flightMult)
 	if err != nil {
 		return estimate, err
 	}
 
+	// Convert labor hours into a PG Interval to work with DB
 	hours_interval := pgtype.Interval{
 		Microseconds: int64(hours * 3600000000),
 		Valid:        true,
 	}
 
+	// Calculate number of workers
 	workers, err := estimateWorkers(req)
 	if err != nil {
 		return estimate, err
 	}
 
+	// Calculate the hourly rate
 	rate, err := estimateRate(req, workers)
 	if err != nil {
 		return estimate, err
@@ -265,16 +292,19 @@ func calculateEstimate(req models.EstimateRequest, c echo.Context, store bool) (
 		return estimate, err
 	}
 
+	// Convert startTime datestring into a usable format
 	startTime, err := time.Parse("02.01.2006 03:04 PM", req.StartTime)
 	if err != nil {
 		return estimate, err
 	}
 
+	// Convert startTime into a Timestamp for entry into the DB
 	timeStamp := pgtype.Timestamp{
 		Time:  startTime,
 		Valid: true,
 	}
 
+	// Create the estimate that will both be returned to the user as well as stored in the database
 	estimate = models.Estimate{
 		LoadAddrID:   loadAddrID,
 		UnloadAddrID: unloadAddrID,
@@ -287,7 +317,7 @@ func calculateEstimate(req models.EstimateRequest, c echo.Context, store bool) (
 		Large:      sizes[2],
 		Boxes:      boxes,
 		ItemLoad:   itemLoad,
-		FlightMult: float64((*req.UnloadAddr).Flights),
+		FlightMult: flightMult,
 
 		Pack:   req.Pack,
 		Unpack: req.Unpack,
@@ -312,18 +342,21 @@ func calculateEstimate(req models.EstimateRequest, c echo.Context, store bool) (
 // POST Route to create an Estimate with an account
 func createEstimate(c echo.Context) error {
 	var req models.EstimateRequest
-	// attempt at binding incoming json to a jobRequest
+	// attempt at binding incoming json to an estimate request
 	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": err})
 	}
 
+	// Calculate the actual estimate, including cost, hours, etc.
 	args, err := calculateEstimate(req, c, true)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"error": err})
 	}
 
+	// Find the customers username; parsed from the JWT in middleware
 	args.CustomerUsername = c.Get("username").(string)
 
+	// Insert the estimate into the database
 	_, err = DB.PgInstance.CreateEstimate(c.Request().Context(), args)
 	if err != nil {
 		var pgErr *pgconn.PgError
@@ -349,6 +382,7 @@ func createUnownedEstimate(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": err})
 	}
 
+	// Calculate the estimate (cost, hours, workers, etc)
 	result, err := calculateEstimate(req, c, false)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"error": err})
