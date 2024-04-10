@@ -194,8 +194,8 @@ func createEmployee(c echo.Context) error {
 		PhonePrimary:     newEmployee.PhonePrimary,
 		PhoneOther1:      newEmployee.PhoneOther1,
 		PhoneOther2:      newEmployee.PhoneOther2,
-		EmployeeType:     newEmployee.EmployeeType,
-		EmployeePriority: newEmployee.EmployeePriority,
+		EmployeeType:     string(su.EmployeeType),
+		EmployeePriority: su.EmployeePriority,
 	}
 
 	// validation stuff probably needed
