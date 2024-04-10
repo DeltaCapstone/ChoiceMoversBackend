@@ -122,7 +122,7 @@ const createEmployeeNameQuery = `INSERT INTO employees
 	phone_primary, phone_other1,phone_other2, employee_type,employee_priority) 
 VALUES 
 (@username,@password_hash,@first_name,@last_name,@email,
-	@phone_primary,@phone_other1,phone_other2,@employee_type,@employee_priority) `
+	@phone_primary,@phone_other1,@phone_other2,@employee_type,@employee_priority) `
 
 func (pg *postgres) CreateEmployee(ctx context.Context, newEmployee models.CreateEmployeeParams) error {
 	_, err := pg.db.Exec(ctx, createEmployeeNameQuery, pgx.NamedArgs(utils.StructToMap(newEmployee, "db")))

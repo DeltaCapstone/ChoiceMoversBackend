@@ -119,7 +119,7 @@ func addEmployee(c echo.Context) error {
 	DB.PgInstance.AddEmployeeSignup(c.Request().Context(), newEmployee)
 	//make url
 
-	url := fmt.Sprintf("%v", utils.ServerConfig.EmpSignupURL+"?token="+t)
+	url := fmt.Sprintf("%v", utils.ServerConfig.EmpSignupURL+"/"+t)
 	link := fmt.Sprintf(`<p><a href="%s">Signup Link</a></p>`, url)
 	//email it
 	body := signupMessage + link
