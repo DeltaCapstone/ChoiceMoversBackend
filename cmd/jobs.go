@@ -198,7 +198,7 @@ func estimateCost(estRequest models.EstimateRequest, hours float64, workers int,
 
 // Creates an estimate object from an Unowned Estimate. Used by both owned and unowned estimate creation.
 // Calculates labor hours, milage, cost, etc. for an estimate.
-func calculateEstimate(req models.EstimateRequest, c echo.Context) (models.Estimate, error) {
+func calculateEstimate(req models.EstimateRequest, c echo.Context, store bool) (models.Estimate, error) {
 	var estimate models.Estimate
 
 	sizes, err := itemsToSizes(req)
@@ -212,22 +212,27 @@ func calculateEstimate(req models.EstimateRequest, c echo.Context) (models.Estim
 	}
 
 	var loadAddrID, unloadAddrID int
-	if req.LoadAddr != nil {
-		loadAddrID, err = createAddress(*req.LoadAddr, c)
-		if err != nil {
-			return estimate, err
+	if store {
+		if req.LoadAddr != nil {
+			loadAddrID, err = createAddress(*req.LoadAddr, c)
+			if err != nil {
+				return estimate, err
+			}
+		} else {
+			loadAddrID = -1
 		}
-	} else {
-		loadAddrID = -1
-	}
 
-	if req.UnloadAddr != nil {
-		unloadAddrID, err = createAddress(*req.UnloadAddr, c)
-		if err != nil {
-			return estimate, err
+		if req.UnloadAddr != nil {
+			unloadAddrID, err = createAddress(*req.UnloadAddr, c)
+			if err != nil {
+				return estimate, err
+			}
+		} else {
+			loadAddrID = -1
 		}
 	} else {
-		loadAddrID = -1
+		loadAddrID = 0
+		unloadAddrID = 0
 	}
 
 	boxes := req.Boxes["smBox"] + 2*req.Boxes["mdBox"] + 4*req.Boxes["lgBox"]
@@ -312,7 +317,7 @@ func createEstimate(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": err})
 	}
 
-	args, err := calculateEstimate(req, c)
+	args, err := calculateEstimate(req, c, true)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"error": err})
 	}
@@ -344,7 +349,7 @@ func createUnownedEstimate(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": err})
 	}
 
-	result, err := calculateEstimate(req, c)
+	result, err := calculateEstimate(req, c, false)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"error": err})
 	}
