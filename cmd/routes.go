@@ -51,6 +51,7 @@ func CreateRoutes(e *echo.Echo) {
 	managerGroup.DELETE("/employee/:username", deleteEmployee)          // Manager adds new employee
 	managerGroup.PUT("/employee/:username", updateEmployeeTypePriority) //manager makes changes  to employee
 	managerGroup.POST("/job/assign", managerAssignEmployeeToJob)        // Query Params "jobID", "toAdd", "toRemove", front end checks for full job, if "toRemove" not included then no employee removed, if "toAdd" not included not employee added
+	managerGroup.POST("/job/update", updateJob)
 	//managerGroup.POST("/job", createJob)           // Manager creates a job, needed for cases where a customer call in or a job is recieved from Uhaul for example
 	//managerGroup.PUT("/job/:jobID", updateJob)        // Manager makes changes to a job or confirms a job
 

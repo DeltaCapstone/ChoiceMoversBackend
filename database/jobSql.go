@@ -235,3 +235,25 @@ func (pg *postgres) CreateJob(ctx context.Context, job models.Job) (int, error) 
 	err := row.Scan(&u)
 	return u, err
 }
+
+const updateJobQuery = `UPDATE jobs 
+SET man_hours = @man_hours, rate = @rate, cost = @cost, finalized = @finalized, 
+final_cost = @final_cost, amount_payed = @amount_payed, notes = @notes
+WHERE job_id=@job_id`
+
+func (pg *postgres) UpdateJob(ctx context.Context, job models.Job) error {
+	_, err := pg.db.Exec(ctx, updateJobQuery, pgx.NamedArgs(utils.StructToMap(job, "db")))
+	return err
+}
+
+const getJobByIDQuery = `
+SELECT estimate_id, man_hours, rate, cost, finalized, final_cost, amount_payed, notes FROM jobs
+WHERE job_id=$1`
+
+func (pg *postgres) GetJobByID(ctx context.Context, jobID int) (models.Job, error) {
+	row := pg.db.QueryRow(ctx, getJobByIDQuery, jobID)
+
+	var res models.Job
+	err := row.Scan(&res.EstimateID, &res.ManHours, &res.Rate, &res.Cost, &res.Finalized, &res.FinalCost, &res.AmountPaid, &res.Notes)
+	return res, err
+}

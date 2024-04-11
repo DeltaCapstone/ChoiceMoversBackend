@@ -87,3 +87,59 @@ func convertEstimateToJob(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, echo.Map{"estimate": res, "job": job})
 }
+
+func updateJob(c echo.Context) error {
+	var updatedJob models.Job
+	if err := c.Bind(&updatedJob); err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": err})
+	}
+
+	oldJob, err := DB.PgInstance.GetJobByID(c.Request().Context(), updatedJob.JobID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{"message": "cannot find job by id", "error": err})
+	}
+
+	if oldJob.Finalized {
+		return c.JSON(http.StatusConflict, echo.Map{"message": "cannot modify a finalized job"})
+	}
+
+	if updatedJob.AmountPaid < oldJob.AmountPaid {
+		return c.JSON(http.StatusConflict, echo.Map{"message": "new paid amount lower than previous amount"})
+	}
+
+	if updatedJob.Cost == 0 {
+		updatedJob.Cost = oldJob.Cost
+	}
+
+	if updatedJob.ManHours.Microseconds == 0 {
+		updatedJob.ManHours = oldJob.ManHours
+	}
+
+	if updatedJob.Rate == 0 {
+		updatedJob.Rate = oldJob.Rate
+	}
+
+	if updatedJob.FinalCost == 0 {
+		updatedJob.FinalCost = oldJob.FinalCost
+	}
+
+	if updatedJob.ActualManHours.Microseconds == 0 {
+		updatedJob.ActualManHours = oldJob.ActualManHours
+	}
+
+	if len(updatedJob.Notes) == 0 {
+		updatedJob.Notes = oldJob.Notes
+	}
+
+	err = DB.PgInstance.UpdateJob(c.Request().Context(), updatedJob)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{"message": "cannot update job", "error": err})
+	}
+
+	newJob, err := DB.PgInstance.GetJobByID(c.Request().Context(), updatedJob.JobID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{"message": "cannot find updated job", "error": err})
+	}
+
+	return c.JSON(http.StatusOK, echo.Map{"oldJob": oldJob, "updatedJob": newJob})
+}
