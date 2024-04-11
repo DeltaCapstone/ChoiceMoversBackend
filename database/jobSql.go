@@ -257,3 +257,55 @@ func (pg *postgres) GetJobByID(ctx context.Context, jobID int) (models.Job, erro
 	err := row.Scan(&res.EstimateID, &res.ManHours, &res.Rate, &res.Cost, &res.Finalized, &res.FinalCost, &res.AmountPaid, &res.Notes)
 	return res, err
 }
+
+const getJobsByUsernameQuery = `SELECT 
+estimate_id, customer_username,load_addr_id,unload_addr_id,start_time,end_time,rooms,special,
+small_items,medium_items,large_items,boxes,item_load,flight_mult,pack,unpack,load,unload,
+clean,need_truck,number_workers,
+dist_to_job,dist_move,
+estimated_man_hours,
+estimated_rate,
+estimated_cost,
+job_id,
+man_hours,
+rate,
+cost,
+finalized,
+actual_man_hours,
+final_cost,
+amount_payed,
+notes   
+FROM estimates NATURAL JOIN jobs WHERE customer_username=@username`
+
+func (pg *postgres) GetJobsByUsername(ctx context.Context, username string) ([]models.JobResponse, error) {
+	var jobs []models.JobResponse
+
+	rows, err := pg.db.Query(ctx, getJobsByUsernameQuery, pgx.NamedArgs{"username": username})
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var ej models.EstimateJobJoin
+		if err := scanStruct(rows, &ej); err != nil {
+			return nil, err
+		}
+		var er models.EstimateResponse
+		er.MakeFromJoin(ej)
+
+		if ej.LoadAddrID != 0 {
+			er.LoadAddr, _ = getAddr(ctx, ej.LoadAddrID)
+		}
+		if ej.UnloadAddrID != 0 {
+			er.UnloadAddr, _ = getAddr(ctx, ej.UnloadAddrID)
+		}
+		er.Customer, _ = pg.GetCustomerByUserName(ctx, ej.CustomerUsername)
+		var jr models.JobResponse
+		jr.MakeFromJoin(ej)
+		jr.EstimateResponse = er
+		jobs = append(jobs, jr)
+	}
+	return jobs, nil
+}

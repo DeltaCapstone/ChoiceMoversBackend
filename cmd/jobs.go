@@ -143,3 +143,16 @@ func updateJob(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, echo.Map{"oldJob": oldJob, "updatedJob": newJob})
 }
+
+func getCustomerJobs(c echo.Context) error {
+	username := c.QueryParam("username")
+
+	jobs, err := DB.PgInstance.GetJobsByUsername(c.Request().Context(), username)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, fmt.Sprintf("Error retrieving data: %v", err))
+	}
+	if jobs == nil {
+		return c.String(http.StatusNotFound, fmt.Sprintf("No jobs found with username: %v", username))
+	}
+	return c.JSON(http.StatusOK, jobs)
+}
