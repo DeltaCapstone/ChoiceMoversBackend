@@ -21,7 +21,7 @@ func CreateRoutes(e *echo.Echo) {
 	e.POST("/estimate", createUnownedEstimate)
 
 	customerGroup := e.Group("/customer")
-	// customerGroup.Use(echojwt.WithConfig(token.Config), customerMiddleware)
+	customerGroup.Use(echojwt.WithConfig(token.Config), customerMiddleware)
 	customerGroup.GET("/profile", getCustomer)    //view my account
 	customerGroup.PUT("/profile", updateCustomer) //update my account
 	//customerGroup.DELETE("/", deleteCustomer) //delete my account
