@@ -45,7 +45,7 @@ INSERT INTO public.jobs
     (estimate_id, man_hours, rate, cost, finalized, actual_man_hours, final_cost, amount_payed, notes) 
 VALUES 
     (1, '8 hours', 20.00, 160.00, false, '8 hours', 160.00, 150.00, 'Job completed successfully.'),
-    (2, '8 hours', 25.00, 200.00, true, '8 hours', 200.00, 180.00, 'Additional items requested by the customer.'),
+    (2, '8 hours', 25.00, 200.00, false, '8 hours', 200.00, 180.00, 'Additional items requested by the customer.'),
     (3, '8 hours', 30.00, 240.00, true, '8 hours', 240.00, 220.00, 'Customer provided additional instructions.'),
     (4, '8 hours', 35.00, 280.00, true, '8 hours', 280.00, 250.00, 'Job completed on time and within budget.');
 
