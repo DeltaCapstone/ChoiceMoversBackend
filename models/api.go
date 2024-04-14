@@ -201,6 +201,11 @@ type JobResponse struct {
 	AssignedEmp []AssignedEmployee `json:"assignedEmployees"`
 }
 
+type Room struct {
+	RoomName string         `json:"roomName"`
+	Items    map[string]int `json:"items"`
+}
+
 type EstimateResponse struct {
 	EstimateID int                 `db:"estimate_id" json:"estimateId"`
 	Customer   GetCustomerResponse `json:"customer"`
@@ -282,7 +287,36 @@ func (er *EstimateResponse) MakeFromJoin(ej EstimateJobJoin) {
 	er.EstimateCost = ej.EstimateCost
 }
 
+type EstimateRequest struct {
+	// Username   string   `json:"username"`
+	LoadAddr   *Address `json:"loadAddr"`
+	UnloadAddr *Address `json:"unloadAddr"`
+	StartTime  string   `db:"start_time" json:"startTime"`
+
+	Rooms   []Room         `db:"rooms" json:"rooms"`
+	Special map[string]int `db:"special" json:"special"`
+	Boxes   map[string]int `json:"boxes"`
+
+	Pack   bool `db:"pack" json:"pack"`
+	Unpack bool `db:"unpack" json:"unpack"`
+	Load   bool `db:"load" json:"load"`
+	Unload bool `db:"unload" json:"unload"`
+
+	Clean bool `db:"clean" json:"clean"`
+
+	NeedTruck bool `db:"need_truck" json:"needTruck"`
+	DistToJob int  `db:"dist_to_job" json:"distanceToJob"`
+	DistMove  int  `db:"dist_move" json:"distanceMove"`
+
+	SpecialRequests []string `json:"specialRequests"`
+}
+
 type PasswordResetRequest struct {
 	Code  string `json:"code"`
 	NewPW string `json:"newPassword"`
+}
+
+type ConvertEstimateToJob struct {
+	// Username   string `json:"username"`
+	EstimateID int `json:"estimateId"`
 }

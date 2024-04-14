@@ -22,7 +22,7 @@ BEGIN
         EXECUTE 'CREATE TYPE Employee_type AS ENUM (''Part-time'', ''Full-time'', ''Manager'', ''Admin'')';
     END IF;
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'residence_type') THEN
-       EXECUTE 'CREATE TYPE Residence_type AS ENUM (''Business'', ''House'',''Apartment'',''Condo'',''Storage Unit'')';
+       EXECUTE 'CREATE TYPE Residence_type AS ENUM (''Business'', ''House'',''Apartment'',''Condo'',''Storage Unit'',''Other'')';
     END IF;
 END$$;
 

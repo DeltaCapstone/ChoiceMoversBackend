@@ -18,6 +18,7 @@ func CreateRoutes(e *echo.Echo) {
 	e.POST("/portal/passwordReset", sendResetCodeEmployee)
 	e.PUT("/portal/passwordReset", resetPasswordEmployee)
 	e.POST("/renewAccess", renewAccessToken)
+	e.POST("/estimate", createUnownedEstimate)
 
 	customerGroup := e.Group("/customer")
 	customerGroup.Use(echojwt.WithConfig(token.Config), customerMiddleware)
@@ -25,9 +26,11 @@ func CreateRoutes(e *echo.Echo) {
 	customerGroup.PUT("/profile", updateCustomer) //update my account
 	//customerGroup.DELETE("/", deleteCustomer) //delete my account
 	//customerGroup.GET("/job", getCustomerJobs)
-	//customerGroup.POST("/job", createJobByCustomer)
+	customerGroup.POST("/estimate", createEstimate)
 	//customerGroup.PUT("/job/:jobID", updateJobByCustomer)
 	customerGroup.PUT("/password", changeCustomerPassword)
+	customerGroup.POST("/estimate/convert", convertEstimateToJob)
+	customerGroup.GET("/job", getCustomerJobs)
 
 	// Group for employee routes
 	employeeGroup := e.Group("/employee")
@@ -49,6 +52,7 @@ func CreateRoutes(e *echo.Echo) {
 	managerGroup.DELETE("/employee/:username", deleteEmployee)          // Manager adds new employee
 	managerGroup.PUT("/employee/:username", updateEmployeeTypePriority) //manager makes changes  to employee
 	managerGroup.POST("/job/assign", managerAssignEmployeeToJob)        // Query Params "jobID", "toAdd", "toRemove", front end checks for full job, if "toRemove" not included then no employee removed, if "toAdd" not included not employee added
+	managerGroup.POST("/job/update", updateJob)
 	//managerGroup.POST("/job", createJob)           // Manager creates a job, needed for cases where a customer call in or a job is recieved from Uhaul for example
 	//managerGroup.PUT("/job/:jobID", updateJob)        // Manager makes changes to a job or confirms a job
 
