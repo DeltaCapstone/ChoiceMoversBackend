@@ -145,7 +145,7 @@ func updateJob(c echo.Context) error {
 }
 
 func getCustomerJobs(c echo.Context) error {
-	username := c.QueryParam("username")
+	username := c.Get("username").(string)
 
 	jobs, err := DB.PgInstance.GetJobsByUsername(c.Request().Context(), username)
 	if err != nil {
