@@ -129,7 +129,7 @@ type EstimateJobJoin struct {
 	StartTime        pgtype.Timestamp `db:"start_time" json:"startTime"`
 	EndTime          pgtype.Timestamp `db:"end_time" json:"endTime"`
 
-	Rooms      map[string]interface{} `db:"rooms" json:"rooms"`
+	Rooms      []Room                 `db:"rooms" json:"rooms"`
 	Special    map[string]interface{} `db:"special" json:"special"`
 	Small      int                    `db:"small_items" json:"smallItems"`
 	Medium     int                    `db:"medium_items" json:"mediumItems"`
