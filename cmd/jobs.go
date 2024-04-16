@@ -113,11 +113,7 @@ func updateJob(c echo.Context) error {
 		return c.JSON(http.StatusConflict, echo.Map{"message": "new paid amount lower than previous amount"})
 	}
 
-	if updatedJobRequest.Cost == 0 {
-		updatedJob.Cost = oldJob.Cost
-	} else {
-		updatedJob.Cost = updatedJobRequest.Cost
-	}
+	updatedJob.Finalized = updatedJobRequest.Finalized
 
 	if updatedJobRequest.ManHours == 0 {
 		updatedJob.ManHours = oldJob.ManHours
