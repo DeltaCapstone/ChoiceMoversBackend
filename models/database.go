@@ -74,9 +74,9 @@ type Job struct {
 	JobID      int `db:"job_id" json:"jobId"`
 	EstimateID int `db:"estimate_id" json:"estimateId"`
 
-	ManHours pgtype.Interval `db:"man_hours" json:"ManHours"`
-	Rate     float64         `db:"rate" json:"Rate"`
-	Cost     float64         `db:"cost" json:"Cost"`
+	ManHours pgtype.Interval `db:"man_hours" json:"jobManHours"`
+	Rate     float64         `db:"rate" json:"jobRate"`
+	Cost     float64         `db:"cost" json:"jobCost"`
 
 	Finalized      bool            `db:"finalized" json:"finalized"` //meaning customer agrees to all the job parameters
 	ActualManHours pgtype.Interval `db:"actual_man_hours" json:"actualManHours"`
