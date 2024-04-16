@@ -105,10 +105,6 @@ func updateJob(c echo.Context) error {
 		return c.JSON(http.StatusConflict, echo.Map{"message": "cannot modify a finalized job"})
 	}
 
-	if updatedJob.AmountPaid < oldJob.AmountPaid {
-		return c.JSON(http.StatusConflict, echo.Map{"message": "new paid amount lower than previous amount"})
-	}
-
 	if updatedJob.Cost == 0 {
 		updatedJob.Cost = oldJob.Cost
 	}
