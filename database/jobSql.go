@@ -98,10 +98,10 @@ func getAddr(ctx context.Context, addrID int) (models.Address, error) {
 const createEstimateQuery = `INSERT INTO estimates 
 (customer_username, load_addr_id, unload_addr_id, start_time, end_time, rooms, special, small_items, medium_items, large_items, 
 	boxes, item_load, flight_mult, pack, unpack, load, unload, clean, need_truck, number_workers, dist_to_job, dist_move,
-	estimated_man_hours, estimated_rate, estimated_cost) VALUES 
+	estimated_man_hours, estimated_rate, estimated_cost, customer_notes) VALUES 
 (@customer_username, @load_addr_id, @unload_addr_id, @start_time, @end_time, @rooms, @special, @small_items, @medium_items, @large_items,
 	@boxes, @item_load, @flight_mult, @pack, @unpack, @load, @unload, @clean, @need_truck, @number_workers, @dist_to_job, @dist_move,
-	@estimated_man_hours, @estimated_rate, @estimated_cost) RETURNING estimate_id`
+	@estimated_man_hours, @estimated_rate, @estimated_cost, @customer_notes) RETURNING estimate_id`
 
 func (pg *postgres) CreateEstimate(ctx context.Context, estimate models.Estimate) (int, error) {
 	row := pg.db.QueryRow(ctx, createEstimateQuery, pgx.NamedArgs(utils.StructToMap(estimate, "db")))
@@ -212,7 +212,7 @@ func (pg *postgres) GetIsManagerAssigned(ctx context.Context, username string, j
 const getEstimateByIDQuery = `
 SELECT customer_username, load_addr_id, unload_addr_id, start_time, end_time, rooms, special, small_items, medium_items, large_items, 
 boxes, item_load, flight_mult, pack, unpack, load, unload, clean, need_truck, number_workers, dist_to_job, dist_move,
-estimated_man_hours, estimated_rate, estimated_cost FROM estimates
+estimated_man_hours, estimated_rate, estimated_cost, customer_notes FROM estimates
 WHERE estimate_id=$1`
 
 func (pg *postgres) GetEstimateByID(ctx context.Context, estimateID int) (models.Estimate, error) {
@@ -221,7 +221,7 @@ func (pg *postgres) GetEstimateByID(ctx context.Context, estimateID int) (models
 	var res models.Estimate
 	err := row.Scan(&res.CustomerUsername, &res.LoadAddrID, &res.UnloadAddrID, &res.StartTime, &res.EndTime, &res.Rooms, &res.Special, &res.Small, &res.Medium,
 		&res.Large, &res.Boxes, &res.ItemLoad, &res.FlightMult, &res.Pack, &res.Unpack, &res.Load, &res.Unload, &res.Clean, &res.NeedTruck, &res.NumberWorkers,
-		&res.DistToJob, &res.DistMove, &res.EstimateManHours, &res.EstimateRate, &res.EstimateCost)
+		&res.DistToJob, &res.DistMove, &res.EstimateManHours, &res.EstimateRate, &res.EstimateCost, &res.CustomerNotes)
 	return res, err
 }
 

@@ -66,7 +66,7 @@ func convertEstimateToJob(c echo.Context) error {
 		Finalized:  false,
 		FinalCost:  0,
 		AmountPaid: 0,
-		Notes:      "",
+		Notes:      res.CustomerNotes,
 	}
 
 	id, err := DB.PgInstance.CreateJob(c.Request().Context(), job)

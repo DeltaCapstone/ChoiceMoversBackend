@@ -95,6 +95,8 @@ CREATE TABLE IF NOT EXISTS public.estimates
     estimated_rate numeric(10,2),
     estimated_cost numeric(10,2),
 
+    customer_notes TEXT,
+
     PRIMARY KEY (estimate_id)
 );
 
