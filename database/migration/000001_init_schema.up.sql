@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS public.jobs
     cost numeric(10,2),
 
     finalized boolean NOT NULL DEFAULT False,
-    actual_man_hours numeric(10,2) NOT NULL DEFAULT '0 hours',
+    actual_man_hours numeric(10,2) NOT NULL,
     final_cost numeric(10,2), 
     amount_payed numeric(10,2),
 
@@ -91,7 +91,7 @@ CREATE TABLE IF NOT EXISTS public.estimates
     dist_to_job integer NOT NULL DEFAULT 0, 
     dist_move integer NOT NULL DEFAULT 0, 
 
-    estimated_man_hours numeric(10,2) NOT NULL DEFAULT, 
+    estimated_man_hours numeric(10,2) NOT NULL, 
     estimated_rate numeric(10,2),
     estimated_cost numeric(10,2),
 
