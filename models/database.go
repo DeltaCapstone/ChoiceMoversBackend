@@ -74,14 +74,14 @@ type Job struct {
 	JobID      int `db:"job_id" json:"jobId"`
 	EstimateID int `db:"estimate_id" json:"estimateId"`
 
-	ManHours pgtype.Interval `db:"man_hours" json:"jobManHours"`
-	Rate     float64         `db:"rate" json:"jobRate"`
-	Cost     float64         `db:"cost" json:"jobCost"`
+	ManHours float64 `db:"man_hours" json:"jobManHours"`
+	Rate     float64 `db:"rate" json:"jobRate"`
+	Cost     float64 `db:"cost" json:"jobCost"`
 
-	Finalized      bool            `db:"finalized" json:"finalized"` //meaning customer agrees to all the job parameters
-	ActualManHours pgtype.Interval `db:"actual_man_hours" json:"actualManHours"`
-	FinalCost      float64         `db:"final_cost" json:"finalCost"`
-	AmountPaid     float64         `db:"amount_payed" json:"amountPaid"`
+	Finalized      bool    `db:"finalized" json:"finalized"` //meaning customer agrees to all the job parameters
+	ActualManHours float64 `db:"actual_man_hours" json:"actualManHours"`
+	FinalCost      float64 `db:"final_cost" json:"finalCost"`
+	AmountPaid     float64 `db:"amount_payed" json:"amountPaid"`
 
 	Notes string `db:"notes" json:"notes"`
 }
@@ -116,9 +116,9 @@ type Estimate struct {
 	DistToJob     int  `db:"dist_to_job" json:"distToJob"`
 	DistMove      int  `db:"dist_move" json:"distMove"`
 
-	EstimateManHours pgtype.Interval `db:"estimated_man_hours" json:"estimatedManHours"`
-	EstimateRate     float64         `db:"estimated_rate" json:"estimatedRate"`
-	EstimateCost     float64         `db:"estimated_cost" json:"estimatedCost"`
+	EstimateManHours float64 `db:"estimated_man_hours" json:"estimatedManHours"`
+	EstimateRate     float64 `db:"estimated_rate" json:"estimatedRate"`
+	EstimateCost     float64 `db:"estimated_cost" json:"estimatedCost"`
 }
 
 type EstimateJobJoin struct {
@@ -150,20 +150,20 @@ type EstimateJobJoin struct {
 	DistToJob     int  `db:"dist_to_job" json:"distToJob"`
 	DistMove      int  `db:"dist_move" json:"distMove"`
 
-	EstimateManHours pgtype.Interval `db:"estimated_man_hours" json:"estimatedManHours"`
-	EstimateRate     float64         `db:"estimated_rate" json:"estimatedRate"`
-	EstimateCost     float64         `db:"estimated_cost" json:"estimatedCost"`
+	EstimateManHours float64 `db:"estimated_man_hours" json:"estimatedManHours"`
+	EstimateRate     float64 `db:"estimated_rate" json:"estimatedRate"`
+	EstimateCost     float64 `db:"estimated_cost" json:"estimatedCost"`
 
 	JobID int `db:"job_id" json:"jobId"`
 
-	ManHours pgtype.Interval `db:"man_hours" json:"ManHours"`
-	Rate     float64         `db:"rate" json:"Rate"`
-	Cost     float64         `db:"cost" json:"Cost"`
+	ManHours float64 `db:"man_hours" json:"ManHours"`
+	Rate     float64 `db:"rate" json:"Rate"`
+	Cost     float64 `db:"cost" json:"Cost"`
 
-	Finalized      bool            `db:"finalized" json:"finalized"` //meaning customer agrees to all the job parameters
-	ActualManHours pgtype.Interval `db:"actual_man_hours" json:"actualManHours"`
-	FinalCost      float64         `db:"final_cost" json:"finalCost"`
-	AmountPaid     float64         `db:"amount_payed" json:"amountPaid"`
+	Finalized      bool    `db:"finalized" json:"finalized"` //meaning customer agrees to all the job parameters
+	ActualManHours float64 `db:"actual_man_hours" json:"actualManHours"`
+	FinalCost      float64 `db:"final_cost" json:"finalCost"`
+	AmountPaid     float64 `db:"amount_payed" json:"amountPaid"`
 
 	Notes string `db:"notes" json:"notes"`
 }

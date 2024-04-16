@@ -247,12 +247,6 @@ func calculateEstimate(req models.EstimateRequest, c echo.Context, store bool) (
 		return estimate, err
 	}
 
-	// Convert labor hours into a PG Interval to work with DB
-	hours_interval := pgtype.Interval{
-		Microseconds: int64(hours * 3600000000),
-		Valid:        true,
-	}
-
 	// Calculate number of workers
 	workers, err := estimateWorkers(req)
 	if err != nil {
@@ -310,7 +304,7 @@ func calculateEstimate(req models.EstimateRequest, c echo.Context, store bool) (
 		DistToJob:     req.DistToJob,
 		DistMove:      req.DistMove,
 
-		EstimateManHours: hours_interval,
+		EstimateManHours: hours,
 		EstimateRate:     rate,
 		EstimateCost:     cost,
 	}

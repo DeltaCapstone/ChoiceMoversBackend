@@ -6,13 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"time"
 
 	DB "github.com/DeltaCapstone/ChoiceMoversBackend/database"
 	"github.com/DeltaCapstone/ChoiceMoversBackend/models"
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/jackc/pgx/v5/pgtype"
 
 	//"github.com/jackc/pgerrcode"
 	//"github.com/jackc/pgx/v5/pgconn"
@@ -121,15 +119,10 @@ func updateJob(c echo.Context) error {
 		updatedJob.Cost = updatedJobRequest.Cost
 	}
 
-	if updatedJobRequest.ManHours == "" {
+	if updatedJobRequest.ManHours == 0 {
 		updatedJob.ManHours = oldJob.ManHours
 	} else {
-		duration, _ := time.ParseDuration(updatedJobRequest.ManHours)
-		var interval = pgtype.Interval{
-			Microseconds: duration.Microseconds(),
-			Valid:        true,
-		}
-		updatedJob.ManHours = interval
+		updatedJob.ManHours = updatedJobRequest.ManHours
 	}
 
 	if updatedJobRequest.Rate == 0 {
@@ -144,15 +137,10 @@ func updateJob(c echo.Context) error {
 		updatedJob.FinalCost = updatedJobRequest.FinalCost
 	}
 
-	if updatedJobRequest.ActualManHours == "" {
+	if updatedJobRequest.ActualManHours == 0 {
 		updatedJob.ActualManHours = oldJob.ActualManHours
 	} else {
-		duration, _ := time.ParseDuration(updatedJobRequest.ActualManHours)
-		var interval = pgtype.Interval{
-			Microseconds: duration.Microseconds(),
-			Valid:        true,
-		}
-		updatedJob.ActualManHours = interval
+		updatedJob.ActualManHours = updatedJobRequest.ActualManHours
 	}
 
 	if len(updatedJobRequest.Notes) == 0 {

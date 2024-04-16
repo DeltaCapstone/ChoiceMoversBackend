@@ -34,19 +34,19 @@ VALUES
 INSERT INTO public.estimates 
     (customer_username, load_addr_id, unload_addr_id, start_time, end_time, rooms, special, small_items, medium_items, large_items, boxes, item_load, flight_mult, pack, unpack, load, unload, clean, need_truck, number_workers, dist_to_job, dist_move, estimated_man_hours, estimated_rate, estimated_cost) 
 VALUES 
-    ('user_john_d', 1, 2, '2024-04-10 08:00:00', '2024-04-10 16:00:00', '[{"roomName": "Bedroom","items": {"Arm Chair": 2,"Bed": 0}}]', '{}', 5, 3, 1, 10, 100, 1.0, true, false, true, false, true, true, 2, 10, 20, '4 hours', 25.00, 100.00),
-    ('user_jane_s', 3, 4, '2024-04-15 10:00:00', '2024-04-15 18:00:00', '[{"roomName": "Bedroom","items": {"Arm Chair": 2,"Bed": 0}}]', '{}', 7, 4, 2, 15, 120, 1.2, true, true, true, false, false, false, 2, 15, 25, '5 hours', 30.00, 150.00),
-    ('user_emily_b', 5, 6, '2024-04-20 09:00:00', '2024-04-20 17:00:00', '[{"roomName": "Bedroom","items": {"Arm Chair": 2,"Bed": 0}}]', '{"fragile_items": ["vases", "glasses"]}', 8, 5, 3, 20, 130, 1.5, false, true, false, true, true, true, 2, 20, 30, '6 hours', 35.00, 180.00),
-    ('user_mike_w', 7, 8, '2024-04-25 11:00:00', '2024-04-25 19:00:00', '[{"roomName": "Bedroom","items": {"Arm Chair": 2,"Bed": 0}}]', '{"antiques": ["painting", "sculpture"]}', 6, 4, 2, 12, 110, 1.3, true, false, false, true, false, true, 2, 18, 22, '4.5 hours', 28.00, 130.00);
+    ('user_john_d', 1, 2, '2024-04-10 08:00:00', '2024-04-10 16:00:00', '[{"roomName": "Bedroom","items": {"Arm Chair": 2,"Bed": 0}}]', '{}', 5, 3, 1, 10, 100, 1.0, true, false, true, false, true, true, 2, 10, 20, 4, 25.00, 100.00),
+    ('user_jane_s', 3, 4, '2024-04-15 10:00:00', '2024-04-15 18:00:00', '[{"roomName": "Bedroom","items": {"Arm Chair": 2,"Bed": 0}}]', '{}', 7, 4, 2, 15, 120, 1.2, true, true, true, false, false, false, 2, 15, 25, 5, 30.00, 150.00),
+    ('user_emily_b', 5, 6, '2024-04-20 09:00:00', '2024-04-20 17:00:00', '[{"roomName": "Bedroom","items": {"Arm Chair": 2,"Bed": 0}}]', '{"fragile_items": ["vases", "glasses"]}', 8, 5, 3, 20, 130, 1.5, false, true, false, true, true, true, 2, 20, 30, 6, 35.00, 180.00),
+    ('user_mike_w', 7, 8, '2024-04-25 11:00:00', '2024-04-25 19:00:00', '[{"roomName": "Bedroom","items": {"Arm Chair": 2,"Bed": 0}}]', '{"antiques": ["painting", "sculpture"]}', 6, 4, 2, 12, 110, 1.3, true, false, false, true, false, true, 2, 18, 22, 4.5, 28.00, 130.00);
 
 -- Inserting 4 jobs
 INSERT INTO public.jobs 
     (estimate_id, man_hours, rate, cost, finalized, actual_man_hours, final_cost, amount_payed, notes) 
 VALUES 
-    (1, '8 hours', 20.00, 160.00, false, '8 hours', 160.00, 150.00, 'Job completed successfully.'),
-    (2, '8 hours', 25.00, 200.00, false, '8 hours', 200.00, 180.00, 'Additional items requested by the customer.'),
-    (3, '8 hours', 30.00, 240.00, true, '8 hours', 240.00, 220.00, 'Customer provided additional instructions.'),
-    (4, '8 hours', 35.00, 280.00, true, '8 hours', 280.00, 250.00, 'Job completed on time and within budget.');
+    (1, 8, 20.00, 160.00, false, 8, 160.00, 150.00, 'Job completed successfully.'),
+    (2, 8.5, 25.00, 200.00, false, 8.5, 200.00, 180.00, 'Additional items requested by the customer.'),
+    (3, 4, 30.00, 240.00, true, 4, 240.00, 220.00, 'Customer provided additional instructions.'),
+    (4, 6, 35.00, 280.00, true, 6, 280.00, 250.00, 'Job completed on time and within budget.');
     
 INSERT INTO public.employee_jobs
     (employee_username,job_id,manager_override)

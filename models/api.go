@@ -189,12 +189,12 @@ type JobResponse struct {
 	JobID int `db:"job_id" json:"jobId"`
 	EstimateResponse
 
-	ManHours string  `db:"man_hours" json:"jobManHours"`
+	ManHours float64 `db:"man_hours" json:"jobManHours"`
 	Rate     float64 `db:"rate" json:"jobRate"`
 	Cost     float64 `db:"cost" json:"jobCost"`
 
 	Finalized      bool    `db:"finalized" json:"finalized"` //meaning customer agrees to all the job parameters
-	ActualManHours string  `db:"actual_man_hours" json:"actualManHours"`
+	ActualManHours float64 `db:"actual_man_hours" json:"actualManHours"`
 	FinalCost      float64 `db:"final_cost" json:"finalCost"`
 	AmountPaid     float64 `db:"ammount_payed" json:"ammountPaid"`
 
@@ -236,7 +236,7 @@ type EstimateResponse struct {
 	DistToJob     int  `db:"dist_to_job" json:"distToJob"`
 	DistMove      int  `db:"dist_move" json:"distMove"`
 
-	EstimateManHours string  `db:"estimated_man_hours" json:"estimatedManHours"`
+	EstimateManHours float64 `db:"estimated_man_hours" json:"estimatedManHours"`
 	EstimateRate     float64 `db:"estimated_rate" json:"estimatedRate"`
 	EstimateCost     float64 `db:"estimated_cost" json:"estimatedCost"`
 }
@@ -251,11 +251,11 @@ func intervalToISO(i pgtype.Interval) string {
 
 func (jr *JobResponse) MakeFromJoin(ej EstimateJobJoin) {
 	jr.JobID = ej.JobID
-	jr.ManHours = intervalToISO(ej.ManHours)
+	jr.ManHours = ej.ManHours
 	jr.Rate = ej.Rate
 	jr.Cost = ej.Cost
 	jr.Finalized = ej.Finalized
-	jr.ActualManHours = intervalToISO(ej.ActualManHours)
+	jr.ActualManHours = ej.ManHours
 	jr.FinalCost = ej.FinalCost
 	jr.AmountPaid = ej.AmountPaid
 	jr.Notes = ej.Notes
@@ -283,7 +283,7 @@ func (er *EstimateResponse) MakeFromJoin(ej EstimateJobJoin) {
 	er.NumberWorkers = ej.NumberWorkers
 	er.DistToJob = ej.DistToJob
 	er.DistMove = ej.DistMove
-	er.EstimateManHours = intervalToISO(ej.EstimateManHours)
+	er.EstimateManHours = ej.EstimateManHours
 	er.EstimateRate = ej.EstimateRate
 	er.EstimateCost = ej.EstimateCost
 }
