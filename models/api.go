@@ -239,6 +239,8 @@ type EstimateResponse struct {
 	EstimateManHours float64 `db:"estimated_man_hours" json:"estimatedManHours"`
 	EstimateRate     float64 `db:"estimated_rate" json:"estimatedRate"`
 	EstimateCost     float64 `db:"estimated_cost" json:"estimatedCost"`
+
+	CustomerNotes string `db:"customer_notes" json:"customerNotes"`
 }
 
 func intervalToISO(i pgtype.Interval) string {
@@ -286,6 +288,7 @@ func (er *EstimateResponse) MakeFromJoin(ej EstimateJobJoin) {
 	er.EstimateManHours = ej.EstimateManHours
 	er.EstimateRate = ej.EstimateRate
 	er.EstimateCost = ej.EstimateCost
+	er.CustomerNotes = ej.CustomerNotes
 }
 
 type EstimateRequest struct {

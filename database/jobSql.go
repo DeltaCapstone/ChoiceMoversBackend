@@ -275,6 +275,7 @@ finalized,
 actual_man_hours,
 final_cost,
 amount_payed,
+customer_notes,
 notes   
 FROM estimates NATURAL JOIN jobs WHERE customer_username=@username`
 
