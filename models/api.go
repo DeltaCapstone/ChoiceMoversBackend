@@ -175,6 +175,7 @@ type AssignmentConflictType string
 
 const (
 	JOB_FULL         AssignmentConflictType = "JOB_FULL"
+	MANAGER_ASSIGNED AssignmentConflictType = "MANAGER_ASSIGNED"
 	ALREADY_ASSIGNED AssignmentConflictType = "ALREADY_ASSIGNED"
 )
 

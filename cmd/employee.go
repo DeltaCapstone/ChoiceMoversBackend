@@ -534,9 +534,11 @@ func checkAssignmentAvailability(c echo.Context) error {
 	}
 
 	isAlreadyAssigned := false
+	managerAssigned := false
 	for _, e := range assignedEmps {
 		if e.UserName == me {
 			isAlreadyAssigned = true
+			managerAssigned = e.ManagerAssigned
 			break
 		}
 	}
@@ -546,11 +548,12 @@ func checkAssignmentAvailability(c echo.Context) error {
 
 	if isFull || isAlreadyAssigned {
 		var conflictType models.AssignmentConflictType
-		if isFull {
-			conflictType = models.JOB_FULL
-		}
-		if isAlreadyAssigned {
+		if isAlreadyAssigned && managerAssigned {
+			conflictType = models.MANAGER_ASSIGNED
+		} else if isAlreadyAssigned && !managerAssigned {
 			conflictType = models.ALREADY_ASSIGNED
+		} else if isFull {
+			conflictType = models.JOB_FULL
 		}
 		return c.String(http.StatusConflict, string(conflictType))
 	} else {
