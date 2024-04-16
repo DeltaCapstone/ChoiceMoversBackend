@@ -119,6 +119,8 @@ type Estimate struct {
 	EstimateManHours float64 `db:"estimated_man_hours" json:"estimatedManHours"`
 	EstimateRate     float64 `db:"estimated_rate" json:"estimatedRate"`
 	EstimateCost     float64 `db:"estimated_cost" json:"estimatedCost"`
+
+	CustomerNotes string `db:"customer_notes" json:"customerNotes"`
 }
 
 type EstimateJobJoin struct {
@@ -165,7 +167,8 @@ type EstimateJobJoin struct {
 	FinalCost      float64 `db:"final_cost" json:"finalCost"`
 	AmountPaid     float64 `db:"amount_payed" json:"amountPaid"`
 
-	Notes string `db:"notes" json:"notes"`
+	CustomerNotes string `db:"customer_notes" json:"customerNotes"`
+	Notes         string `db:"notes" json:"notes"`
 }
 
 // /////////////////////////////////////////////////////////////////

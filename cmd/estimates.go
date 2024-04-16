@@ -307,6 +307,8 @@ func calculateEstimate(req models.EstimateRequest, c echo.Context, store bool) (
 		EstimateManHours: hours,
 		EstimateRate:     rate,
 		EstimateCost:     cost,
+
+		CustomerNotes: req.CustomerNotes,
 	}
 
 	return estimate, nil

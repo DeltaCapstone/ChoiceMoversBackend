@@ -309,7 +309,7 @@ type EstimateRequest struct {
 	DistToJob int  `db:"dist_to_job" json:"distanceToJob"`
 	DistMove  int  `db:"dist_move" json:"distanceMove"`
 
-	SpecialRequests []string `json:"specialRequests"`
+	CustomerNotes string `db:"customer_notes" json:"customerNotes"`
 }
 
 type PasswordResetRequest struct {
