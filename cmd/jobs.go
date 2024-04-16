@@ -101,7 +101,11 @@ func updateJob(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"message": "cannot find job by id", "error": err})
 	}
 
+	oldJob.JobID = updatedJobRequest.JobID
+
 	var updatedJob models.Job
+
+	updatedJob.JobID = updatedJobRequest.JobID
 
 	if oldJob.Finalized {
 		return c.JSON(http.StatusConflict, echo.Map{"message": "cannot modify a finalized job"})
