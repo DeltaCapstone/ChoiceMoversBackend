@@ -57,6 +57,7 @@ func itemsToSizes(estRequest models.EstimateRequest) ([]int, error) {
 	sizes := []int{0, 0, 0}
 	var size int
 
+	// Map room itesm to sizes
 	for _, room := range estRequest.Rooms {
 		for item, quantity := range room.Items {
 			size = itemMap[item]
@@ -64,11 +65,13 @@ func itemsToSizes(estRequest models.EstimateRequest) ([]int, error) {
 		}
 	}
 
+	// Map special items to sizes
 	for item, quantity := range estRequest.Special {
 		size = itemMap[item]
 		sizes[size] += quantity
 	}
 
+	// Map boxes to sizes
 	for item, quantity := range estRequest.Boxes {
 		size = itemMap[item]
 		sizes[size] += quantity
